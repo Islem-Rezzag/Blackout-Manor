@@ -227,7 +227,7 @@ describe("play ui model", () => {
         readFileSync(
           resolve(
             __dirname,
-            "../../../../../artifacts/test-replays/sim-17.replay.json",
+            "../../../../../packages/replay-viewer/src/fixtures/highlight-replay.json",
           ),
           "utf8",
         ),
