@@ -1,0 +1,1119 @@
+{
+  "compressionlevel": -1,
+  "height": 35,
+  "infinite": false,
+  "layers": [
+    {
+      "id": 1,
+      "name": "backdrop",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 1,
+          "name": "Storm Grounds",
+          "class": "backdrop",
+          "x": 28,
+          "y": 40,
+          "width": 1544,
+          "height": 1010,
+          "properties": [
+            { "name": "fill", "type": "color", "value": "#071118" },
+            { "name": "stroke", "type": "color", "value": "#183244" },
+            { "name": "depth", "type": "int", "value": 0 }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "North Storm Band",
+          "class": "weather-band",
+          "x": 80,
+          "y": 28,
+          "width": 1440,
+          "height": 136,
+          "properties": [
+            { "name": "fill", "type": "color", "value": "#1b4365" },
+            { "name": "alpha", "type": "float", "value": 0.34 },
+            { "name": "depth", "type": "int", "value": 1 }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "Manor Footprint",
+          "class": "backdrop",
+          "x": 112,
+          "y": 104,
+          "width": 1332,
+          "height": 924,
+          "properties": [
+            { "name": "fill", "type": "color", "value": "#101921" },
+            { "name": "stroke", "type": "color", "value": "#25394b" },
+            { "name": "depth", "type": "int", "value": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "rooms_floor",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 101,
+          "name": "Grand Hall",
+          "class": "room-floor",
+          "x": 268,
+          "y": 148,
+          "width": 360,
+          "height": 224,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" },
+            { "name": "fill", "type": "color", "value": "#2f2630" },
+            { "name": "accent", "type": "color", "value": "#ceb17c" },
+            { "name": "ambience", "type": "color", "value": "#f0bc69" },
+            { "name": "focusZoom", "type": "float", "value": 1.12 },
+            { "name": "cutawayHeight", "type": "int", "value": 56 },
+            {
+              "name": "theme",
+              "type": "string",
+              "value": "ceremonial gaslight"
+            }
+          ]
+        },
+        {
+          "id": 102,
+          "name": "Library",
+          "class": "room-floor",
+          "x": 76,
+          "y": 90,
+          "width": 216,
+          "height": 184,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" },
+            { "name": "fill", "type": "color", "value": "#24313a" },
+            { "name": "accent", "type": "color", "value": "#87b9df" },
+            { "name": "ambience", "type": "color", "value": "#7ac2ff" },
+            { "name": "focusZoom", "type": "float", "value": 1.18 },
+            { "name": "cutawayHeight", "type": "int", "value": 48 },
+            { "name": "theme", "type": "string", "value": "radio hush" }
+          ]
+        },
+        {
+          "id": 103,
+          "name": "Study",
+          "class": "room-floor",
+          "x": 92,
+          "y": 332,
+          "width": 212,
+          "height": 180,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" },
+            { "name": "fill", "type": "color", "value": "#2d3024" },
+            { "name": "accent", "type": "color", "value": "#98be9e" },
+            { "name": "ambience", "type": "color", "value": "#9bd0ac" },
+            { "name": "focusZoom", "type": "float", "value": 1.15 },
+            { "name": "cutawayHeight", "type": "int", "value": 48 },
+            { "name": "theme", "type": "string", "value": "paperwork tension" }
+          ]
+        },
+        {
+          "id": 104,
+          "name": "Kitchen",
+          "class": "room-floor",
+          "x": 706,
+          "y": 118,
+          "width": 258,
+          "height": 214,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" },
+            { "name": "fill", "type": "color", "value": "#35271f" },
+            { "name": "accent", "type": "color", "value": "#e0a070" },
+            { "name": "ambience", "type": "color", "value": "#ffb680" },
+            { "name": "focusZoom", "type": "float", "value": 1.16 },
+            { "name": "cutawayHeight", "type": "int", "value": 52 },
+            { "name": "theme", "type": "string", "value": "steam and silver" }
+          ]
+        },
+        {
+          "id": 105,
+          "name": "Ballroom",
+          "class": "room-floor",
+          "x": 1012,
+          "y": 80,
+          "width": 316,
+          "height": 268,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" },
+            { "name": "fill", "type": "color", "value": "#33223a" },
+            { "name": "accent", "type": "color", "value": "#d4a1d9" },
+            { "name": "ambience", "type": "color", "value": "#ffb7ff" },
+            { "name": "focusZoom", "type": "float", "value": 1.14 },
+            { "name": "cutawayHeight", "type": "int", "value": 58 },
+            { "name": "theme", "type": "string", "value": "masquerade velvet" }
+          ]
+        },
+        {
+          "id": 106,
+          "name": "Greenhouse",
+          "class": "room-floor",
+          "x": 904,
+          "y": 432,
+          "width": 322,
+          "height": 208,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "fill", "type": "color", "value": "#223028" },
+            { "name": "accent", "type": "color", "value": "#8fd1a3" },
+            { "name": "ambience", "type": "color", "value": "#8ff0ad" },
+            { "name": "focusZoom", "type": "float", "value": 1.18 },
+            { "name": "cutawayHeight", "type": "int", "value": 48 },
+            {
+              "name": "theme",
+              "type": "string",
+              "value": "wet glass and leaves"
+            }
+          ]
+        },
+        {
+          "id": 107,
+          "name": "Generator Room",
+          "class": "room-floor",
+          "x": 542,
+          "y": 486,
+          "width": 252,
+          "height": 192,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" },
+            { "name": "fill", "type": "color", "value": "#1f2e33" },
+            { "name": "accent", "type": "color", "value": "#84d4da" },
+            { "name": "ambience", "type": "color", "value": "#7fdff9" },
+            { "name": "focusZoom", "type": "float", "value": 1.2 },
+            { "name": "cutawayHeight", "type": "int", "value": 46 },
+            { "name": "theme", "type": "string", "value": "electrical hum" }
+          ]
+        },
+        {
+          "id": 108,
+          "name": "Surveillance Hall",
+          "class": "room-floor",
+          "x": 242,
+          "y": 594,
+          "width": 240,
+          "height": 176,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "surveillance-hall"
+            },
+            { "name": "fill", "type": "color", "value": "#222638" },
+            { "name": "accent", "type": "color", "value": "#89aaf3" },
+            { "name": "ambience", "type": "color", "value": "#84b8ff" },
+            { "name": "focusZoom", "type": "float", "value": 1.22 },
+            { "name": "cutawayHeight", "type": "int", "value": 44 },
+            { "name": "theme", "type": "string", "value": "film flicker" }
+          ]
+        },
+        {
+          "id": 109,
+          "name": "Cellar",
+          "class": "room-floor",
+          "x": 726,
+          "y": 730,
+          "width": 298,
+          "height": 192,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" },
+            { "name": "fill", "type": "color", "value": "#2f2623" },
+            { "name": "accent", "type": "color", "value": "#b38b72" },
+            { "name": "ambience", "type": "color", "value": "#c79d7b" },
+            { "name": "focusZoom", "type": "float", "value": 1.2 },
+            { "name": "cutawayHeight", "type": "int", "value": 50 },
+            { "name": "theme", "type": "string", "value": "boiler dread" }
+          ]
+        },
+        {
+          "id": 110,
+          "name": "Servants Corridor",
+          "class": "room-floor",
+          "x": 356,
+          "y": 826,
+          "width": 304,
+          "height": 144,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "servants-corridor"
+            },
+            { "name": "fill", "type": "color", "value": "#312d23" },
+            { "name": "accent", "type": "color", "value": "#d8d4b0" },
+            { "name": "ambience", "type": "color", "value": "#efebb7" },
+            { "name": "focusZoom", "type": "float", "value": 1.17 },
+            { "name": "cutawayHeight", "type": "int", "value": 40 },
+            {
+              "name": "theme",
+              "type": "string",
+              "value": "service passage hush"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "cutaway_walls",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 201,
+          "name": "Grand Hall Wall",
+          "class": "cutaway-wall",
+          "x": 268,
+          "y": 148,
+          "width": 360,
+          "height": 56,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" },
+            { "name": "fill", "type": "color", "value": "#4b3740" }
+          ]
+        },
+        {
+          "id": 202,
+          "name": "Library Wall",
+          "class": "cutaway-wall",
+          "x": 76,
+          "y": 90,
+          "width": 216,
+          "height": 48,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" },
+            { "name": "fill", "type": "color", "value": "#384854" }
+          ]
+        },
+        {
+          "id": 203,
+          "name": "Study Wall",
+          "class": "cutaway-wall",
+          "x": 92,
+          "y": 332,
+          "width": 212,
+          "height": 48,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" },
+            { "name": "fill", "type": "color", "value": "#445042" }
+          ]
+        },
+        {
+          "id": 204,
+          "name": "Kitchen Wall",
+          "class": "cutaway-wall",
+          "x": 706,
+          "y": 118,
+          "width": 258,
+          "height": 52,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" },
+            { "name": "fill", "type": "color", "value": "#56372c" }
+          ]
+        },
+        {
+          "id": 205,
+          "name": "Ballroom Wall",
+          "class": "cutaway-wall",
+          "x": 1012,
+          "y": 80,
+          "width": 316,
+          "height": 58,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" },
+            { "name": "fill", "type": "color", "value": "#563561" }
+          ]
+        },
+        {
+          "id": 206,
+          "name": "Greenhouse Wall",
+          "class": "cutaway-wall",
+          "x": 904,
+          "y": 432,
+          "width": 322,
+          "height": 48,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "fill", "type": "color", "value": "#365142" }
+          ]
+        },
+        {
+          "id": 207,
+          "name": "Generator Wall",
+          "class": "cutaway-wall",
+          "x": 542,
+          "y": 486,
+          "width": 252,
+          "height": 46,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" },
+            { "name": "fill", "type": "color", "value": "#33545b" }
+          ]
+        },
+        {
+          "id": 208,
+          "name": "Surveillance Wall",
+          "class": "cutaway-wall",
+          "x": 242,
+          "y": 594,
+          "width": 240,
+          "height": 44,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "surveillance-hall"
+            },
+            { "name": "fill", "type": "color", "value": "#34456f" }
+          ]
+        },
+        {
+          "id": 209,
+          "name": "Cellar Wall",
+          "class": "cutaway-wall",
+          "x": 726,
+          "y": 730,
+          "width": 298,
+          "height": 50,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" },
+            { "name": "fill", "type": "color", "value": "#50413b" }
+          ]
+        },
+        {
+          "id": 210,
+          "name": "Servants Wall",
+          "class": "cutaway-wall",
+          "x": 356,
+          "y": 826,
+          "width": 304,
+          "height": 40,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "servants-corridor"
+            },
+            { "name": "fill", "type": "color", "value": "#504836" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "decor",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 301,
+          "name": "Grand Hall Carpet",
+          "class": "decor-rect",
+          "x": 318,
+          "y": 198,
+          "width": 248,
+          "height": 116,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" },
+            { "name": "fill", "type": "color", "value": "#5a2436" },
+            { "name": "alpha", "type": "float", "value": 0.55 }
+          ]
+        },
+        {
+          "id": 302,
+          "name": "Library Shelves",
+          "class": "decor-rect",
+          "x": 96,
+          "y": 120,
+          "width": 52,
+          "height": 124,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" },
+            { "name": "fill", "type": "color", "value": "#4b321f" },
+            { "name": "alpha", "type": "float", "value": 0.7 }
+          ]
+        },
+        {
+          "id": 303,
+          "name": "Study Desk",
+          "class": "decor-rect",
+          "x": 154,
+          "y": 392,
+          "width": 88,
+          "height": 52,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" },
+            { "name": "fill", "type": "color", "value": "#604530" },
+            { "name": "alpha", "type": "float", "value": 0.72 }
+          ]
+        },
+        {
+          "id": 304,
+          "name": "Kitchen Hearth",
+          "class": "decor-rect",
+          "x": 738,
+          "y": 154,
+          "width": 76,
+          "height": 58,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" },
+            { "name": "fill", "type": "color", "value": "#72442a" },
+            { "name": "alpha", "type": "float", "value": 0.74 }
+          ]
+        },
+        {
+          "id": 305,
+          "name": "Ballroom Dais",
+          "class": "decor-ellipse",
+          "x": 1102,
+          "y": 128,
+          "width": 142,
+          "height": 84,
+          "ellipse": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" },
+            { "name": "fill", "type": "color", "value": "#72355f" },
+            { "name": "alpha", "type": "float", "value": 0.6 }
+          ]
+        },
+        {
+          "id": 306,
+          "name": "Greenhouse Beds West",
+          "class": "decor-rect",
+          "x": 950,
+          "y": 474,
+          "width": 94,
+          "height": 56,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "fill", "type": "color", "value": "#305534" },
+            { "name": "alpha", "type": "float", "value": 0.68 }
+          ]
+        },
+        {
+          "id": 307,
+          "name": "Greenhouse Beds East",
+          "class": "decor-rect",
+          "x": 1078,
+          "y": 474,
+          "width": 98,
+          "height": 56,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "fill", "type": "color", "value": "#3b663f" },
+            { "name": "alpha", "type": "float", "value": 0.68 }
+          ]
+        },
+        {
+          "id": 308,
+          "name": "Generator Coils",
+          "class": "decor-ellipse",
+          "x": 606,
+          "y": 532,
+          "width": 124,
+          "height": 72,
+          "ellipse": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" },
+            { "name": "fill", "type": "color", "value": "#1d5560" },
+            { "name": "alpha", "type": "float", "value": 0.72 }
+          ]
+        },
+        {
+          "id": 309,
+          "name": "Surveillance Console",
+          "class": "decor-rect",
+          "x": 286,
+          "y": 630,
+          "width": 134,
+          "height": 44,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "surveillance-hall"
+            },
+            { "name": "fill", "type": "color", "value": "#2a3658" },
+            { "name": "alpha", "type": "float", "value": 0.74 }
+          ]
+        },
+        {
+          "id": 310,
+          "name": "Cellar Boiler",
+          "class": "decor-ellipse",
+          "x": 812,
+          "y": 768,
+          "width": 132,
+          "height": 84,
+          "ellipse": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" },
+            { "name": "fill", "type": "color", "value": "#695548" },
+            { "name": "alpha", "type": "float", "value": 0.76 }
+          ]
+        },
+        {
+          "id": 311,
+          "name": "Servants Crates",
+          "class": "decor-rect",
+          "x": 432,
+          "y": 862,
+          "width": 128,
+          "height": 48,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "servants-corridor"
+            },
+            { "name": "fill", "type": "color", "value": "#6b5539" },
+            { "name": "alpha", "type": "float", "value": 0.76 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "light_nodes",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 401,
+          "name": "Grand Hall Chandelier",
+          "class": "light-node",
+          "x": 448,
+          "y": 214,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" },
+            { "name": "radius", "type": "float", "value": 184 },
+            { "name": "color", "type": "color", "value": "#f5c468" },
+            { "name": "intensity", "type": "float", "value": 0.95 }
+          ]
+        },
+        {
+          "id": 402,
+          "name": "Library Lamp",
+          "class": "light-node",
+          "x": 202,
+          "y": 154,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" },
+            { "name": "radius", "type": "float", "value": 108 },
+            { "name": "color", "type": "color", "value": "#bcdcff" },
+            { "name": "intensity", "type": "float", "value": 0.76 }
+          ]
+        },
+        {
+          "id": 403,
+          "name": "Study Lamp",
+          "class": "light-node",
+          "x": 198,
+          "y": 402,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" },
+            { "name": "radius", "type": "float", "value": 96 },
+            { "name": "color", "type": "color", "value": "#c4dfbb" },
+            { "name": "intensity", "type": "float", "value": 0.7 }
+          ]
+        },
+        {
+          "id": 404,
+          "name": "Kitchen Range",
+          "class": "light-node",
+          "x": 808,
+          "y": 184,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" },
+            { "name": "radius", "type": "float", "value": 122 },
+            { "name": "color", "type": "color", "value": "#ffb480" },
+            { "name": "intensity", "type": "float", "value": 0.82 }
+          ]
+        },
+        {
+          "id": 405,
+          "name": "Ballroom Chandelier",
+          "class": "light-node",
+          "x": 1170,
+          "y": 196,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" },
+            { "name": "radius", "type": "float", "value": 154 },
+            { "name": "color", "type": "color", "value": "#f0b2ff" },
+            { "name": "intensity", "type": "float", "value": 0.84 }
+          ]
+        },
+        {
+          "id": 406,
+          "name": "Greenhouse Lamp",
+          "class": "light-node",
+          "x": 1066,
+          "y": 486,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "radius", "type": "float", "value": 126 },
+            { "name": "color", "type": "color", "value": "#96f2a5" },
+            { "name": "intensity", "type": "float", "value": 0.68 }
+          ]
+        },
+        {
+          "id": 407,
+          "name": "Generator Glow",
+          "class": "light-node",
+          "x": 668,
+          "y": 568,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" },
+            { "name": "radius", "type": "float", "value": 116 },
+            { "name": "color", "type": "color", "value": "#83e4f4" },
+            { "name": "intensity", "type": "float", "value": 0.72 }
+          ]
+        },
+        {
+          "id": 408,
+          "name": "Surveillance Strip",
+          "class": "light-node",
+          "x": 364,
+          "y": 644,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "surveillance-hall"
+            },
+            { "name": "radius", "type": "float", "value": 96 },
+            { "name": "color", "type": "color", "value": "#8fb6ff" },
+            { "name": "intensity", "type": "float", "value": 0.7 }
+          ]
+        },
+        {
+          "id": 409,
+          "name": "Cellar Furnace",
+          "class": "light-node",
+          "x": 862,
+          "y": 818,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" },
+            { "name": "radius", "type": "float", "value": 114 },
+            { "name": "color", "type": "color", "value": "#d4a586" },
+            { "name": "intensity", "type": "float", "value": 0.7 }
+          ]
+        },
+        {
+          "id": 410,
+          "name": "Servants Lamp",
+          "class": "light-node",
+          "x": 512,
+          "y": 870,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "value": "servants-corridor"
+            },
+            { "name": "radius", "type": "float", "value": 92 },
+            { "name": "color", "type": "color", "value": "#f1e8b9" },
+            { "name": "intensity", "type": "float", "value": 0.66 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "focus_points",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 501,
+          "name": "Grand Hall Focus",
+          "class": "focus-point",
+          "x": 448,
+          "y": 250,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" }
+          ]
+        },
+        {
+          "id": 502,
+          "name": "Library Focus",
+          "class": "focus-point",
+          "x": 184,
+          "y": 180,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" }
+          ]
+        },
+        {
+          "id": 503,
+          "name": "Study Focus",
+          "class": "focus-point",
+          "x": 196,
+          "y": 420,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" }
+          ]
+        },
+        {
+          "id": 504,
+          "name": "Kitchen Focus",
+          "class": "focus-point",
+          "x": 834,
+          "y": 226,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" }
+          ]
+        },
+        {
+          "id": 505,
+          "name": "Ballroom Focus",
+          "class": "focus-point",
+          "x": 1172,
+          "y": 214,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" }
+          ]
+        },
+        {
+          "id": 506,
+          "name": "Greenhouse Focus",
+          "class": "focus-point",
+          "x": 1060,
+          "y": 534,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" }
+          ]
+        },
+        {
+          "id": 507,
+          "name": "Generator Focus",
+          "class": "focus-point",
+          "x": 668,
+          "y": 584,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" }
+          ]
+        },
+        {
+          "id": 508,
+          "name": "Surveillance Focus",
+          "class": "focus-point",
+          "x": 360,
+          "y": 680,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "surveillance-hall" }
+          ]
+        },
+        {
+          "id": 509,
+          "name": "Cellar Focus",
+          "class": "focus-point",
+          "x": 872,
+          "y": 828,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" }
+          ]
+        },
+        {
+          "id": 510,
+          "name": "Servants Focus",
+          "class": "focus-point",
+          "x": 508,
+          "y": 898,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "servants-corridor" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "clue_points",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 601,
+          "name": "Grand Hall Clue",
+          "class": "clue-point",
+          "x": 560,
+          "y": 286,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" }
+          ]
+        },
+        {
+          "id": 602,
+          "name": "Library Clue",
+          "class": "clue-point",
+          "x": 244,
+          "y": 214,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" }
+          ]
+        },
+        {
+          "id": 603,
+          "name": "Study Clue",
+          "class": "clue-point",
+          "x": 250,
+          "y": 468,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "study" }
+          ]
+        },
+        {
+          "id": 604,
+          "name": "Kitchen Clue",
+          "class": "clue-point",
+          "x": 904,
+          "y": 272,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "kitchen" }
+          ]
+        },
+        {
+          "id": 605,
+          "name": "Ballroom Clue",
+          "class": "clue-point",
+          "x": 1262,
+          "y": 268,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" }
+          ]
+        },
+        {
+          "id": 606,
+          "name": "Greenhouse Clue",
+          "class": "clue-point",
+          "x": 1170,
+          "y": 586,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" }
+          ]
+        },
+        {
+          "id": 607,
+          "name": "Generator Clue",
+          "class": "clue-point",
+          "x": 734,
+          "y": 624,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "generator-room" }
+          ]
+        },
+        {
+          "id": 608,
+          "name": "Surveillance Clue",
+          "class": "clue-point",
+          "x": 430,
+          "y": 730,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "surveillance-hall" }
+          ]
+        },
+        {
+          "id": 609,
+          "name": "Cellar Clue",
+          "class": "clue-point",
+          "x": 964,
+          "y": 868,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "cellar" }
+          ]
+        },
+        {
+          "id": 610,
+          "name": "Servants Clue",
+          "class": "clue-point",
+          "x": 606,
+          "y": 918,
+          "width": 0,
+          "height": 0,
+          "point": true,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "servants-corridor" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "weather_windows",
+      "type": "objectgroup",
+      "visible": true,
+      "opacity": 1,
+      "objects": [
+        {
+          "id": 701,
+          "name": "Library Windows",
+          "class": "weather-window",
+          "x": 84,
+          "y": 60,
+          "width": 188,
+          "height": 24,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "library" },
+            { "name": "fill", "type": "color", "value": "#6ea3d0" },
+            { "name": "alpha", "type": "float", "value": 0.42 }
+          ]
+        },
+        {
+          "id": 702,
+          "name": "Ballroom Windows",
+          "class": "weather-window",
+          "x": 1038,
+          "y": 56,
+          "width": 258,
+          "height": 24,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "ballroom" },
+            { "name": "fill", "type": "color", "value": "#7aa6d8" },
+            { "name": "alpha", "type": "float", "value": 0.4 }
+          ]
+        },
+        {
+          "id": 703,
+          "name": "Greenhouse Glass",
+          "class": "weather-window",
+          "x": 930,
+          "y": 410,
+          "width": 270,
+          "height": 22,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "greenhouse" },
+            { "name": "fill", "type": "color", "value": "#7dbbde" },
+            { "name": "alpha", "type": "float", "value": 0.46 }
+          ]
+        },
+        {
+          "id": 704,
+          "name": "Grand Hall Windows",
+          "class": "weather-window",
+          "x": 298,
+          "y": 122,
+          "width": 290,
+          "height": 20,
+          "properties": [
+            { "name": "roomId", "type": "string", "value": "grand-hall" },
+            { "name": "fill", "type": "color", "value": "#87aed6" },
+            { "name": "alpha", "type": "float", "value": 0.28 }
+          ]
+        }
+      ]
+    }
+  ],
+  "nextlayerid": 9,
+  "nextobjectid": 800,
+  "orientation": "orthogonal",
+  "renderorder": "right-down",
+  "tiledversion": "1.11.0",
+  "tileheight": 32,
+  "tilesets": [],
+  "tilewidth": 32,
+  "type": "map",
+  "version": "1.10",
+  "width": 50
+}

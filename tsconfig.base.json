@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@blackout-manor/shared": ["packages/shared/src/index.ts"],
+      "@blackout-manor/shared/*": ["packages/shared/src/*"],
+      "@blackout-manor/engine": ["packages/engine/src/index.ts"],
+      "@blackout-manor/engine/*": ["packages/engine/src/*"],
+      "@blackout-manor/agents": ["packages/agents/src/index.ts"],
+      "@blackout-manor/agents/*": ["packages/agents/src/*"],
+      "@blackout-manor/client-game": ["packages/client-game/src/index.ts"],
+      "@blackout-manor/client-game/*": ["packages/client-game/src/*"],
+      "@blackout-manor/content": ["packages/content/src/index.ts"],
+      "@blackout-manor/content/*": ["packages/content/src/*"],
+      "@blackout-manor/replay-viewer": ["packages/replay-viewer/src/index.ts"],
+      "@blackout-manor/replay-viewer/*": ["packages/replay-viewer/src/*"],
+      "@blackout-manor/db": ["packages/db/src/index.ts"],
+      "@blackout-manor/db/*": ["packages/db/src/*"]
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "replayId": "replay-match-17-17",
+  "matchId": "match-17",
+  "seed": 17,
+  "eventTypes": [
+    "match-bootstrapped",
+    "roles-assigned",
+    "tick-advanced",
+    "phase-changed",
+    "action-recorded",
+    "action-recorded",
+    "phase-changed",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "phase-changed",
+    "tick-advanced",
+    "tick-advanced",
+    "phase-changed",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "action-recorded",
+    "vote-resolved",
+    "phase-changed",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "tick-advanced",
+    "phase-changed"
+  ],
+  "roleAssignments": [
+    {
+      "playerId": "agent-9",
+      "role": "shadow",
+      "team": "shadow"
+    },
+    {
+      "playerId": "agent-4",
+      "role": "shadow",
+      "team": "shadow"
+    },
+    {
+      "playerId": "agent-3",
+      "role": "investigator",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-1",
+      "role": "steward",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-8",
+      "role": "household",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-10",
+      "role": "household",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-2",
+      "role": "household",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-5",
+      "role": "household",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-6",
+      "role": "household",
+      "team": "household"
+    },
+    {
+      "playerId": "agent-7",
+      "role": "household",
+      "team": "household"
+    }
+  ],
+  "phaseTimeline": [
+    "0:intro",
+    "0:intro",
+    "1:intro",
+    "1:roam",
+    "1:roam",
+    "1:report",
+    "2:report",
+    "3:report",
+    "4:report",
+    "5:report",
+    "6:report",
+    "6:meeting",
+    "7:meeting",
+    "8:meeting",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:vote",
+    "8:reveal",
+    "9:reveal",
+    "10:reveal",
+    "11:reveal",
+    "12:reveal",
+    "13:reveal",
+    "13:roam"
+  ],
+  "finalPlayers": [
+    {
+      "id": "agent-1",
+      "role": "steward",
+      "status": "eliminated",
+      "roomId": null
+    },
+    {
+      "id": "agent-2",
+      "role": "household",
+      "status": "alive",
+      "roomId": "cellar"
+    },
+    {
+      "id": "agent-3",
+      "role": "investigator",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-4",
+      "role": "shadow",
+      "status": "alive",
+      "roomId": "cellar"
+    },
+    {
+      "id": "agent-5",
+      "role": "household",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-6",
+      "role": "household",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-7",
+      "role": "household",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-8",
+      "role": "household",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-9",
+      "role": "shadow",
+      "status": "alive",
+      "roomId": "grand-hall"
+    },
+    {
+      "id": "agent-10",
+      "role": "household",
+      "status": "alive",
+      "roomId": "grand-hall"
+    }
+  ],
+  "finalWinner": null
+}

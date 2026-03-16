@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@blackout-manor/shared": ["../../packages/shared/src/index.ts"],
+      "@blackout-manor/shared/*": ["../../packages/shared/src/*"],
+      "@blackout-manor/engine": ["../../packages/engine/src/index.ts"],
+      "@blackout-manor/engine/*": ["../../packages/engine/src/*"],
+      "@blackout-manor/agents": ["../../packages/agents/src/index.ts"],
+      "@blackout-manor/agents/*": ["../../packages/agents/src/*"],
+      "@blackout-manor/client-game": [
+        "../../packages/client-game/src/index.ts"
+      ],
+      "@blackout-manor/client-game/*": ["../../packages/client-game/src/*"],
+      "@blackout-manor/content": ["../../packages/content/src/index.ts"],
+      "@blackout-manor/content/*": ["../../packages/content/src/*"],
+      "@blackout-manor/replay-viewer": [
+        "../../packages/replay-viewer/src/index.ts"
+      ],
+      "@blackout-manor/replay-viewer/*": ["../../packages/replay-viewer/src/*"],
+      "@blackout-manor/db": ["../../packages/db/src/index.ts"],
+      "@blackout-manor/db/*": ["../../packages/db/src/*"]
+    },
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist", "node_modules"]
+}

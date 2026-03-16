@@ -1,0 +1,14 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/web" },
+    { "path": "./apps/server" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/engine" },
+    { "path": "./packages/agents" },
+    { "path": "./packages/client-game" },
+    { "path": "./packages/content" },
+    { "path": "./packages/replay-viewer" },
+    { "path": "./packages/db" }
+  ]
+}

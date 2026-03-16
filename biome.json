@@ -1,0 +1,45 @@
+{
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.next",
+      "!**/coverage",
+      "!**/node_modules",
+      "!**/.turbo",
+      "!**/.local",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!**/artifacts",
+      "!apps/web/public/data/fairness-report.latest.json",
+      "!**/packages/db/generated"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
+    }
+  }
+}

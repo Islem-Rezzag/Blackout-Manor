@@ -1,0 +1,2015 @@
+{
+  "formatVersion": "1.0.0",
+  "generatedAt": "2026-03-15T21:54:49.146Z",
+  "simulationCount": 10,
+  "passed": false,
+  "thresholds": [
+    {
+      "id": "household-win-rate",
+      "label": "Household win rate",
+      "min": 0.47,
+      "max": 0.53,
+      "actual": 0,
+      "pass": false
+    },
+    {
+      "id": "shadow-win-rate",
+      "label": "Shadow win rate",
+      "min": 0.47,
+      "max": 0.53,
+      "actual": 1,
+      "pass": false
+    },
+    {
+      "id": "investigator-swing",
+      "label": "Investigator swing",
+      "max": 0.08,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "id": "steward-swing",
+      "label": "Steward swing",
+      "max": 0.06,
+      "actual": 0,
+      "pass": true
+    }
+  ],
+  "schedule": {
+    "baseSeeds": [1001],
+    "rotationPairsPerSeed": 5,
+    "scheduleEntries": [
+      {
+        "entryId": "1001:forward:0",
+        "matchId": "fairness-1001-f0",
+        "baseSeed": 1001,
+        "matchSeed": 1001,
+        "rotationIndex": 0,
+        "slotOffset": 0,
+        "variant": "forward",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:swapped:0",
+        "matchId": "fairness-1001-s0",
+        "baseSeed": 1001,
+        "matchSeed": 51001,
+        "rotationIndex": 0,
+        "slotOffset": 5,
+        "variant": "swapped",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:forward:1",
+        "matchId": "fairness-1001-f1",
+        "baseSeed": 1001,
+        "matchSeed": 1098,
+        "rotationIndex": 1,
+        "slotOffset": 1,
+        "variant": "forward",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:swapped:1",
+        "matchId": "fairness-1001-s1",
+        "baseSeed": 1001,
+        "matchSeed": 51098,
+        "rotationIndex": 1,
+        "slotOffset": 6,
+        "variant": "swapped",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:forward:2",
+        "matchId": "fairness-1001-f2",
+        "baseSeed": 1001,
+        "matchSeed": 1195,
+        "rotationIndex": 2,
+        "slotOffset": 2,
+        "variant": "forward",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:swapped:2",
+        "matchId": "fairness-1001-s2",
+        "baseSeed": 1001,
+        "matchSeed": 51195,
+        "rotationIndex": 2,
+        "slotOffset": 7,
+        "variant": "swapped",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:forward:3",
+        "matchId": "fairness-1001-f3",
+        "baseSeed": 1001,
+        "matchSeed": 1292,
+        "rotationIndex": 3,
+        "slotOffset": 3,
+        "variant": "forward",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:swapped:3",
+        "matchId": "fairness-1001-s3",
+        "baseSeed": 1001,
+        "matchSeed": 51292,
+        "rotationIndex": 3,
+        "slotOffset": 8,
+        "variant": "swapped",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:forward:4",
+        "matchId": "fairness-1001-f4",
+        "baseSeed": 1001,
+        "matchSeed": 1389,
+        "rotationIndex": 4,
+        "slotOffset": 4,
+        "variant": "forward",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 9
+          }
+        ]
+      },
+      {
+        "entryId": "1001:swapped:4",
+        "matchId": "fairness-1001-s4",
+        "baseSeed": 1001,
+        "matchSeed": 51389,
+        "rotationIndex": 4,
+        "slotOffset": 9,
+        "variant": "swapped",
+        "assignments": [
+          {
+            "playerId": "agent-01",
+            "displayName": "Velour Romantic",
+            "personaId": "velour-romantic",
+            "slotIndex": 0
+          },
+          {
+            "playerId": "agent-02",
+            "displayName": "Glass Fox",
+            "personaId": "glass-fox",
+            "slotIndex": 1
+          },
+          {
+            "playerId": "agent-03",
+            "displayName": "Clockwork Advocate",
+            "personaId": "clockwork-advocate",
+            "slotIndex": 2
+          },
+          {
+            "playerId": "agent-04",
+            "displayName": "Spark Journalist",
+            "personaId": "spark-journalist",
+            "slotIndex": 3
+          },
+          {
+            "playerId": "agent-05",
+            "displayName": "Hearth Keeper",
+            "personaId": "hearth-keeper",
+            "slotIndex": 4
+          },
+          {
+            "playerId": "agent-06",
+            "displayName": "Storm Orator",
+            "personaId": "storm-orator",
+            "slotIndex": 5
+          },
+          {
+            "playerId": "agent-07",
+            "displayName": "Needle Cross-Examiner",
+            "personaId": "needle-cross-examiner",
+            "slotIndex": 6
+          },
+          {
+            "playerId": "agent-08",
+            "displayName": "Quiet Ledger",
+            "personaId": "quiet-ledger",
+            "slotIndex": 7
+          },
+          {
+            "playerId": "agent-09",
+            "displayName": "Marble Skeptic",
+            "personaId": "marble-skeptic",
+            "slotIndex": 8
+          },
+          {
+            "playerId": "agent-10",
+            "displayName": "Parlor Comedian",
+            "personaId": "parlor-comedian",
+            "slotIndex": 9
+          }
+        ]
+      }
+    ]
+  },
+  "overallWinRates": [
+    {
+      "teamId": "household",
+      "wins": 0,
+      "matches": 10,
+      "winRate": 0
+    },
+    {
+      "teamId": "shadow",
+      "wins": 10,
+      "matches": 10,
+      "winRate": 1
+    }
+  ],
+  "roleNormalizedWinRates": [
+    {
+      "roleId": "shadow",
+      "appearances": 20,
+      "wins": 20,
+      "winRate": 1
+    },
+    {
+      "roleId": "investigator",
+      "appearances": 10,
+      "wins": 0,
+      "winRate": 0
+    },
+    {
+      "roleId": "steward",
+      "appearances": 10,
+      "wins": 0,
+      "winRate": 0
+    },
+    {
+      "roleId": "household",
+      "appearances": 60,
+      "wins": 0,
+      "winRate": 0
+    }
+  ],
+  "specialRoleSwing": {
+    "investigator": 0,
+    "steward": 0
+  },
+  "personaCoverage": [
+    {
+      "personaId": "clockwork-advocate",
+      "displayName": "Clockwork Advocate",
+      "appearances": 10,
+      "shadowAppearances": 2,
+      "householdAppearances": 8,
+      "roleCounts": {
+        "shadow": 2,
+        "investigator": 3,
+        "steward": 1,
+        "household": 4
+      },
+      "winsByRole": {
+        "shadow": 2,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "glass-fox",
+      "displayName": "Glass Fox",
+      "appearances": 10,
+      "shadowAppearances": 4,
+      "householdAppearances": 6,
+      "roleCounts": {
+        "shadow": 4,
+        "investigator": 0,
+        "steward": 0,
+        "household": 6
+      },
+      "winsByRole": {
+        "shadow": 4,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "hearth-keeper",
+      "displayName": "Hearth Keeper",
+      "appearances": 10,
+      "shadowAppearances": 1,
+      "householdAppearances": 9,
+      "roleCounts": {
+        "shadow": 1,
+        "investigator": 0,
+        "steward": 2,
+        "household": 7
+      },
+      "winsByRole": {
+        "shadow": 1,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "marble-skeptic",
+      "displayName": "Marble Skeptic",
+      "appearances": 10,
+      "shadowAppearances": 2,
+      "householdAppearances": 8,
+      "roleCounts": {
+        "shadow": 2,
+        "investigator": 1,
+        "steward": 1,
+        "household": 6
+      },
+      "winsByRole": {
+        "shadow": 2,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "needle-cross-examiner",
+      "displayName": "Needle Cross-Examiner",
+      "appearances": 10,
+      "shadowAppearances": 0,
+      "householdAppearances": 10,
+      "roleCounts": {
+        "shadow": 0,
+        "investigator": 0,
+        "steward": 1,
+        "household": 9
+      },
+      "winsByRole": {
+        "shadow": 0,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "parlor-comedian",
+      "displayName": "Parlor Comedian",
+      "appearances": 10,
+      "shadowAppearances": 5,
+      "householdAppearances": 5,
+      "roleCounts": {
+        "shadow": 5,
+        "investigator": 0,
+        "steward": 2,
+        "household": 3
+      },
+      "winsByRole": {
+        "shadow": 5,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "quiet-ledger",
+      "displayName": "Quiet Ledger",
+      "appearances": 10,
+      "shadowAppearances": 1,
+      "householdAppearances": 9,
+      "roleCounts": {
+        "shadow": 1,
+        "investigator": 1,
+        "steward": 0,
+        "household": 8
+      },
+      "winsByRole": {
+        "shadow": 1,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "spark-journalist",
+      "displayName": "Spark Journalist",
+      "appearances": 10,
+      "shadowAppearances": 1,
+      "householdAppearances": 9,
+      "roleCounts": {
+        "shadow": 1,
+        "investigator": 1,
+        "steward": 2,
+        "household": 6
+      },
+      "winsByRole": {
+        "shadow": 1,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "storm-orator",
+      "displayName": "Storm Orator",
+      "appearances": 10,
+      "shadowAppearances": 1,
+      "householdAppearances": 9,
+      "roleCounts": {
+        "shadow": 1,
+        "investigator": 4,
+        "steward": 0,
+        "household": 5
+      },
+      "winsByRole": {
+        "shadow": 1,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    },
+    {
+      "personaId": "velour-romantic",
+      "displayName": "Velour Romantic",
+      "appearances": 10,
+      "shadowAppearances": 3,
+      "householdAppearances": 7,
+      "roleCounts": {
+        "shadow": 3,
+        "investigator": 0,
+        "steward": 1,
+        "household": 6
+      },
+      "winsByRole": {
+        "shadow": 3,
+        "investigator": 0,
+        "steward": 0,
+        "household": 0
+      }
+    }
+  ],
+  "metrics": {
+    "suspicionCalibration": {
+      "sampleCount": 3492,
+      "brierScore": 0.2808112256586533,
+      "meanShadowScore": 0.587766423357665,
+      "meanHouseholdScore": 0.5512219451371501,
+      "buckets": [
+        {
+          "bucketLabel": "0.0-0.2",
+          "range": {
+            "min": 0,
+            "max": 0.2
+          },
+          "sampleCount": 0,
+          "meanPrediction": 0,
+          "actualShadowRate": 0,
+          "absoluteError": 0
+        },
+        {
+          "bucketLabel": "0.2-0.4",
+          "range": {
+            "min": 0.2,
+            "max": 0.4
+          },
+          "sampleCount": 0,
+          "meanPrediction": 0,
+          "actualShadowRate": 0,
+          "absoluteError": 0
+        },
+        {
+          "bucketLabel": "0.4-0.6",
+          "range": {
+            "min": 0.4,
+            "max": 0.6000000000000001
+          },
+          "sampleCount": 2803,
+          "meanPrediction": 0.5357081698180449,
+          "actualShadowRate": 0.15483410631466285,
+          "absoluteError": 0.38087406350338204
+        },
+        {
+          "bucketLabel": "0.6-0.8",
+          "range": {
+            "min": 0.6000000000000001,
+            "max": 0.8
+          },
+          "sampleCount": 684,
+          "meanPrediction": 0.6494883040935698,
+          "actualShadowRate": 0.3611111111111111,
+          "absoluteError": 0.28837719298245873
+        },
+        {
+          "bucketLabel": "0.8-1.0",
+          "range": {
+            "min": 0.8,
+            "max": 1
+          },
+          "sampleCount": 5,
+          "meanPrediction": 0.812,
+          "actualShadowRate": 0.8,
+          "absoluteError": 0.01200000000000001
+        }
+      ]
+    },
+    "evidenceGroundedAccusationRate": {
+      "numerator": 216,
+      "denominator": 276,
+      "rate": 0.782608695652174
+    },
+    "promiseBreakCost": {
+      "breakCount": 0,
+      "averageTrustDrop": 0,
+      "averageSuspectIncrease": 0,
+      "publicPenaltyRate": 0,
+      "compositeCost": 0
+    },
+    "witnessStabilizationRate": {
+      "numerator": 0,
+      "denominator": 0,
+      "rate": 0
+    },
+    "falseAccusationRepairScore": {
+      "repairCount": 0,
+      "averageTrustRepair": 0,
+      "averageSuspectRepair": 0,
+      "repairScore": 0
+    },
+    "tomPredictionBrier": {
+      "sampleCount": 2396,
+      "brierScore": 0.10049147236396015,
+      "hitRate": 0.14858096828046743
+    }
+  },
+  "runs": [
+    {
+      "matchId": "fairness-1001-f0",
+      "baseSeed": 1001,
+      "matchSeed": 1001,
+      "rotationIndex": 0,
+      "slotOffset": 0,
+      "variant": "forward",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 24,
+      "roleAssignments": [
+        {
+          "playerId": "agent-09",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        }
+      ],
+      "metrics": {
+        "accusations": 25,
+        "evidenceGroundedAccusations": 17,
+        "promiseBreaks": 0,
+        "falseAccusations": 23,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-s0",
+      "baseSeed": 1001,
+      "matchSeed": 51001,
+      "rotationIndex": 0,
+      "slotOffset": 5,
+      "variant": "swapped",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 28,
+      "roleAssignments": [
+        {
+          "playerId": "agent-06",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        }
+      ],
+      "metrics": {
+        "accusations": 32,
+        "evidenceGroundedAccusations": 20,
+        "promiseBreaks": 0,
+        "falseAccusations": 21,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-f1",
+      "baseSeed": 1001,
+      "matchSeed": 1098,
+      "rotationIndex": 1,
+      "slotOffset": 1,
+      "variant": "forward",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 24,
+      "roleAssignments": [
+        {
+          "playerId": "agent-08",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        }
+      ],
+      "metrics": {
+        "accusations": 18,
+        "evidenceGroundedAccusations": 12,
+        "promiseBreaks": 0,
+        "falseAccusations": 13,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-s1",
+      "baseSeed": 1001,
+      "matchSeed": 51098,
+      "rotationIndex": 1,
+      "slotOffset": 6,
+      "variant": "swapped",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 27,
+      "roleAssignments": [
+        {
+          "playerId": "agent-02",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        }
+      ],
+      "metrics": {
+        "accusations": 32,
+        "evidenceGroundedAccusations": 30,
+        "promiseBreaks": 0,
+        "falseAccusations": 14,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-f2",
+      "baseSeed": 1001,
+      "matchSeed": 1195,
+      "rotationIndex": 2,
+      "slotOffset": 2,
+      "variant": "forward",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 24,
+      "roleAssignments": [
+        {
+          "playerId": "agent-09",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        }
+      ],
+      "metrics": {
+        "accusations": 24,
+        "evidenceGroundedAccusations": 20,
+        "promiseBreaks": 0,
+        "falseAccusations": 15,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-s2",
+      "baseSeed": 1001,
+      "matchSeed": 51195,
+      "rotationIndex": 2,
+      "slotOffset": 7,
+      "variant": "swapped",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 27,
+      "roleAssignments": [
+        {
+          "playerId": "agent-03",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        }
+      ],
+      "metrics": {
+        "accusations": 32,
+        "evidenceGroundedAccusations": 29,
+        "promiseBreaks": 0,
+        "falseAccusations": 21,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-f3",
+      "baseSeed": 1001,
+      "matchSeed": 1292,
+      "rotationIndex": 3,
+      "slotOffset": 3,
+      "variant": "forward",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 24,
+      "roleAssignments": [
+        {
+          "playerId": "agent-10",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        }
+      ],
+      "metrics": {
+        "accusations": 25,
+        "evidenceGroundedAccusations": 20,
+        "promiseBreaks": 0,
+        "falseAccusations": 21,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-s3",
+      "baseSeed": 1001,
+      "matchSeed": 51292,
+      "rotationIndex": 3,
+      "slotOffset": 8,
+      "variant": "swapped",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 28,
+      "roleAssignments": [
+        {
+          "playerId": "agent-02",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        }
+      ],
+      "metrics": {
+        "accusations": 30,
+        "evidenceGroundedAccusations": 20,
+        "promiseBreaks": 0,
+        "falseAccusations": 18,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-f4",
+      "baseSeed": 1001,
+      "matchSeed": 1389,
+      "rotationIndex": 4,
+      "slotOffset": 4,
+      "variant": "forward",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 28,
+      "roleAssignments": [
+        {
+          "playerId": "agent-07",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-02",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        }
+      ],
+      "metrics": {
+        "accusations": 32,
+        "evidenceGroundedAccusations": 27,
+        "promiseBreaks": 0,
+        "falseAccusations": 28,
+        "repairs": 0
+      }
+    },
+    {
+      "matchId": "fairness-1001-s4",
+      "baseSeed": 1001,
+      "matchSeed": 51389,
+      "rotationIndex": 4,
+      "slotOffset": 9,
+      "variant": "swapped",
+      "winner": {
+        "team": "shadow",
+        "reason": "hard-cap",
+        "decidedAtTick": 24
+      },
+      "finalTick": 24,
+      "roleAssignments": [
+        {
+          "playerId": "agent-02",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "glass-fox",
+          "displayName": "Glass Fox"
+        },
+        {
+          "playerId": "agent-08",
+          "roleId": "shadow",
+          "teamId": "shadow",
+          "personaId": "quiet-ledger",
+          "displayName": "Quiet Ledger"
+        },
+        {
+          "playerId": "agent-03",
+          "roleId": "investigator",
+          "teamId": "household",
+          "personaId": "clockwork-advocate",
+          "displayName": "Clockwork Advocate"
+        },
+        {
+          "playerId": "agent-10",
+          "roleId": "steward",
+          "teamId": "household",
+          "personaId": "parlor-comedian",
+          "displayName": "Parlor Comedian"
+        },
+        {
+          "playerId": "agent-01",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "velour-romantic",
+          "displayName": "Velour Romantic"
+        },
+        {
+          "playerId": "agent-07",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "needle-cross-examiner",
+          "displayName": "Needle Cross-Examiner"
+        },
+        {
+          "playerId": "agent-04",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "spark-journalist",
+          "displayName": "Spark Journalist"
+        },
+        {
+          "playerId": "agent-09",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "marble-skeptic",
+          "displayName": "Marble Skeptic"
+        },
+        {
+          "playerId": "agent-05",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "hearth-keeper",
+          "displayName": "Hearth Keeper"
+        },
+        {
+          "playerId": "agent-06",
+          "roleId": "household",
+          "teamId": "household",
+          "personaId": "storm-orator",
+          "displayName": "Storm Orator"
+        }
+      ],
+      "metrics": {
+        "accusations": 26,
+        "evidenceGroundedAccusations": 21,
+        "promiseBreaks": 0,
+        "falseAccusations": 21,
+        "repairs": 0
+      }
+    }
+  ]
+}
