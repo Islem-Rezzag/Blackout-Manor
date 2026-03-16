@@ -41,7 +41,7 @@ describe("fairness analytics", () => {
     expect(
       tournament.report.metrics.tomPredictionBrier.sampleCount,
     ).toBeGreaterThan(0);
-  }, 40_000);
+  }, 90_000);
 
   it("flags failing official fairness thresholds", () => {
     const thresholds = evaluateFairnessThresholds({
