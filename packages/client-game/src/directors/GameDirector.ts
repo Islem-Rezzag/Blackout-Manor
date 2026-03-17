@@ -8,9 +8,11 @@ import { CameraDirector } from "./CameraDirector";
 import { MeetingDirector } from "./MeetingDirector";
 import { PhaseDirector } from "./PhaseDirector";
 import { ReplayDirector } from "./ReplayDirector";
+import { SurveillanceDirector } from "./SurveillanceDirector";
 import type {
   EndgamePresentation,
   GamePresentationState,
+  ObservationMode,
   RuntimeSceneId,
 } from "./types";
 
@@ -150,6 +152,7 @@ export class GameDirector {
   readonly #cameraDirector = new CameraDirector();
   readonly #meetingDirector = new MeetingDirector();
   readonly #replayDirector: ReplayDirector;
+  readonly #surveillanceDirector = new SurveillanceDirector();
   readonly #listeners = new Set<Listener>();
   #scenePlugin: Phaser.Scenes.ScenePlugin | null = null;
   #state: GamePresentationState;
@@ -207,6 +210,27 @@ export class GameDirector {
     this.#syncSceneActivation();
   }
 
+  toggleObservationMode() {
+    this.#surveillanceDirector.toggleMode();
+    this.#refreshDerivedState();
+  }
+
+  setObservationMode(mode: ObservationMode) {
+    this.#surveillanceDirector.setMode(mode);
+    this.#refreshDerivedState();
+  }
+
+  focusSurveillanceRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
+    this.#surveillanceDirector.focusRoom(roomId);
+    this.#refreshDerivedState();
+  }
+
+  cycleSurveillanceRoom(delta: number) {
+    const rooms = this.#state.surveillance.feedRooms.map((feed) => feed.roomId);
+    this.#surveillanceDirector.cycleFocus(rooms, delta);
+    this.#refreshDerivedState();
+  }
+
   #deriveState(
     runtimeState: ClientGameState,
     replayEnvelope: SavedReplayEnvelope | null,
@@ -229,22 +253,52 @@ export class GameDirector {
       activeScene === "endgame" && snapshot
         ? createEndgamePresentation(snapshot, runtimeState, replayEnvelope)
         : null;
+    const initialCamera = this.#cameraDirector.resolvePlan({
+      scene: activeScene,
+      runtimeState,
+      snapshot: stageSnapshot,
+      meetingRoomId: meeting?.meetingRoomId ?? null,
+      observationMode: "roaming",
+      surveillanceRoomId: null,
+    });
+    const surveillance = this.#surveillanceDirector.derive({
+      scene: activeScene,
+      snapshot: stageSnapshot,
+      runtimeState,
+      camera: initialCamera,
+    });
+    const camera = this.#cameraDirector.resolvePlan({
+      scene: activeScene,
+      runtimeState,
+      snapshot: stageSnapshot,
+      meetingRoomId: meeting?.meetingRoomId ?? null,
+      observationMode: surveillance.mode,
+      surveillanceRoomId: surveillance.selectedRoomId,
+    });
 
     return {
       runtimeState,
       activeScene,
       snapshot: stageSnapshot,
-      camera: this.#cameraDirector.resolvePlan({
-        scene: activeScene,
-        runtimeState,
-        snapshot: stageSnapshot,
-        meetingRoomId: meeting?.meetingRoomId ?? null,
-      }),
+      camera,
       banner: buildBanner(runtimeState, activeScene, snapshot),
       meeting,
       endgame,
       replay,
+      surveillance: {
+        ...surveillance,
+        cameraLabel: camera.detail,
+      },
     };
+  }
+
+  #refreshDerivedState() {
+    this.#state = this.#deriveState(
+      this.#runtime.getState(),
+      this.#state.replay?.envelope ?? null,
+    );
+    this.#emit();
+    this.#syncSceneActivation();
   }
 
   #syncSceneActivation() {

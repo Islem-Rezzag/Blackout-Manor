@@ -2,15 +2,33 @@ import type {
   ReplayHighlightMarker,
   SavedReplayEnvelope,
 } from "@blackout-manor/replay-viewer";
-import type { MatchSnapshot, PlayerId, RoomId } from "@blackout-manor/shared";
+import type {
+  LightLevelId,
+  MatchSnapshot,
+  PlayerId,
+  PublicPlayerState,
+  RoomId,
+} from "@blackout-manor/shared";
 
 import type { ClientGameState } from "../types";
 
 export type RuntimeSceneId = "manor-world" | "meeting" | "endgame" | "replay";
+export type ObservationMode = "roaming" | "surveillance";
+export type CameraReasonId =
+  | "meeting"
+  | "endgame"
+  | "report"
+  | "sabotage"
+  | "interaction"
+  | "surveillance"
+  | "actor"
+  | "default";
 
 export type CameraPlan = {
   roomId: RoomId | null;
   immediate: boolean;
+  reason: CameraReasonId;
+  detail: string;
 };
 
 export type MeetingPresentation = {
@@ -41,6 +59,50 @@ export type ReplayPresentation = {
   canStepForward: boolean;
 };
 
+export type VisibleSubtitle = {
+  text: string;
+  speakerId: PlayerId | null;
+  roomId: RoomId | null;
+  tone: "speech" | "alert" | "status";
+};
+
+export type RoomStatusIndicator = {
+  roomId: RoomId;
+  label: string;
+  lightLevel: LightLevelId;
+  doorState: MatchSnapshot["rooms"][number]["doorState"];
+  occupantCount: number;
+  flagged: boolean;
+};
+
+export type SurveillanceFeedPresentation = {
+  roomId: RoomId;
+  label: string;
+  lightLevel: LightLevelId;
+  doorState: MatchSnapshot["rooms"][number]["doorState"];
+  occupants: PublicPlayerState[];
+  occupantCount: number;
+  statusLine: string;
+  priority: number;
+  selected: boolean;
+  markers: {
+    body: boolean;
+    sabotage: boolean;
+    clue: boolean;
+  };
+};
+
+export type SurveillancePresentation = {
+  available: boolean;
+  mode: ObservationMode;
+  selectedRoomId: RoomId | null;
+  feedRooms: SurveillanceFeedPresentation[];
+  statusIndicators: RoomStatusIndicator[];
+  subtitle: VisibleSubtitle | null;
+  indicatorLabel: string;
+  cameraLabel: string;
+};
+
 export type GamePresentationState = {
   runtimeState: ClientGameState;
   activeScene: RuntimeSceneId;
@@ -54,4 +116,5 @@ export type GamePresentationState = {
   meeting: MeetingPresentation | null;
   endgame: EndgamePresentation | null;
   replay: ReplayPresentation | null;
+  surveillance: SurveillancePresentation;
 };

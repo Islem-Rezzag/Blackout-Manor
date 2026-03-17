@@ -9,7 +9,9 @@ import {
   createMeetingSeatResolver,
   worldSeatResolver,
 } from "../stage/seatResolvers";
-import { RuntimeBanner } from "../ui/RuntimeBanner";
+import { ObservationHud } from "../ui/ObservationHud";
+import { SurveillanceConsole } from "../ui/SurveillanceConsole";
+import { attachObservationControls } from "./attachObservationControls";
 import { SCENE_KEYS } from "./keys";
 
 const resolveSeatResolver = (phaseId: PhaseId): SeatResolver => {
@@ -24,14 +26,22 @@ const resolveSeatResolver = (phaseId: PhaseId): SeatResolver => {
   return worldSeatResolver;
 };
 
+const replayContextLine = (
+  frameIndex: number,
+  totalFrames: number,
+  tick: number,
+  phaseId: PhaseId,
+) =>
+  `Frame ${frameIndex + 1}/${totalFrames} · Tick ${tick} · ${phaseId.toUpperCase()}`;
+
 export class ReplayScene extends Phaser.Scene {
   readonly #director: GameDirector;
   #stage: ManorWorldStage | null = null;
-  #banner: RuntimeBanner | null = null;
-  #controlPlate: Phaser.GameObjects.Container | null = null;
-  #frameLabel: Phaser.GameObjects.Text | null = null;
-  #highlightLabel: Phaser.GameObjects.Text | null = null;
+  #hud: ObservationHud | null = null;
+  #console: SurveillanceConsole | null = null;
   #unsubscribe: (() => void) | null = null;
+  #detachControls: (() => void) | null = null;
+  #detachReplayControls: (() => void) | null = null;
 
   constructor(director: GameDirector) {
     super(SCENE_KEYS.replay);
@@ -40,53 +50,19 @@ export class ReplayScene extends Phaser.Scene {
 
   create() {
     this.#stage = new ManorWorldStage({ scene: this });
-    this.#banner = new RuntimeBanner({ scene: this, width: 560 });
-
-    const backplate = this.add
-      .rectangle(0, 0, 720, 94, 0x081018, 0.8)
-      .setStrokeStyle(1, 0x73a8c9, 0.16);
-    const previousButton = this.#createReplayButton(-290, 0, "Prev", () => {
-      this.#director.stepReplay(-1);
+    this.#hud = new ObservationHud({ scene: this });
+    this.#console = new SurveillanceConsole({
+      scene: this,
+      onSelectRoom: (roomId) => {
+        this.#director.focusSurveillanceRoom(roomId);
+      },
     });
-    const nextButton = this.#createReplayButton(290, 0, "Next", () => {
-      this.#director.stepReplay(1);
-    });
-    const frameLabel = this.add.text(-230, -18, "", {
-      color: "#f5f0e4",
-      fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "20px",
-      fontStyle: "bold",
-      wordWrap: { width: 360 },
-    });
-    const highlightLabel = this.add.text(-230, 14, "", {
-      color: "#d7dee9",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "12px",
-      wordWrap: { width: 360 },
-    });
-
-    this.#frameLabel = frameLabel;
-    this.#highlightLabel = highlightLabel;
-    this.#controlPlate = this.add.container(0, 0, [
-      backplate,
-      previousButton,
-      nextButton,
-      frameLabel,
-      highlightLabel,
-    ]);
-    this.#controlPlate.setDepth(96);
-    this.#controlPlate.setScrollFactor(0);
-    this.#resizePanels();
-
-    this.input.keyboard?.on("keydown-LEFT", () => {
-      this.#director.stepReplay(-1);
-    });
-    this.input.keyboard?.on("keydown-RIGHT", () => {
-      this.#director.stepReplay(1);
-    });
-    this.input.keyboard?.on("keydown-HOME", () => {
-      this.#director.jumpReplay(0);
-    });
+    this.#detachControls = attachObservationControls(
+      this,
+      this.#director,
+      "replay",
+    );
+    this.#detachReplayControls = this.#attachReplayControls();
 
     this.scale.on("resize", this.#handleResize, this);
     this.#unsubscribe = this.#director.subscribe((state) => {
@@ -97,35 +73,42 @@ export class ReplayScene extends Phaser.Scene {
       const phaseId = state.replay.snapshot.phaseId;
       const highlightText =
         state.replay.highlightMarkers[0]?.description ??
-        "Step frame by frame through the deterministic replay.";
+        "Left and right step the deterministic frame log.";
 
-      this.#banner?.setContent(state.banner);
-      this.#frameLabel?.setText(
-        `Frame ${state.replay.frameIndex + 1} / ${state.replay.totalFrames} - Tick ${state.replay.snapshot.tick} - ${phaseId.toUpperCase()}`,
-      );
-      this.#highlightLabel?.setText(highlightText);
+      this.#hud?.setContent({
+        surveillance: state.surveillance,
+        contextText: `${replayContextLine(
+          state.replay.frameIndex,
+          state.replay.totalFrames,
+          state.replay.snapshot.tick,
+          phaseId,
+        )} · ${highlightText}`,
+      });
+      this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({
         snapshot: state.replay.snapshot,
         focusRoomId: state.camera.roomId,
         immediateFocus: state.camera.immediate,
         seatResolver: resolveSeatResolver(phaseId),
-        showTaskChips: phaseId === "roam",
+        showTaskChips:
+          phaseId === "roam" && state.surveillance.mode === "roaming",
       });
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.#unsubscribe?.();
       this.#unsubscribe = null;
-      this.input.keyboard?.removeAllListeners();
+      this.#detachControls?.();
+      this.#detachControls = null;
+      this.#detachReplayControls?.();
+      this.#detachReplayControls = null;
       this.scale.off("resize", this.#handleResize, this);
-      this.#banner?.destroy();
-      this.#banner = null;
+      this.#hud?.destroy();
+      this.#hud = null;
+      this.#console?.destroy();
+      this.#console = null;
       this.#stage?.destroy();
       this.#stage = null;
-      this.#controlPlate?.destroy(true);
-      this.#controlPlate = null;
-      this.#frameLabel = null;
-      this.#highlightLabel = null;
     });
   }
 
@@ -133,41 +116,54 @@ export class ReplayScene extends Phaser.Scene {
     this.#stage?.update(delta);
   }
 
-  #createReplayButton(
-    x: number,
-    y: number,
-    label: string,
-    onClick: () => void,
-  ) {
-    const plate = this.add
-      .rectangle(x, y, 96, 40, 0x12202a, 0.88)
-      .setStrokeStyle(1, 0x73a8c9, 0.24)
-      .setInteractive({ useHandCursor: true });
-    const text = this.add.text(x, y, label, {
-      color: "#f5f0e4",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "13px",
-      fontStyle: "bold",
-    });
-    text.setOrigin(0.5);
+  #attachReplayControls() {
+    const keyboard = this.input.keyboard;
 
-    plate.on("pointerdown", () => {
-      onClick();
-    });
+    if (!keyboard) {
+      return () => {};
+    }
 
-    return this.add.container(0, 0, [plate, text]);
-  }
+    const bind = (
+      eventName: string,
+      handler: (event: KeyboardEvent) => void,
+    ) => {
+      const guardedHandler = (event: KeyboardEvent) => {
+        if (this.#director.getState().activeScene !== "replay") {
+          return;
+        }
 
-  #resizePanels() {
-    this.#banner?.resize(this.scale.width);
-    this.#controlPlate?.setPosition(
-      this.scale.width / 2,
-      this.scale.height - 72,
-    );
+        handler(event);
+      };
+
+      keyboard.on(eventName, guardedHandler);
+
+      return () => {
+        keyboard.off(eventName, guardedHandler);
+      };
+    };
+
+    const disposers = [
+      bind("keydown-LEFT", () => {
+        this.#director.stepReplay(-1);
+      }),
+      bind("keydown-RIGHT", () => {
+        this.#director.stepReplay(1);
+      }),
+      bind("keydown-HOME", () => {
+        this.#director.jumpReplay(0);
+      }),
+    ];
+
+    return () => {
+      for (const dispose of disposers) {
+        dispose();
+      }
+    };
   }
 
   #handleResize(gameSize?: Phaser.Structs.Size) {
     this.#stage?.resize(gameSize);
-    this.#resizePanels();
+    this.#hud?.resize(this.scale.width, this.scale.height);
+    this.#console?.resize(this.scale.width, this.scale.height);
   }
 }
