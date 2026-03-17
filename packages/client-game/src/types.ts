@@ -1,3 +1,4 @@
+import type { SavedReplayEnvelope } from "@blackout-manor/replay-viewer";
 import type {
   ClientMatchProposeActionMessage,
   MatchEvent,
@@ -9,7 +10,7 @@ import type {
   ServerValidationErrorMessage,
 } from "@blackout-manor/shared";
 
-export type ClientGameConnectionMode = "mock" | "live";
+export type ClientGameConnectionMode = "mock" | "live" | "replay";
 
 export type ClientGameState = {
   mode: ClientGameConnectionMode;
@@ -53,6 +54,12 @@ export type ClientGameConnectionOptions =
       mode: "live";
       serverUrl: string;
       roomId: string;
+      actorId?: PlayerId;
+    }
+  | {
+      mode: "replay";
+      replay: SavedReplayEnvelope;
+      roomId?: string;
       actorId?: PlayerId;
     };
 

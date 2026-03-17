@@ -1,5 +1,8 @@
 export const SCENE_KEYS = {
   boot: "boot",
-  preload: "preload",
-  manor: "manor",
+  loading: "loading",
+  manorWorld: "manor-world",
+  meeting: "meeting",
+  endgame: "endgame",
+  replay: "replay",
 } as const;

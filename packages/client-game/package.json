@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@blackout-manor/content": "workspace:*",
+    "@blackout-manor/replay-viewer": "workspace:*",
     "@blackout-manor/shared": "workspace:*",
     "colyseus.js": "^0.16.22",
     "phaser": "^3.90.0"

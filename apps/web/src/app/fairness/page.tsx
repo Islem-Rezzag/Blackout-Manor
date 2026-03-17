@@ -1,8 +1,5 @@
-import { FairnessDashboard } from "@/features/fairness/FairnessDashboard";
-import { loadFairnessReport } from "@/features/fairness/loadFairnessReport";
+import { redirect } from "next/navigation";
 
-export default async function FairnessPage() {
-  const { report, source } = await loadFairnessReport();
-
-  return <FairnessDashboard report={report} source={source} />;
+export default function FairnessPage() {
+  redirect("/dev/fairness");
 }

@@ -1,3 +1,4 @@
+import { GameDirector } from "../directors/GameDirector";
 import type { BlackoutGameMountOptions, ClientGameController } from "../types";
 
 import { ClientGameRuntime } from "./runtime";
@@ -17,9 +18,14 @@ export const mountBlackoutGame = async ({
     connection,
     ...(onStateChange ? { onStateChange } : {}),
   });
+  const director = new GameDirector(
+    runtime,
+    connection.mode === "replay" ? connection.replay : null,
+  );
   const game = new Phaser.Game(
     createGameConfig({
       container,
+      director,
       runtime,
       ...(typeof width === "number" ? { width } : {}),
       ...(typeof height === "number" ? { height } : {}),

@@ -1,49 +1,57 @@
-import { Suspense } from "react";
-import { env } from "@/env";
-import { BlackoutGameShell } from "@/features/play/BlackoutGameShell";
+import { redirect } from "next/navigation";
 
-export default function PlayPage() {
-  return (
-    <main className="play-shell">
-      <header className="play-header">
-        <div>
-          <span className="eyebrow">Night Interface</span>
-          <h1>Blackout Manor control room</h1>
-          <p>
-            Live player mode keeps the server authoritative, spectator mode
-            keeps hidden information sealed until the night ends, and replay
-            theater opens the deeper social dossier after the match.
-          </p>
-        </div>
-        <div className="play-badges">
-          <span className="play-badge">
-            Default {env.NEXT_PUBLIC_CLIENT_GAME_MODE}
-          </span>
-          <span className="play-badge">
-            Server {env.NEXT_PUBLIC_MATCH_SERVER_URL}
-          </span>
-        </div>
-      </header>
-      <Suspense
-        fallback={
-          <section className="support-panel replay-loading">
-            <span className="eyebrow">Loading</span>
-            <h2>Preparing the manor interface</h2>
-            <p>
-              Loading player, spectator, and replay controls for the current
-              room.
-            </p>
-          </section>
-        }
-      >
-        <BlackoutGameShell
-          defaultMode={env.NEXT_PUBLIC_CLIENT_GAME_MODE}
-          defaultRoomId={env.NEXT_PUBLIC_MATCH_ROOM_ID ?? null}
-          defaultServerUrl={env.NEXT_PUBLIC_MATCH_SERVER_URL}
-          defaultActorId={env.NEXT_PUBLIC_MATCH_PLAYER_ID ?? null}
-          sampleReplayEndpoint="/api/replays/sample"
-        />
-      </Suspense>
-    </main>
+import { env } from "@/env";
+
+type LegacyPlayPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function PlayPage({ searchParams }: LegacyPlayPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const nextSearch = new URLSearchParams();
+  const viewParam = Array.isArray(resolvedSearchParams.view)
+    ? resolvedSearchParams.view[0]
+    : resolvedSearchParams.view;
+  const requestedRoomId = Array.isArray(resolvedSearchParams.roomId)
+    ? resolvedSearchParams.roomId[0]
+    : resolvedSearchParams.roomId;
+  const roomId = requestedRoomId ?? env.NEXT_PUBLIC_MATCH_ROOM_ID ?? "demo";
+
+  if (viewParam === "replay") {
+    for (const [key, value] of Object.entries(resolvedSearchParams)) {
+      if (typeof value === "string") {
+        nextSearch.set(key, value);
+        continue;
+      }
+
+      for (const item of value ?? []) {
+        nextSearch.append(key, item);
+      }
+    }
+
+    redirect(
+      nextSearch.size > 0 ? `/dev/play?${nextSearch.toString()}` : "/dev/play",
+    );
+  }
+
+  for (const [key, value] of Object.entries(resolvedSearchParams)) {
+    if (key === "view" || key === "roomId") {
+      continue;
+    }
+
+    if (typeof value === "string") {
+      nextSearch.set(key, value);
+      continue;
+    }
+
+    for (const item of value ?? []) {
+      nextSearch.append(key, item);
+    }
+  }
+
+  redirect(
+    nextSearch.size > 0
+      ? `/game/${roomId}?${nextSearch.toString()}`
+      : `/game/${roomId}`,
   );
 }

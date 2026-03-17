@@ -1,24 +1,24 @@
 import { MANOR_V1_MAP } from "@blackout-manor/content";
-import type { MatchEvent, MatchSnapshot, RoomId } from "@blackout-manor/shared";
+import type {
+  MatchEvent,
+  MatchSnapshot,
+  PhaseId,
+  RoomId,
+  TaskId,
+} from "@blackout-manor/shared";
 import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import { SoundBus } from "../audio/SoundBus";
-import type { ClientGameRuntime } from "../bootstrap/runtime";
-import { MeetingPortraitStrip } from "../entities/avatar/MeetingPortraitStrip";
-import { PlayerTokenLayer } from "../entities/PlayerTokens";
+import { PlayerAvatarLayer } from "../entities/avatar/PlayerAvatarLayer";
 import { AtmosphereVeil } from "../fx/AtmosphereVeil";
 import { StormLayer } from "../fx/StormLayer";
 import {
   getRoomRenderData,
-  getRoomSeatPosition,
   MANOR_RENDER_MAP,
   MANOR_WORLD_BOUNDS,
   type ManorRenderRoom,
 } from "../tiled/manorLayout";
-import type { ClientGameState } from "../types";
-import { MatchHud } from "../ui/MatchHud";
-import { SCENE_KEYS } from "./keys";
 
 type RoomSignal = {
   clue: boolean;
@@ -47,6 +47,27 @@ type RoomVisual = {
   clueMarker: Phaser.GameObjects.Image;
   sabotageBanner: Phaser.GameObjects.Image;
   sabotageLabel: Phaser.GameObjects.Text;
+};
+
+export type SeatResolver = (
+  roomId: RoomId,
+  seatIndex: number,
+  seatCount: number,
+) => { x: number; y: number };
+
+export type ManorWorldStageRenderOptions = {
+  snapshot: MatchSnapshot;
+  focusRoomId: RoomId | null;
+  phaseId?: PhaseId;
+  seatResolver: SeatResolver;
+  showTaskChips?: boolean;
+  immediateFocus?: boolean;
+};
+
+type ManorWorldStageOptions = {
+  scene: Phaser.Scene;
+  onMoveToRoom?: (roomId: RoomId) => void;
+  onStartTask?: (taskId: TaskId) => void;
 };
 
 const readableTaskLabel = (taskId: string) =>
@@ -155,7 +176,6 @@ const createSignalMap = (snapshot: MatchSnapshot) => {
     switch (event.eventId) {
       case "clue-discovered": {
         const roomSignal = signals.get(event.roomId);
-
         if (roomSignal) {
           roomSignal.clue = true;
         }
@@ -164,7 +184,6 @@ const createSignalMap = (snapshot: MatchSnapshot) => {
       case "player-eliminated":
       case "body-reported": {
         const roomSignal = signals.get(event.roomId);
-
         if (roomSignal) {
           roomSignal.body = true;
         }
@@ -173,7 +192,6 @@ const createSignalMap = (snapshot: MatchSnapshot) => {
       case "sabotage-triggered":
         if (event.roomId) {
           const roomSignal = signals.get(event.roomId);
-
           if (roomSignal) {
             roomSignal.sabotage = true;
             roomSignal.sabotageLabel = readableTaskLabel(event.actionId);
@@ -186,28 +204,6 @@ const createSignalMap = (snapshot: MatchSnapshot) => {
   }
 
   return signals;
-};
-
-const focusRoomFromState = (state: ClientGameState): RoomId | null => {
-  const snapshot = state.snapshot;
-
-  if (!snapshot) {
-    return null;
-  }
-
-  for (const event of [...snapshot.recentEvents].reverse()) {
-    const roomId = eventRoomId(event);
-
-    if (roomId) {
-      return roomId;
-    }
-  }
-
-  const actorRoom = state.actorId
-    ? snapshot.players.find((player) => player.id === state.actorId)?.roomId
-    : null;
-
-  return actorRoom ?? snapshot.rooms[0]?.roomId ?? null;
 };
 
 const blackoutStrengthFromSnapshot = (snapshot: MatchSnapshot) => {
@@ -229,35 +225,29 @@ const blackoutStrengthFromSnapshot = (snapshot: MatchSnapshot) => {
   return 0.08;
 };
 
-export class ManorScene extends Phaser.Scene {
-  readonly #runtime: ClientGameRuntime;
+export class ManorWorldStage {
+  readonly #scene: Phaser.Scene;
   readonly #soundBus = new SoundBus();
   readonly #roomVisuals = new Map<RoomId, RoomVisual>();
-  #playerLayer: PlayerTokenLayer | null = null;
-  #portraitStrip: MeetingPortraitStrip | null = null;
-  #hud: MatchHud | null = null;
-  #stormLayer: StormLayer | null = null;
-  #atmosphereVeil: AtmosphereVeil | null = null;
-  #backdrop: Phaser.GameObjects.Graphics | null = null;
-  #unsubscribe: (() => void) | null = null;
-  #currentState: ClientGameState | null = null;
+  readonly #playerLayer: PlayerAvatarLayer;
+  readonly #stormLayer: StormLayer;
+  readonly #atmosphereVeil: AtmosphereVeil;
+  readonly #backdrop: Phaser.GameObjects.Graphics;
+  readonly #onMoveToRoom: ((roomId: RoomId) => void) | null;
+  readonly #onStartTask: ((taskId: TaskId) => void) | null;
   #focusedRoomId: RoomId | null = null;
   #hoveredRoomId: RoomId | null = null;
   #baseZoom = 1;
-  #lastFpsSample = 60;
+  #lastRenderedTick: number | null = null;
 
-  constructor(runtime: ClientGameRuntime) {
-    super(SCENE_KEYS.manor);
-    this.#runtime = runtime;
-  }
-
-  create() {
-    this.#backdrop = this.add.graphics();
-    this.#playerLayer = new PlayerTokenLayer(this);
-    this.#portraitStrip = new MeetingPortraitStrip(this);
-    this.#hud = new MatchHud(this);
-    this.#stormLayer = new StormLayer(this);
-    this.#atmosphereVeil = new AtmosphereVeil(this);
+  constructor(options: ManorWorldStageOptions) {
+    this.#scene = options.scene;
+    this.#onMoveToRoom = options.onMoveToRoom ?? null;
+    this.#onStartTask = options.onStartTask ?? null;
+    this.#backdrop = this.#scene.add.graphics();
+    this.#playerLayer = new PlayerAvatarLayer(this.#scene);
+    this.#stormLayer = new StormLayer(this.#scene);
+    this.#atmosphereVeil = new AtmosphereVeil(this.#scene);
     this.#drawBackdrop();
     this.#drawRooms();
     this.#stormLayer.setWindows(
@@ -267,76 +257,96 @@ export class ManorScene extends Phaser.Scene {
     );
 
     this.#baseZoom = this.#calculateZoom();
-    this.cameras.main.setBounds(
+    this.#scene.cameras.main.setBounds(
       0,
       0,
       MANOR_WORLD_BOUNDS.width,
       MANOR_WORLD_BOUNDS.height,
     );
-    this.cameras.main.centerOn(
+    this.#scene.cameras.main.centerOn(
       MANOR_WORLD_BOUNDS.width / 2,
       MANOR_WORLD_BOUNDS.height / 2,
     );
-    this.cameras.main.setZoom(this.#baseZoom);
-
-    this.scale.on("resize", this.#handleResize, this);
-    this.#handleResize(this.scale.gameSize);
-
-    this.#unsubscribe = this.#runtime.subscribe((state) => {
-      this.#currentState = state;
-      this.#hud?.update(state);
-
-      if (state.snapshot) {
-        this.#applyState(state);
-      }
-    });
-
-    const initialState = this.#runtime.getState();
-    this.#currentState = initialState;
-    this.#hud?.update(initialState);
-    if (initialState.snapshot) {
-      this.#applyState(initialState);
-    }
-
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.#unsubscribe?.();
-      this.#unsubscribe = null;
-      this.#playerLayer?.destroy();
-      this.#playerLayer = null;
-      this.#portraitStrip?.destroy();
-      this.#portraitStrip = null;
-      this.#stormLayer?.destroy();
-      this.#stormLayer = null;
-      this.#atmosphereVeil?.destroy();
-      this.#atmosphereVeil = null;
-      this.#hud?.destroy();
-      this.#hud = null;
-      this.scale.off("resize", this.#handleResize, this);
-    });
+    this.#scene.cameras.main.setZoom(this.#baseZoom);
+    this.#handleResize(this.#scene.scale.gameSize);
   }
 
-  update(_time: number, delta: number) {
-    const smoothDelta = Math.max(1, delta);
-    this.#lastFpsSample = Phaser.Math.Linear(
-      this.#lastFpsSample,
-      1000 / smoothDelta,
-      0.08,
+  update(delta: number) {
+    this.#playerLayer.update(delta);
+    this.#stormLayer.update(delta);
+    this.#atmosphereVeil.setLightningLevel(
+      this.#stormLayer.lightningStrength ?? 0,
     );
-    this.#runtime.setFpsEstimate(this.#lastFpsSample);
-    this.#playerLayer?.update(delta);
-    this.#portraitStrip?.update(delta);
-    this.#stormLayer?.update(delta);
-    this.#atmosphereVeil?.setLightningLevel(
-      this.#stormLayer?.lightningStrength ?? 0,
+    this.#atmosphereVeil.update();
+  }
+
+  resize(gameSize?: Phaser.Structs.Size) {
+    this.#handleResize(gameSize);
+  }
+
+  render(options: ManorWorldStageRenderOptions) {
+    const phaseId = options.phaseId ?? options.snapshot.phaseId;
+    const signals = createSignalMap(options.snapshot);
+    const focusedRoomId =
+      options.focusRoomId ??
+      [...options.snapshot.recentEvents]
+        .reverse()
+        .map((event) => eventRoomId(event))
+        .find((roomId): roomId is RoomId => roomId !== null) ??
+      options.snapshot.rooms[0]?.roomId ??
+      null;
+
+    if (focusedRoomId) {
+      this.#focusRoom(
+        focusedRoomId,
+        options.immediateFocus ?? this.#lastRenderedTick === null,
+      );
+    }
+
+    for (const roomState of options.snapshot.rooms) {
+      const visual = this.#roomVisuals.get(roomState.roomId);
+      const signal = signals.get(roomState.roomId);
+      if (!visual || !signal) {
+        continue;
+      }
+
+      this.#applyRoomState(
+        visual,
+        getRoomRenderData(roomState.roomId),
+        roomState,
+        signal,
+        options.showTaskChips ?? false,
+        options.snapshot,
+      );
+    }
+
+    this.#playerLayer.render(
+      options.snapshot.players,
+      options.snapshot.recentEvents,
+      phaseId,
+      options.seatResolver,
     );
-    this.#atmosphereVeil?.update();
+    this.#atmosphereVeil.setBlackoutLevel(
+      blackoutStrengthFromSnapshot(options.snapshot),
+    );
+    this.#refreshRoomFocus();
+    this.#lastRenderedTick = options.snapshot.tick;
+  }
+
+  destroy() {
+    this.#playerLayer.destroy();
+    this.#stormLayer.destroy();
+    this.#atmosphereVeil.destroy();
+    this.#backdrop.destroy();
+
+    for (const visual of this.#roomVisuals.values()) {
+      visual.container.destroy(true);
+    }
+
+    this.#roomVisuals.clear();
   }
 
   #drawBackdrop() {
-    if (!this.#backdrop) {
-      return;
-    }
-
     this.#backdrop.clear();
 
     for (const rect of MANOR_RENDER_MAP.backdropRects) {
@@ -355,11 +365,11 @@ export class ManorScene extends Phaser.Scene {
       );
     }
 
-    const stormGlow = this.add
+    const stormGlow = this.#scene.add
       .ellipse(1390, 110, 440, 260, 0x78add5, 0.16)
       .setBlendMode(Phaser.BlendModes.SCREEN)
       .setDepth(3);
-    const southShadow = this.add
+    const southShadow = this.#scene.add
       .ellipse(820, 1060, 920, 160, 0x02060a, 0.28)
       .setDepth(3);
 
@@ -371,28 +381,28 @@ export class ManorScene extends Phaser.Scene {
   #drawRooms() {
     for (const roomId of MANOR_RENDER_MAP.roomOrder) {
       const room = getRoomRenderData(roomId);
-      const container = this.add.container(room.x, room.y);
+      const container = this.#scene.add.container(room.x, room.y);
       container.setDepth(20 + room.y / 40);
 
-      const shellShadow = this.add
+      const shellShadow = this.#scene.add
         .rectangle(10, 14, room.width + 22, room.height + 26, 0x000000, 0.24)
         .setOrigin(0.5);
-      const shell = this.add
+      const shell = this.#scene.add
         .rectangle(0, 0, room.width + 14, room.height + 18, 0x131a21, 0.98)
         .setStrokeStyle(2, room.accentColor, 0.15)
         .setOrigin(0.5);
-      const ambientGlow = this.add
+      const ambientGlow = this.#scene.add
         .image(0, 4, "room-glow")
         .setDisplaySize(room.width * 1.14, room.height * 0.94)
         .setTint(room.ambienceColor)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.42);
-      const floor = this.add
+      const floor = this.#scene.add
         .image(0, 8, "room-floor")
         .setDisplaySize(room.width, room.height)
         .setTint(room.fillColor)
         .setAlpha(0.96);
-      const accent = this.add
+      const accent = this.#scene.add
         .image(0, 16, "room-floor")
         .setDisplaySize(room.width * 0.78, room.height * 0.56)
         .setTint(room.accentColor)
@@ -401,7 +411,7 @@ export class ManorScene extends Phaser.Scene {
 
       const decorObjects = room.decor.map((decor) => {
         const object = decor.ellipse
-          ? this.add.ellipse(
+          ? this.#scene.add.ellipse(
               decor.x - room.x,
               decor.y - room.y + 8,
               decor.width,
@@ -409,7 +419,7 @@ export class ManorScene extends Phaser.Scene {
               decor.fill,
               decor.alpha,
             )
-          : this.add.rectangle(
+          : this.#scene.add.rectangle(
               decor.x - room.x,
               decor.y - room.y + 8,
               decor.width,
@@ -423,7 +433,7 @@ export class ManorScene extends Phaser.Scene {
       });
 
       const lightGlows = room.lights.map((light) =>
-        this.add
+        this.#scene.add
           .image(light.x - room.x, light.y - room.y - 8, "room-glow")
           .setDisplaySize(light.radius * 1.5, light.radius * 0.96)
           .setTint(light.color)
@@ -432,7 +442,7 @@ export class ManorScene extends Phaser.Scene {
       );
 
       const windowOverlays = room.windows.map((windowSlice) =>
-        this.add
+        this.#scene.add
           .image(windowSlice.x - room.x, windowSlice.y - room.y, "rain-sheen")
           .setDisplaySize(windowSlice.width, windowSlice.height)
           .setTint(windowSlice.fill)
@@ -440,7 +450,7 @@ export class ManorScene extends Phaser.Scene {
           .setAlpha(windowSlice.alpha * 0.65),
       );
 
-      const cutawayShadow = this.add
+      const cutawayShadow = this.#scene.add
         .rectangle(
           0,
           -room.height / 2 + room.cutawayHeight / 2 + 6,
@@ -450,7 +460,7 @@ export class ManorScene extends Phaser.Scene {
           0.24,
         )
         .setOrigin(0.5);
-      const cutawayWall = this.add
+      const cutawayWall = this.#scene.add
         .rectangle(
           0,
           -room.height / 2 + room.cutawayHeight / 2,
@@ -460,7 +470,7 @@ export class ManorScene extends Phaser.Scene {
           0.9,
         )
         .setOrigin(0.5);
-      const cutawayTrim = this.add
+      const cutawayTrim = this.#scene.add
         .rectangle(
           0,
           -room.height / 2 + 10,
@@ -470,12 +480,12 @@ export class ManorScene extends Phaser.Scene {
           0.28,
         )
         .setOrigin(0.5);
-      const focusFrame = this.add
+      const focusFrame = this.#scene.add
         .rectangle(0, 0, room.width + 18, room.height + 22)
         .setStrokeStyle(2, room.accentColor, 0)
         .setFillStyle(room.accentColor, 0)
         .setOrigin(0.5);
-      const title = this.add.text(
+      const title = this.#scene.add.text(
         0,
         -room.height / 2 + room.cutawayHeight / 2 - 7,
         DEFAULT_ROOM_LABELS[room.roomId],
@@ -487,7 +497,7 @@ export class ManorScene extends Phaser.Scene {
         },
       );
       title.setOrigin(0.5);
-      const theme = this.add.text(
+      const theme = this.#scene.add.text(
         0,
         -room.height / 2 + room.cutawayHeight + 12,
         room.theme,
@@ -499,7 +509,7 @@ export class ManorScene extends Phaser.Scene {
         },
       );
       theme.setOrigin(0.5);
-      const state = this.add.text(0, room.height / 2 - 24, "", {
+      const state = this.#scene.add.text(0, room.height / 2 - 24, "", {
         color: "#dce4ed",
         fontFamily: "Segoe UI, sans-serif",
         fontSize: "12px",
@@ -511,7 +521,7 @@ export class ManorScene extends Phaser.Scene {
         MANOR_V1_MAP.rooms
           .find((candidate) => candidate.id === room.roomId)
           ?.taskIds.map((taskId, index) => {
-            const chip = this.add.text(
+            const chip = this.#scene.add.text(
               -room.width / 2 + 24,
               -room.height / 2 + room.cutawayHeight + 34 + index * 24,
               readableTaskLabel(taskId),
@@ -527,12 +537,12 @@ export class ManorScene extends Phaser.Scene {
             chip.setInteractive({ useHandCursor: true });
             chip.on("pointerdown", () => {
               this.#focusRoom(room.roomId, false);
-              void this.#runtime.proposeStartTask(taskId);
+              this.#onStartTask?.(taskId);
             });
             return chip;
           }) ?? [];
 
-      const clueMarker = this.add
+      const clueMarker = this.#scene.add
         .image(
           room.cluePoint.x - room.x,
           room.cluePoint.y - room.y,
@@ -541,7 +551,7 @@ export class ManorScene extends Phaser.Scene {
         .setDisplaySize(42, 42)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0);
-      this.tweens.add({
+      this.#scene.tweens.add({
         targets: clueMarker,
         scaleX: 1.14,
         scaleY: 1.14,
@@ -551,11 +561,11 @@ export class ManorScene extends Phaser.Scene {
         ease: "Sine.easeInOut",
       });
 
-      const sabotageBanner = this.add
+      const sabotageBanner = this.#scene.add
         .image(0, -room.height / 2 + 22, "sabotage-stripe")
         .setDisplaySize(room.width * 0.84, 44)
         .setAlpha(0);
-      const sabotageLabel = this.add.text(0, -room.height / 2 + 22, "", {
+      const sabotageLabel = this.#scene.add.text(0, -room.height / 2 + 22, "", {
         color: "#fff6ed",
         fontFamily: "Segoe UI, sans-serif",
         fontSize: "13px",
@@ -565,7 +575,7 @@ export class ManorScene extends Phaser.Scene {
       sabotageLabel.setOrigin(0.5);
       sabotageLabel.setAlpha(0);
 
-      const hitTarget = this.add
+      const hitTarget = this.#scene.add
         .rectangle(0, 0, room.width, room.height, 0xffffff, 0.001)
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
@@ -580,7 +590,7 @@ export class ManorScene extends Phaser.Scene {
       hitTarget.on("pointerdown", () => {
         this.#soundBus.play("hover");
         this.#focusRoom(room.roomId, false);
-        void this.#runtime.proposeMove(room.roomId);
+        this.#onMoveToRoom?.(room.roomId);
       });
 
       container.add([
@@ -630,59 +640,13 @@ export class ManorScene extends Phaser.Scene {
     }
   }
 
-  #applyState(state: ClientGameState) {
-    const snapshot = state.snapshot;
-
-    if (!snapshot) {
-      return;
-    }
-
-    const signals = createSignalMap(snapshot);
-    const focusedRoomId = focusRoomFromState(state);
-
-    if (focusedRoomId) {
-      this.#focusRoom(focusedRoomId, this.#focusedRoomId === null);
-    }
-
-    for (const roomState of snapshot.rooms) {
-      const visual = this.#roomVisuals.get(roomState.roomId);
-
-      if (!visual) {
-        continue;
-      }
-
-      const room = getRoomRenderData(roomState.roomId);
-      const signal = signals.get(roomState.roomId);
-
-      if (!signal) {
-        continue;
-      }
-
-      this.#applyRoomState(visual, room, roomState, signal);
-    }
-
-    this.#playerLayer?.render(
-      snapshot.players,
-      snapshot.recentEvents,
-      snapshot.phaseId,
-      getRoomSeatPosition,
-    );
-    this.#portraitStrip?.render(
-      snapshot.players,
-      snapshot.phaseId,
-      snapshot.recentEvents,
-    );
-    this.#atmosphereVeil?.setBlackoutLevel(
-      blackoutStrengthFromSnapshot(snapshot),
-    );
-    this.#refreshRoomFocus();
-  }
-
   #applyRoomState(
     visual: RoomVisual,
     room: ManorRenderRoom,
     roomState: MatchSnapshot["rooms"][number],
     signal: RoomSignal,
+    showTaskChips: boolean,
+    snapshot: MatchSnapshot,
   ) {
     const lightFactor = lightLevelToFactor(roomState.lightLevel);
     const focused = this.#focusedRoomId === room.roomId;
@@ -699,7 +663,6 @@ export class ManorScene extends Phaser.Scene {
     );
 
     visual.floor.setTint(floorTint);
-    visual.floor.setAlpha(0.94);
     visual.accent.setTint(accentTint);
     visual.accent.setAlpha(0.14 + lightFactor * 0.06);
     visual.ambientGlow.setTint(ambienceTint);
@@ -719,7 +682,7 @@ export class ManorScene extends Phaser.Scene {
     visual.title.setColor(lightFactor < 0.2 ? "#f0f4f7" : "#f5f0e4");
     visual.theme.setAlpha(0.62 + lightFactor * 0.18);
     visual.state.setText(
-      `${describeSignalLabel(roomState, signal)} · ${roomState.occupantIds.length} present`,
+      `${describeSignalLabel(roomState, signal)} - ${roomState.occupantIds.length} present`,
     );
 
     for (const [index, lightGlow] of visual.lightGlows.entries()) {
@@ -768,27 +731,27 @@ export class ManorScene extends Phaser.Scene {
 
     this.#applyTaskStateLabels(
       visual,
-      room,
       roomState.roomId,
       roomState.lightLevel,
+      snapshot,
+      showTaskChips,
     );
   }
 
   #applyTaskStateLabels(
     visual: RoomVisual,
-    _room: ManorRenderRoom,
     roomId: RoomId,
     lightLevel: MatchSnapshot["rooms"][number]["lightLevel"],
+    snapshot: MatchSnapshot,
+    showTaskChips: boolean,
   ) {
-    const snapshot = this.#currentState?.snapshot;
-    const roomTasks =
-      snapshot?.tasks.filter((task) => task.roomId === roomId) ?? [];
+    const roomTasks = snapshot.tasks.filter((task) => task.roomId === roomId);
     const lightFactor = lightLevelToFactor(lightLevel);
 
     for (const [index, chip] of visual.taskChips.entries()) {
       const task = roomTasks[index];
 
-      if (!task) {
+      if (!showTaskChips || !task) {
         chip.setVisible(false);
         continue;
       }
@@ -821,14 +784,14 @@ export class ManorScene extends Phaser.Scene {
     this.#focusedRoomId = roomId;
     const duration = immediate ? 0 : 520;
 
-    this.cameras.main.pan(
+    this.#scene.cameras.main.pan(
       room.focusPoint.x,
       room.focusPoint.y,
       duration,
       Phaser.Math.Easing.Cubic.Out,
       true,
     );
-    this.cameras.main.zoomTo(
+    this.#scene.cameras.main.zoomTo(
       this.#baseZoom * room.focusZoom,
       duration,
       Phaser.Math.Easing.Cubic.Out,
@@ -854,33 +817,32 @@ export class ManorScene extends Phaser.Scene {
 
   #calculateZoom() {
     return Math.min(
-      this.scale.width / (MANOR_WORLD_BOUNDS.width + 160),
-      this.scale.height / (MANOR_WORLD_BOUNDS.height + 140),
+      this.#scene.scale.width / (MANOR_WORLD_BOUNDS.width + 160),
+      this.#scene.scale.height / (MANOR_WORLD_BOUNDS.height + 140),
     );
   }
 
   #handleResize(gameSize?: Phaser.Structs.Size) {
-    const width = gameSize?.width ?? this.scale.width;
-    const height = gameSize?.height ?? this.scale.height;
+    const width = gameSize?.width ?? this.#scene.scale.width;
+    const height = gameSize?.height ?? this.#scene.scale.height;
 
     this.#baseZoom = this.#calculateZoom();
-    this.#atmosphereVeil?.resize(width, height);
-    this.#portraitStrip?.resize(width, height);
+    this.#atmosphereVeil.resize(width, height);
 
     if (this.#focusedRoomId) {
       const focusedRoom = getRoomRenderData(this.#focusedRoomId);
-      this.cameras.main.centerOn(
+      this.#scene.cameras.main.centerOn(
         focusedRoom.focusPoint.x,
         focusedRoom.focusPoint.y,
       );
-      this.cameras.main.setZoom(this.#baseZoom * focusedRoom.focusZoom);
+      this.#scene.cameras.main.setZoom(this.#baseZoom * focusedRoom.focusZoom);
       return;
     }
 
-    this.cameras.main.centerOn(
+    this.#scene.cameras.main.centerOn(
       MANOR_WORLD_BOUNDS.width / 2,
       MANOR_WORLD_BOUNDS.height / 2,
     );
-    this.cameras.main.setZoom(this.#baseZoom);
+    this.#scene.cameras.main.setZoom(this.#baseZoom);
   }
 }

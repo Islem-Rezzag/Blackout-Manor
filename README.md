@@ -1,6 +1,6 @@
 # Blackout Manor
 
-Blackout Manor is an open-source AI social-deduction game set inside a storm-locked manor. Ten agents move through a premium 2.5D map, perform evidence-generating tasks, build trust, lie, panic, accuse, vote, and leave behind deterministic replay data for fairness and replay analysis.
+Blackout Manor is an open-source AI social-deduction game set inside a storm-locked manor. Ten agents move through a premium 2.5D map, perform evidence-generating tasks, build trust, lie, panic, accuse, vote, and leave behind deterministic replay data for fairness and replay analysis. The primary live product surface is the Phaser runtime in `packages/client-game`; the Next.js app in `apps/web` is a thin shell that boots that runtime and exposes secondary surfaces.
 
 ## Gameplay Loop
 - Ten masked characters enter the manor with hidden roles.
@@ -10,12 +10,12 @@ Blackout Manor is an open-source AI social-deduction game set inside a storm-loc
 - Replays preserve the full night for spectator analysis, fairness runs, and highlight export.
 
 ## Workspace Layout
-- `apps/web`: Next.js shell, Phaser host, replay theater, fairness dashboard.
+- `apps/web`: thin Next.js shell for bootstrapping the game runtime and exposing opt-in replay, fairness, debug, admin, and contributor-facing secondary surfaces.
 - `apps/server`: Colyseus rooms, authoritative simulation orchestration, admin APIs.
 - `packages/shared`: shared contracts, schemas, protocol messages, constants.
 - `packages/engine`: deterministic seeded rules engine and replay log output.
 - `packages/agents`: HEART runtime, model gateway, policy, scripted fallback bots.
-- `packages/client-game`: Phaser renderer, networking client, manor presentation.
+- `packages/client-game`: primary live game runtime, Phaser renderer, networking client, manor presentation, and player-facing match UX.
 - `packages/content`: season data, map metadata, personas, tasks, sabotage definitions.
 - `packages/replay-viewer`: replay serialization, highlight extraction, fairness analytics.
 - `packages/db`: SQLite local fallback and PostgreSQL production persistence.
@@ -38,11 +38,13 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-3. Start the local web and server apps.
+3. Start the local shell and authoritative server.
 
 ```bash
 pnpm dev
 ```
+
+The browser entry point lives in `apps/web`, but the intended live experience is the full-screen game runtime mounted from `packages/client-game`. The documented primary live route is `/game/[roomId]`. `/game` bootstraps or redirects to a demo or local room. `/play` is a legacy compatibility route that now forwards live entry traffic to `/game/[roomId]`. Replay, fairness, and other tool-heavy surfaces stay behind developer-oriented routes such as `/dev/play` and `/dev/fairness`.
 
 4. Run a 10-agent local simulation in a second terminal.
 
@@ -56,7 +58,7 @@ pnpm sim --seed 42 --mode fast
 pnpm replay:open artifacts/replays/fast-42.replay.json
 ```
 
-6. Visit `http://127.0.0.1:3000/play?view=replay&source=open` if the browser did not open automatically.
+6. Visit `http://127.0.0.1:3000/dev/play?view=replay&source=open` if the browser did not open automatically. To enter the live game directly, use `http://127.0.0.1:3000/game/demo`.
 
 Local development works without production infra. By default the server uses SQLite at `.local/blackout-manor-dev.sqlite`.
 
@@ -99,12 +101,15 @@ pnpm db:down
 - `pnpm media:capture` saves screenshots and, when `ffmpeg` is available, a GIF into `artifacts/media/latest/`.
 
 ## Documentation
-- [Local Quickstart](/Users/moham/Downloads/Blackout%20Manor/docs/local-quickstart.md)
-- [Contribution Guide](/Users/moham/Downloads/Blackout%20Manor/CONTRIBUTING.md)
-- [Architecture Index](/Users/moham/Downloads/Blackout%20Manor/docs/architecture/README.md)
-- [System Overview](/Users/moham/Downloads/Blackout%20Manor/docs/architecture/system-overview.md)
-- [Production Deployment](/Users/moham/Downloads/Blackout%20Manor/docs/deployment/production.md)
-- [Asset Licensing Notes](/Users/moham/Downloads/Blackout%20Manor/docs/assets-licensing.md)
+- [Local Quickstart](./docs/local-quickstart.md)
+- [Contribution Guide](./CONTRIBUTING.md)
+- [Architecture Index](./docs/architecture/README.md)
+- [Presentation Direction](./docs/architecture/presentation.md)
+- [System Overview](./docs/architecture/system-overview.md)
+- [Target Scaffold](./docs/architecture/target-scaffold.md)
+- [Migration Plan](./docs/architecture/migration-plan.md)
+- [Production Deployment](./docs/deployment/production.md)
+- [Asset Licensing Notes](./docs/assets-licensing.md)
 
 ## License
 Code in this repository is licensed under the MIT license. Prototype placeholder art should be treated separately from code; see the asset notes for current licensing and replacement expectations before shipping public builds.

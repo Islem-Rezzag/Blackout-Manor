@@ -60,6 +60,38 @@ a {
   max-width: 720px;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.hero-link {
+  backdrop-filter: blur(16px);
+  background: rgba(11, 15, 22, 0.58);
+  border: 1px solid rgba(143, 221, 228, 0.18);
+  border-radius: 999px;
+  color: #ecf4ff;
+  padding: 12px 18px;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.hero-link:hover {
+  border-color: rgba(143, 221, 228, 0.42);
+  transform: translateY(-1px);
+}
+
+.hero-link-primary {
+  background: linear-gradient(135deg, #d6b67a, #e6d3a7);
+  border-color: transparent;
+  color: #140f09;
+  font-weight: 700;
+}
+
 .eyebrow {
   color: #8fe3ff;
   font-size: 0.9rem;
@@ -72,6 +104,46 @@ a {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.dev-shell {
+  max-width: 1200px;
+}
+
+.dev-link-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.dev-link-card {
+  backdrop-filter: blur(14px);
+  background: rgba(16, 19, 27, 0.82);
+  border: 1px solid rgba(143, 227, 255, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.25);
+  display: grid;
+  gap: 10px;
+  min-height: 220px;
+  padding: 24px;
+  text-decoration: none;
+}
+
+.dev-link-card h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.dev-link-card p,
+.dev-link-card strong {
+  color: rgba(245, 247, 250, 0.8);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.dev-link-card strong {
+  color: var(--manor-gold);
+  margin-top: auto;
 }
 
 .fairness-shell {
@@ -463,6 +535,109 @@ a {
   border-color: rgba(214, 182, 122, 0.44);
   color: #fff7e7;
   transform: translateY(-1px);
+}
+
+.game-route-page,
+.game-runtime-shell,
+.game-runtime-stage,
+.game-runtime-canvas-host {
+  min-height: 100vh;
+}
+
+.game-route-page {
+  overflow: clip;
+}
+
+.game-runtime-shell {
+  position: relative;
+}
+
+.game-runtime-stage {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(214, 182, 122, 0.16),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(143, 221, 228, 0.12),
+      transparent 24%
+    ),
+    linear-gradient(180deg, rgba(9, 12, 18, 0.98), rgba(5, 7, 11, 1));
+  position: relative;
+}
+
+.game-runtime-canvas-host {
+  width: 100%;
+}
+
+.game-runtime-topbar {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  left: 0;
+  padding: 20px 24px;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 4;
+}
+
+.game-runtime-wordmark,
+.game-runtime-badges,
+.game-runtime-status-banner {
+  backdrop-filter: blur(18px);
+  background: linear-gradient(
+    180deg,
+    rgba(13, 18, 27, 0.7),
+    rgba(7, 10, 15, 0.74)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.game-runtime-wordmark {
+  border-radius: 22px;
+  display: grid;
+  gap: 6px;
+  max-width: 360px;
+  padding: 14px 18px;
+}
+
+.game-runtime-wordmark h1 {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 0.96;
+  margin: 0;
+}
+
+.game-runtime-badges {
+  border-radius: 999px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.game-runtime-status-banner {
+  border-radius: 999px;
+  bottom: 20px;
+  color: rgba(245, 247, 250, 0.84);
+  left: 24px;
+  max-width: min(540px, calc(100% - 48px));
+  padding: 12px 16px;
+  position: absolute;
+  z-index: 4;
+}
+
+.game-runtime-loading {
+  align-items: center;
+  display: grid;
 }
 
 .play-board,
@@ -914,6 +1089,11 @@ a {
     font-size: 2.8rem;
   }
 
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .play-shell {
     padding: 24px 18px 48px;
   }
@@ -951,8 +1131,25 @@ a {
     top: 184px;
   }
 
+  .game-runtime-topbar {
+    flex-direction: column;
+    padding: 18px;
+  }
+
+  .game-runtime-badges {
+    border-radius: 24px;
+    justify-content: flex-start;
+  }
+
+  .game-runtime-status-banner {
+    bottom: 18px;
+    left: 18px;
+    max-width: calc(100% - 36px);
+  }
+
   .game-frame,
-  .game-canvas-host {
+  .game-canvas-host,
+  .game-runtime-canvas-host {
     min-height: 560px;
   }
 }

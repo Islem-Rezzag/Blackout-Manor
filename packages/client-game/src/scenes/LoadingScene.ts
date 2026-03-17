@@ -1,14 +1,17 @@
 import * as Phaser from "phaser";
 
 import { INLINE_ASSETS } from "../bootstrap/inlineAssets";
+import type { GameDirector } from "../directors/GameDirector";
 import { SCENE_KEYS } from "./keys";
 
-export class PreloadScene extends Phaser.Scene {
+export class LoadingScene extends Phaser.Scene {
   readonly #barWidth = 320;
   readonly #barHeight = 14;
+  readonly #director: GameDirector;
 
-  constructor() {
-    super(SCENE_KEYS.preload);
+  constructor(director: GameDirector) {
+    super(SCENE_KEYS.loading);
+    this.#director = director;
   }
 
   preload() {
@@ -52,6 +55,11 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create() {
-    this.scene.start(SCENE_KEYS.manor);
+    this.scene.launch(SCENE_KEYS.manorWorld);
+    this.scene.launch(SCENE_KEYS.meeting);
+    this.scene.launch(SCENE_KEYS.endgame);
+    this.scene.launch(SCENE_KEYS.replay);
+    this.#director.attachScenePlugin(this.scene);
+    this.scene.stop();
   }
 }

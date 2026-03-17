@@ -14,6 +14,14 @@ export default defineConfig({
         workspaceRoot,
         "packages/shared/src/index.ts",
       ),
+      "@blackout-manor/replay-viewer": resolve(
+        workspaceRoot,
+        "packages/replay-viewer/src/index.ts",
+      ),
+      "@blackout-manor/replay-viewer/schemas": resolve(
+        workspaceRoot,
+        "packages/replay-viewer/src/schemas.ts",
+      ),
     },
   },
   test: {

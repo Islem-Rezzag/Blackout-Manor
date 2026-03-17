@@ -1,0 +1,272 @@
+import type { SavedReplayEnvelope } from "@blackout-manor/replay-viewer";
+import type { MatchSnapshot } from "@blackout-manor/shared";
+import type * as Phaser from "phaser";
+
+import type { ClientGameRuntime } from "../bootstrap/runtime";
+import type { ClientGameState } from "../types";
+import { CameraDirector } from "./CameraDirector";
+import { MeetingDirector } from "./MeetingDirector";
+import { PhaseDirector } from "./PhaseDirector";
+import { ReplayDirector } from "./ReplayDirector";
+import type {
+  EndgamePresentation,
+  GamePresentationState,
+  RuntimeSceneId,
+} from "./types";
+
+const CONTENT_SCENE_KEYS = {
+  "manor-world": "manor-world",
+  meeting: "meeting",
+  endgame: "endgame",
+  replay: "replay",
+} as const;
+
+type Listener = (state: GamePresentationState) => void;
+
+const roleTitle = (
+  role: NonNullable<ClientGameState["privateState"]>["role"] | undefined,
+) => {
+  switch (role) {
+    case "shadow":
+      return "Shadow";
+    case "investigator":
+      return "Investigator";
+    case "steward":
+      return "Steward";
+    case "household":
+      return "Household";
+    default:
+      return "Witness";
+  }
+};
+
+const buildBanner = (
+  state: ClientGameState,
+  scene: RuntimeSceneId,
+  snapshot: MatchSnapshot | null,
+) => {
+  if (scene === "replay") {
+    return {
+      eyebrow: "Replay",
+      title: "Deterministic theater",
+      detail: "Scrub the recorded night through the same world pipeline.",
+    };
+  }
+
+  if (!snapshot) {
+    return {
+      eyebrow: "Connecting",
+      title: "Entering the manor",
+      detail: "Waiting for the authoritative state stream.",
+    };
+  }
+
+  if (scene === "meeting") {
+    return {
+      eyebrow: snapshot.phaseId.toUpperCase(),
+      title: "The house convenes",
+      detail:
+        "The server state remains authoritative while the cast converges.",
+    };
+  }
+
+  if (scene === "endgame") {
+    return {
+      eyebrow: "Resolution",
+      title: "The night resolves",
+      detail: "The final public state settles before the roles are archived.",
+    };
+  }
+
+  if (snapshot.phaseId === "report") {
+    return {
+      eyebrow: "Report",
+      title: "A body cuts through the storm",
+      detail:
+        "Camera focus follows the discovered room before the meeting begins.",
+    };
+  }
+
+  return {
+    eyebrow: snapshot.phaseId.toUpperCase(),
+    title: "Masquerade Night",
+    detail:
+      state.mode === "live"
+        ? "Real-time authority flows from the server into the manor."
+        : "Demo mode keeps the same world-first flow with a local deterministic stream.",
+  };
+};
+
+const createEndgamePresentation = (
+  snapshot: MatchSnapshot,
+  runtimeState: ClientGameState,
+  replayEnvelope: SavedReplayEnvelope | null,
+): EndgamePresentation => {
+  const stagedPlayers = snapshot.players.map((player) => ({
+    ...player,
+    roomId: "grand-hall" as const,
+    bodyLanguage:
+      player.status === "alive" ? ("confident" as const) : ("shaken" as const),
+  }));
+
+  const stagedRooms = snapshot.rooms.map((room) =>
+    room.roomId === "grand-hall"
+      ? {
+          ...room,
+          lightLevel: "lit" as const,
+          doorState: "open" as const,
+          occupantIds: stagedPlayers.map((player) => player.id),
+        }
+      : {
+          ...room,
+          occupantIds: [],
+        },
+  );
+
+  const winner = replayEnvelope?.summary.winner ?? null;
+  const role = runtimeState.privateState?.role;
+
+  return {
+    stagedSnapshot: {
+      ...snapshot,
+      players: stagedPlayers,
+      rooms: stagedRooms,
+    },
+    title: winner
+      ? `${winner.team === "shadow" ? "Shadows" : "Household"} take the manor`
+      : "The storm leaves only survivors and silence",
+    subtitle: winner
+      ? `Win condition: ${winner.reason}`
+      : role
+        ? `You leave the manor as ${roleTitle(role)}.`
+        : "Live mode keeps hidden-role reveals sealed on the player path.",
+    summaryTag: winner ? `Tick ${winner.decidedAtTick}` : "Public result",
+  };
+};
+
+export class GameDirector {
+  readonly #runtime: ClientGameRuntime;
+  readonly #phaseDirector = new PhaseDirector();
+  readonly #cameraDirector = new CameraDirector();
+  readonly #meetingDirector = new MeetingDirector();
+  readonly #replayDirector: ReplayDirector;
+  readonly #listeners = new Set<Listener>();
+  #scenePlugin: Phaser.Scenes.ScenePlugin | null = null;
+  #state: GamePresentationState;
+
+  constructor(
+    runtime: ClientGameRuntime,
+    replayEnvelope: SavedReplayEnvelope | null,
+  ) {
+    this.#runtime = runtime;
+    this.#replayDirector = new ReplayDirector(replayEnvelope);
+    this.#state = this.#deriveState(runtime.getState(), replayEnvelope);
+
+    runtime.subscribe((runtimeState) => {
+      this.#state = this.#deriveState(runtimeState, replayEnvelope);
+      this.#emit();
+      this.#syncSceneActivation();
+    });
+  }
+
+  attachScenePlugin(scenePlugin: Phaser.Scenes.ScenePlugin) {
+    this.#scenePlugin = scenePlugin;
+    this.#syncSceneActivation();
+  }
+
+  getState() {
+    return this.#state;
+  }
+
+  subscribe(listener: Listener) {
+    this.#listeners.add(listener);
+    listener(this.#state);
+
+    return () => {
+      this.#listeners.delete(listener);
+    };
+  }
+
+  stepReplay(delta: number) {
+    this.#replayDirector.step(delta);
+    this.#state = this.#deriveState(
+      this.#runtime.getState(),
+      this.#state.replay?.envelope ?? null,
+    );
+    this.#emit();
+    this.#syncSceneActivation();
+  }
+
+  jumpReplay(index: number) {
+    this.#replayDirector.jump(index);
+    this.#state = this.#deriveState(
+      this.#runtime.getState(),
+      this.#state.replay?.envelope ?? null,
+    );
+    this.#emit();
+    this.#syncSceneActivation();
+  }
+
+  #deriveState(
+    runtimeState: ClientGameState,
+    replayEnvelope: SavedReplayEnvelope | null,
+  ): GamePresentationState {
+    const replay = this.#replayDirector.derive(runtimeState);
+    const activeScene = this.#phaseDirector.resolveScene(runtimeState, replay);
+    const snapshot = replay?.snapshot ?? runtimeState.snapshot;
+    const meeting =
+      snapshot && activeScene === "meeting"
+        ? this.#meetingDirector.derive(snapshot)
+        : null;
+    const stageSnapshot =
+      activeScene === "meeting"
+        ? (meeting?.stagedSnapshot ?? snapshot)
+        : activeScene === "endgame" && snapshot
+          ? createEndgamePresentation(snapshot, runtimeState, replayEnvelope)
+              .stagedSnapshot
+          : snapshot;
+    const endgame =
+      activeScene === "endgame" && snapshot
+        ? createEndgamePresentation(snapshot, runtimeState, replayEnvelope)
+        : null;
+
+    return {
+      runtimeState,
+      activeScene,
+      snapshot: stageSnapshot,
+      camera: this.#cameraDirector.resolvePlan({
+        scene: activeScene,
+        runtimeState,
+        snapshot: stageSnapshot,
+        meetingRoomId: meeting?.meetingRoomId ?? null,
+      }),
+      banner: buildBanner(runtimeState, activeScene, snapshot),
+      meeting,
+      endgame,
+      replay,
+    };
+  }
+
+  #syncSceneActivation() {
+    if (!this.#scenePlugin) {
+      return;
+    }
+
+    for (const [sceneId, sceneKey] of Object.entries(
+      CONTENT_SCENE_KEYS,
+    ) as Array<[RuntimeSceneId, string]>) {
+      if (sceneId === this.#state.activeScene) {
+        this.#scenePlugin.wake(sceneKey);
+        this.#scenePlugin.bringToTop(sceneKey);
+      } else {
+        this.#scenePlugin.sleep(sceneKey);
+      }
+    }
+  }
+
+  #emit() {
+    for (const listener of this.#listeners) {
+      listener(this.#state);
+    }
+  }
+}
