@@ -1,7 +1,7 @@
 # Asset Licensing Notes
 
 ## Code
-Repository source code is MIT licensed. See the root [LICENSE](/Users/moham/Downloads/Blackout%20Manor/LICENSE).
+Repository source code is MIT licensed. See the root [LICENSE](../LICENSE).
 
 ## Placeholder and Prototype Assets
 - Prototype placeholder art should be treated as separate from code.

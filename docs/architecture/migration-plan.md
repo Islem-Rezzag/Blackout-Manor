@@ -1,6 +1,6 @@
 # Migration Plan
 
-This plan changes presentation ownership and documentation. It does not change game rules, server authority, or replay guarantees.
+This plan tracks presentation ownership and product-surface work only. It does not change game rules, server authority, replay guarantees, or fairness assumptions.
 
 ## What Stays Untouched
 - `packages/engine` gameplay rules, role behavior rules, round structure, legality flow, seeded determinism, and replay event semantics
@@ -8,99 +8,127 @@ This plan changes presentation ownership and documentation. It does not change g
 - `packages/content` season data, authored balance values, and rule-data model
 - `apps/server` authoritative state model, persistence wiring, admin API semantics, and Colyseus authority model
 - replay serialization, replay guarantees, replay metadata flow, and persistence contracts
-- current route implementation behavior during the documentation phase
-- Existing asset set and rendering behavior during the documentation phase
 
-## Milestone 1: Lock the Ownership Boundary
+## Current Milestone Map
 
-### Goal
-Document and enforce that `packages/client-game` is the primary live surface and `apps/web` is the thin shell that boots the runtime.
+### Completed: Milestone 1 - Route and Product-Surface Inversion
 
-### Submilestones
-1. Update repo guidance and architecture docs.
-2. Audit live-match UI ownership across `apps/web` and `packages/client-game`.
-3. Identify which host-side panels are live-player critical versus tool-only.
+#### Outcome
+- `/game/[roomId]` is the primary live route.
+- `/game` is the bootstrap route.
+- `/play` is compatibility only.
+- fairness and replay-heavy tooling live behind developer-oriented routes instead of defining the default player path.
 
-### File and Folder Changes
-- Update `AGENTS.md`
-- Update `README.md`
-- Update `docs/architecture/*.md`
-- No runtime code moves yet
+#### File and Folder Changes
+- `apps/web/src/app/game/`
+- `apps/web/src/app/dev/`
+- `apps/web/src/app/play/`
+- docs clarifying `packages/client-game` ownership and `apps/web` shell responsibilities
 
-### Acceptance Criteria
-- New contributors can tell which package owns live mode versus support tooling.
-- Architecture docs no longer imply that the current host shell is the intended final product.
-- `/game/[roomId]` is documented as the primary live route, `/game` as the bootstrap or redirect entry, and `/play` only as legacy or dev-oriented language.
-- No runtime behavior changes land in this milestone.
+#### Acceptance Criteria
+- Live players enter through a game-first route instead of a dashboard-first route.
+- `packages/client-game` is documented as the primary product surface.
+- `apps/web` is documented as a thin shell that boots the runtime.
 
-## Milestone 2: Move Live Match Presentation into `packages/client-game`
+### Completed: Milestone 2 - World-First Runtime Refactor
 
-### Goal
-Make the live match feel owned by the game runtime instead of by host-page React composition.
+#### Outcome
+- `packages/client-game` now uses scene and director ownership instead of a single monolithic live scene.
+- runtime flow is staged through `GameDirector`, `PhaseDirector`, `CameraDirector`, `MeetingDirector`, and `ReplayDirector`.
+- live play, meetings, endgame, and replay now share a world-first rendering pipeline.
 
-### Submilestones
-1. Define a minimal host-to-runtime boot contract.
-2. Move live HUD, meeting, confessional, and post-match player surfaces behind runtime-owned interfaces.
-3. Reduce host-page chrome around the live canvas.
+#### File and Folder Changes
+- `packages/client-game/src/directors/`
+- `packages/client-game/src/scenes/`
+- `packages/client-game/src/stage/`
+- minimal runtime boot adjustments in `apps/web/src/features/game/`
 
-### File and Folder Changes
-- Expand `packages/client-game/src/ui/` into clear live-match ownership folders
-- Reduce `apps/web/src/features/play/` to thin mounting, host options, and route glue
-- Keep routes unchanged during this milestone
+#### Acceptance Criteria
+- reports, meetings, voting, and endgame are staged through the runtime instead of host-side panels.
+- replay uses the same rendering pipeline as live observation.
+- host-page React chrome stays minimal on the player route.
 
-### Acceptance Criteria
-- Live mode can be described as a full-screen game surface with minimal host scaffolding.
-- `apps/web` no longer owns the structure of the in-match presentation.
-- Replay and analytics remain available without leaking into player mode.
-- The design target is clearly aligned to `/game/[roomId]`, even if compatibility routes still exist during migration.
+### Completed: Milestone 3 - Surveillance and Observation Mode
 
-## Milestone 3: Separate Secondary Tooling From the Default Match Path
+#### Outcome
+- roaming observation and surveillance observation now exist inside the same full-screen runtime.
+- a surveillance console can render several room feeds at once.
+- camera focus is event-driven for sabotage, reports, meetings, and visible public interactions.
+- live mode keeps a minimal observation HUD without surfacing fairness or debug analytics.
 
-### Goal
-Keep spectator, replay, fairness, contributor, debug, and admin tools useful without letting them define the live product.
+#### File and Folder Changes
+- `packages/client-game/src/directors/SurveillanceDirector.ts`
+- `packages/client-game/src/ui/ObservationHud.ts`
+- `packages/client-game/src/ui/SurveillanceConsole.ts`
+- scene integration in `packages/client-game/src/scenes/ManorWorldScene.ts` and `packages/client-game/src/scenes/ReplayScene.ts`
 
-### Submilestones
-1. Classify secondary surfaces by audience: player, spectator, contributor, operator.
-2. Move deep-analysis panels behind explicit mode switches or post-match contexts.
-3. Audit hidden-role analytics to ensure they never appear in default live player mode.
+#### Acceptance Criteria
+- live and replay observation stay visually coherent.
+- surveillance mode remains in-world instead of becoming a separate website surface.
+- hidden-role analytics remain sealed in live mode.
 
-### File and Folder Changes
-- Consolidate secondary surfaces under host-side tool folders in `apps/web`
-- Keep replay analytics logic in `packages/replay-viewer`
-- Leave server endpoints and replay data format untouched
+### Upcoming: Milestone 4 - Premium Rendering Pipeline
 
-### Acceptance Criteria
-- Default `/game/[roomId]` behavior is focused on the match, not on analysis.
-- `/game` can remain a bootstrap or redirect entry without becoming a tool-heavy landing page.
-- Spectator and replay modes can still access richer analysis after the match.
-- Tooling remains discoverable without shaping the first-run player experience.
+#### Goal
+Raise the environmental rendering quality so the manor reads as a premium storm thriller rather than a strong prototype.
 
-## Milestone 4: Polish the Runtime Surface Without Breaking Authority
+#### Planned Focus
+- richer room materials, lighting, and storm atmosphere
+- stronger cutaway treatment and spatial depth
+- better in-world transition and focus polish
 
-### Goal
-Improve immersion, clarity, and commercial feel while preserving current simulation contracts.
+#### Acceptance Criteria
+- blackout, storm, and room mood read clearly at a glance.
+- visual upgrades do not require engine, server, or replay contract changes.
 
-### Submilestones
-1. Tighten runtime-owned presentation architecture.
-2. Establish clearer shared UI primitives between live and post-match views.
-3. Add validation for player-mode information boundaries and runtime boot performance.
+### Upcoming: Milestone 5 - Character Readability and Live HUD Polish
 
-### File and Folder Changes
-- Refine `packages/client-game/src/bootstrap`, `src/scenes`, `src/ui`, and `src/state`
-- Keep `packages/engine`, `packages/agents`, `apps/server`, and route structure untouched unless a separate approved milestone requires otherwise
+#### Goal
+Make character presence, posture, speech, and key room state more readable during live observation.
 
-### Acceptance Criteria
-- Player mode feels like a coherent game runtime first.
-- Runtime changes do not alter replay determinism or legality.
-- Host pages remain thin wrappers instead of re-accumulating product ownership.
-- Legacy `/play` support, if still present, behaves as compatibility only and does not redefine the primary product route.
+#### Planned Focus
+- improve at-a-glance avatar readability
+- tighten speech and status presentation
+- refine the live HUD without turning it into a benchmark dashboard
+
+#### Acceptance Criteria
+- players and spectators can follow public action without relying on secondary tooling.
+- the HUD remains minimal and game-first.
+
+### Upcoming: Milestone 6 - Public Launcher and Attract-Mode Polish
+
+#### Goal
+Polish the public entry flow so launching the game feels intentional and commercial before the match begins.
+
+#### Planned Focus
+- stronger `/game` bootstrap experience
+- improved onboarding and demo-room presentation
+- cleaner handoff into live runtime and replay entry paths
+
+#### Acceptance Criteria
+- the launcher feels like a game entry surface, not a dev shell.
+- compatibility routes remain secondary and do not replace `/game`.
+
+### Upcoming: Milestone 7 - EQ Benchmark Hardening
+
+#### Goal
+Harden replay, observation, and benchmark validation around the already-implemented live runtime.
+
+#### Planned Focus
+- stronger observation validation and replay assertions
+- stricter checks around information boundaries and fairness assumptions
+- better tooling confidence without moving those tools back into the player path
+
+#### Acceptance Criteria
+- benchmark tooling stays secondary to the live product surface.
+- added hardening does not leak hidden-role analytics into live mode.
 
 ## Risks
 - Duplicating UI state between React host code and Phaser runtime
 - Accidentally leaking spectator or hidden-role analysis into live player mode
 - Refactoring presentation in a way that quietly changes timing, sequencing, or replay semantics
-- Letting admin or contributor requirements pull the live UI back toward dashboard density
-- Mixing future asset migrations with ownership refactors, which makes regressions harder to isolate
+- Letting debug or fairness tooling pull the live UI back toward dashboard density
+- Mixing major visual overhauls with authority or replay-sensitive code paths
 
 ## Risky Refactors to Avoid
 - Moving rules, role powers, or meeting flow into presentation code
@@ -118,9 +146,9 @@ Improve immersion, clarity, and commercial feel while preserving current simulat
 - `pnpm sim --seed 42 --mode fast`
 - `pnpm sim --seed 42 --mode showcase`
 
-For milestones that move presentation ownership, also manually verify:
+For presentation milestones, also manually verify:
 - `/game/[roomId]` launches into a live-match-first view
 - `/game` only bootstraps or redirects to a demo or local room
-- spectator and replay paths still work
+- `/dev/play?view=replay` still works as the replay-oriented dev path
 - hidden-role analytics remain absent from default live mode
-- `/play`, if still present, behaves only as a compatibility or dev route
+- `/play` remains compatibility only

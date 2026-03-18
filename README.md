@@ -62,6 +62,13 @@ pnpm replay:open artifacts/replays/fast-42.replay.json
 
 Local development works without production infra. By default the server uses SQLite at `.local/blackout-manor-dev.sqlite`.
 
+## Route Map
+- `/game/[roomId]`: primary live route
+- `/game`: bootstrap route for a demo or local room
+- `/play`: compatibility route only
+- `/dev/play?view=replay`: replay-oriented dev route
+- `/dev/fairness`: fairness and balance tooling
+
 ## Core Commands
 ```bash
 pnpm dev
@@ -99,6 +106,12 @@ pnpm db:down
 - `pnpm seed-suite` writes regression packs into `artifacts/seed-packs/`.
 - `pnpm replay:open <file>` validates and stages a replay at `.local/replay-open/current.replay.json`.
 - `pnpm media:capture` saves screenshots and, when `ffmpeg` is available, a GIF into `artifacts/media/latest/`.
+
+## Observation Controls
+- `V`: toggle roaming and surveillance observation
+- `Q` / `E` or `Tab`: cycle surveillance feeds
+- `1` to `4`: lock a surveillance feed
+- `Esc`: return to roaming observation
 
 ## Documentation
 - [Local Quickstart](./docs/local-quickstart.md)
