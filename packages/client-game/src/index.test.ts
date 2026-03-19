@@ -4,6 +4,7 @@ import { parseSavedReplayEnvelope } from "@blackout-manor/replay-viewer";
 import type { MatchSnapshot } from "@blackout-manor/shared";
 import { describe, expect, it, vi } from "vitest";
 
+import { CLIENT_GAME_ASSET_MANIFEST } from "./bootstrap/assetManifest";
 import { MeetingDirector } from "./directors/MeetingDirector";
 import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
@@ -39,6 +40,22 @@ describe("client-game package", () => {
       0,
     );
     expect(MANOR_RENDER_MAP.rooms.greenhouse.windows.length).toBeGreaterThan(0);
+    expect(MANOR_RENDER_MAP.rooms["grand-hall"].cameraAnchor).toEqual(
+      MANOR_RENDER_MAP.rooms["grand-hall"].focusPoint,
+    );
+    expect(MANOR_RENDER_MAP.rooms.ballroom.anchors.sabotageY).toBeLessThan(0);
+    expect(MANOR_RENDER_MAP.rooms.library.surfaces.shellColor).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it("exposes a replaceable client asset manifest for the manor renderer", () => {
+    const assetKeys = CLIENT_GAME_ASSET_MANIFEST.map((asset) => asset.key);
+
+    expect(assetKeys).toContain("room-shell");
+    expect(assetKeys).toContain("room-wall");
+    expect(assetKeys).toContain("focus-beam");
+    expect(assetKeys).toContain("storm-cloud");
   });
 
   it("emits hello, private role, and snapshot in mock mode", async () => {

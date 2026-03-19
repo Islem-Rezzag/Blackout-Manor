@@ -1,8 +1,4 @@
-import type {
-  LightLevelId,
-  PublicPlayerState,
-  RoomId,
-} from "@blackout-manor/shared";
+import type { PublicPlayerState, RoomId } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import type {
@@ -10,7 +6,7 @@ import type {
   SurveillancePresentation,
 } from "../directors/types";
 import { resolveAvatarAppearance } from "../entities/avatar/presentation";
-import { lightLevelToFactor, mixColor } from "../stage/signals";
+import { createFeedPalette } from "../stage/renderTheme";
 import { getRoomRenderData, getRoomSeatPosition } from "../tiled/manorLayout";
 
 type SurveillanceConsoleOptions = {
@@ -24,9 +20,12 @@ type FeedCard = {
   title: Phaser.GameObjects.Text;
   status: Phaser.GameObjects.Text;
   frame: Phaser.GameObjects.Rectangle;
+  shell: Phaser.GameObjects.Image;
   floor: Phaser.GameObjects.Rectangle;
   accent: Phaser.GameObjects.Rectangle;
   cutaway: Phaser.GameObjects.Rectangle;
+  dust: Phaser.GameObjects.Image;
+  specular: Phaser.GameObjects.Image;
   marker: Phaser.GameObjects.Text;
   occupants: Phaser.GameObjects.Arc[];
   occupantLabel: Phaser.GameObjects.Text;
@@ -73,17 +72,6 @@ const markerColor = (feed: SurveillanceFeedPresentation) => {
   }
 
   return { fill: 0x17222a, stroke: 0x73a8c9, text: "#dce6ef" };
-};
-
-const roomFrameTint = (roomId: RoomId, lightLevel: LightLevelId) => {
-  const room = getRoomRenderData(roomId);
-  const lightFactor = lightLevelToFactor(lightLevel);
-
-  return {
-    floor: mixColor(room.fillColor, 0x05080c, 1 - lightFactor),
-    accent: mixColor(room.accentColor, 0x0d141a, 1 - lightFactor * 0.86),
-    cutaway: mixColor(room.cutawayColor, 0x05080c, 1 - lightFactor * 0.78),
-  };
 };
 
 const occupantTint = (player: PublicPlayerState) => {
@@ -141,7 +129,7 @@ export class SurveillanceConsole {
       this.#hint,
       ...this.#cards.map((card) => card.container),
     ]);
-    this.#root.setDepth(114);
+    this.#root.setDepth(322);
     this.#root.setScrollFactor(0);
     this.#root.setVisible(false);
     this.resize(options.scene.scale.width, options.scene.scale.height);
@@ -209,6 +197,10 @@ export class SurveillanceConsole {
       fontSize: "11px",
       wordWrap: { width: 164 },
     });
+    const shell = this.#scene.add
+      .image(0, 18, "room-shell")
+      .setDisplaySize(CARD_WIDTH - 8, CARD_HEIGHT - 26)
+      .setAlpha(0.94);
     const frame = this.#scene.add
       .rectangle(0, 18, CARD_WIDTH - 24, 78, 0x0e151b, 0.96)
       .setStrokeStyle(1, 0x73a8c9, 0.14);
@@ -231,6 +223,16 @@ export class SurveillanceConsole {
       0x4c5a64,
       0.88,
     );
+    const dust = this.#scene.add
+      .image(0, 18, "room-dust")
+      .setDisplaySize(CARD_WIDTH - 44, 60)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
+      .setAlpha(0.1);
+    const specular = this.#scene.add
+      .image(0, 18, "room-specular")
+      .setDisplaySize(CARD_WIDTH - 42, 60)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
+      .setAlpha(0.12);
     const marker = this.#scene.add.text(84, -57, "", {
       color: "#dce6ef",
       backgroundColor: "#17222a",
@@ -267,10 +269,13 @@ export class SurveillanceConsole {
         plate,
         title,
         status,
+        shell,
         frame,
         floor,
         accent,
         cutaway,
+        dust,
+        specular,
         marker,
         ...occupants,
         occupantLabel,
@@ -280,9 +285,12 @@ export class SurveillanceConsole {
       title,
       status,
       frame,
+      shell,
       floor,
       accent,
       cutaway,
+      dust,
+      specular,
       marker,
       occupants,
       occupantLabel,
@@ -301,25 +309,34 @@ export class SurveillanceConsole {
   ) {
     const marker = markerLabel(feed);
     const markerStyle = markerColor(feed);
-    const tints = roomFrameTint(feed.roomId, feed.lightLevel);
+    const room = getRoomRenderData(feed.roomId);
+    const palette = createFeedPalette({
+      room,
+      lightLevel: feed.lightLevel,
+      selected: feed.selected,
+      flagged: Boolean(feed.markers.body || feed.markers.sabotage),
+    });
 
     card.title.setText(`${index + 1}. ${feed.label}`);
     card.status.setText(feed.statusLine);
     card.occupantLabel.setText(occupancyLabel(feed.occupantCount));
-    card.plate.setFillStyle(feed.selected ? 0x091521 : 0x081018, 0.86);
+    card.plate.setFillStyle(palette.plateFill, 0.86);
     card.plate.setStrokeStyle(
       1.4,
-      feed.selected ? 0xd8c18a : 0x73a8c9,
+      palette.plateStroke,
       feed.selected ? 0.34 : 0.18,
     );
+    card.shell.setTint(room.surfaces.shellColor);
     card.frame.setStrokeStyle(
       1,
-      feed.selected ? 0xd8c18a : 0x73a8c9,
+      palette.plateStroke,
       feed.selected ? 0.3 : 0.14,
     );
-    card.floor.setFillStyle(tints.floor, 1);
-    card.accent.setFillStyle(tints.accent, 0.22);
-    card.cutaway.setFillStyle(tints.cutaway, 0.9);
+    card.floor.setFillStyle(palette.frameFill, 1);
+    card.accent.setFillStyle(palette.accentFill, 0.22);
+    card.cutaway.setFillStyle(palette.cutawayFill, 0.9);
+    card.dust.setTint(palette.dustTint);
+    card.specular.setTint(room.ambienceColor);
     card.marker.setText(marker || `${feed.lightLevel.toUpperCase()}`);
     card.marker.setStyle({
       color: markerStyle.text,
@@ -333,7 +350,6 @@ export class SurveillanceConsole {
     });
     card.marker.setStroke("#000000", 0);
 
-    const room = getRoomRenderData(feed.roomId);
     const visibleOccupants = feed.occupants.slice(0, MAX_OCCUPANT_PIPS);
     const frameWidth = CARD_WIDTH - 36;
     const frameHeight = 62;

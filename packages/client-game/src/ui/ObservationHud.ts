@@ -119,7 +119,7 @@ export class ObservationHud {
       this.#stateHint,
     ]);
     this.#statePlate.setScrollFactor(0);
-    this.#statePlate.setDepth(112);
+    this.#statePlate.setDepth(320);
 
     this.#subtitlePlate = options.scene.add
       .rectangle(0, 0, 820, 58, 0x071018, 0.78)
@@ -142,7 +142,7 @@ export class ObservationHud {
       this.#subtitleText,
     ]);
     this.#subtitleContainer.setScrollFactor(0);
-    this.#subtitleContainer.setDepth(112);
+    this.#subtitleContainer.setDepth(320);
 
     this.#statusChips = Array.from({ length: 3 }, () => {
       const plate = options.scene.add
@@ -168,7 +168,7 @@ export class ObservationHud {
         detail,
       ]);
       container.setScrollFactor(0);
-      container.setDepth(112);
+      container.setDepth(320);
 
       return {
         container,

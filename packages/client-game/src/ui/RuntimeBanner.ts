@@ -43,7 +43,7 @@ export class RuntimeBanner {
       this.#title,
       this.#detail,
     ]);
-    this.#container.setDepth(96);
+    this.#container.setDepth(320);
     this.#container.setScrollFactor(0);
     this.resize(options.scene.scale.width);
   }

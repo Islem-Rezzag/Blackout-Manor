@@ -44,7 +44,7 @@ export class MeetingScene extends Phaser.Scene {
     this.#meetingHeader = header;
     this.#meetingDetail = detail;
     this.#meetingPlate = this.add.container(0, 0, [plate, header, detail]);
-    this.#meetingPlate.setDepth(96);
+    this.#meetingPlate.setDepth(322);
     this.#meetingPlate.setScrollFactor(0);
     this.#resizePanels();
 

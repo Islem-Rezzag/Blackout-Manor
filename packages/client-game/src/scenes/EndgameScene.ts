@@ -52,7 +52,7 @@ export class EndgameScene extends Phaser.Scene {
     this.#resultDetail = detail;
     this.#resultTag = tag;
     this.#resultPlate = this.add.container(0, 0, [plate, title, detail, tag]);
-    this.#resultPlate.setDepth(96);
+    this.#resultPlate.setDepth(322);
     this.#resultPlate.setScrollFactor(0);
     this.#resizePanels();
 

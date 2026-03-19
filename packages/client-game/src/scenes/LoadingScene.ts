@@ -1,6 +1,6 @@
 import * as Phaser from "phaser";
 
-import { INLINE_ASSETS } from "../bootstrap/inlineAssets";
+import { loadClientGameAssetManifest } from "../bootstrap/assetManifest";
 import type { GameDirector } from "../directors/GameDirector";
 import { SCENE_KEYS } from "./keys";
 
@@ -46,12 +46,7 @@ export class LoadingScene extends Phaser.Scene {
       bar.width = Math.max(4, (this.#barWidth - 4) * progress);
     });
 
-    this.load.image("room-floor", INLINE_ASSETS.roomFloor);
-    this.load.image("player-token", INLINE_ASSETS.playerToken);
-    this.load.image("room-glow", INLINE_ASSETS.roomGlow);
-    this.load.image("clue-marker", INLINE_ASSETS.clueMarker);
-    this.load.image("sabotage-stripe", INLINE_ASSETS.sabotageStripe);
-    this.load.image("rain-sheen", INLINE_ASSETS.rainSheen);
+    loadClientGameAssetManifest(this.load);
   }
 
   create() {

@@ -78,6 +78,32 @@ export type ManorRenderRoom = ManorRoomLayout & {
   cutawayColor: number;
   cluePoint: { x: number; y: number };
   focusPoint: { x: number; y: number };
+  cameraAnchor: { x: number; y: number };
+  anchors: {
+    titleY: number;
+    themeY: number;
+    stateY: number;
+    taskStartX: number;
+    taskStartY: number;
+    sabotageY: number;
+  };
+  framing: {
+    shellPaddingX: number;
+    shellPaddingY: number;
+    focusPaddingX: number;
+    focusPaddingY: number;
+    floorInsetY: number;
+    wallInsetX: number;
+    wallInsetY: number;
+  };
+  surfaces: {
+    shellColor: number;
+    shadowColor: number;
+    dustColor: number;
+    titlePlateColor: number;
+    statePlateColor: number;
+    focusColor: number;
+  };
   decor: ManorDecorShape[];
   lights: ManorLightNode[];
   windows: ManorWeatherWindow[];
@@ -248,6 +274,62 @@ const buildRenderMap = (mapJson: TiledMapJson): ManorRenderMap => {
             x: roomObject.x + roomObject.width / 2,
             y: roomObject.y + roomObject.height / 2,
           },
+      cameraAnchor: focusObject
+        ? pointFromObject(focusObject)
+        : {
+            x: roomObject.x + roomObject.width / 2,
+            y: roomObject.y + roomObject.height / 2,
+          },
+      anchors: {
+        titleY:
+          -roomObject.height / 2 + asNumber(properties, "titleOffsetY", 20),
+        themeY:
+          -roomObject.height / 2 +
+          asNumber(
+            properties,
+            "themeOffsetY",
+            asNumber(properties, "cutawayHeight", 48) + 28,
+          ),
+        stateY:
+          roomObject.height / 2 - asNumber(properties, "stateOffsetY", 24),
+        taskStartX:
+          -roomObject.width / 2 + asNumber(properties, "taskOffsetX", 24),
+        taskStartY:
+          -roomObject.height / 2 +
+          asNumber(
+            properties,
+            "taskOffsetY",
+            asNumber(properties, "cutawayHeight", 48) + 34,
+          ),
+        sabotageY:
+          -roomObject.height / 2 + asNumber(properties, "sabotageOffsetY", 22),
+      },
+      framing: {
+        shellPaddingX: asNumber(properties, "shellPaddingX", 14),
+        shellPaddingY: asNumber(properties, "shellPaddingY", 18),
+        focusPaddingX: asNumber(properties, "focusPaddingX", 18),
+        focusPaddingY: asNumber(properties, "focusPaddingY", 22),
+        floorInsetY: asNumber(properties, "floorInsetY", 8),
+        wallInsetX: asNumber(properties, "wallInsetX", 6),
+        wallInsetY: asNumber(properties, "wallInsetY", 0),
+      },
+      surfaces: {
+        shellColor: parseColor(properties.shellColor, 0x131a21),
+        shadowColor: parseColor(properties.shadowColor, 0x000000),
+        dustColor: parseColor(properties.dustColor, 0xffffff),
+        titlePlateColor: parseColor(
+          properties.titlePlateColor,
+          parseColor(properties.accent, 0xc4c4c4),
+        ),
+        statePlateColor: parseColor(
+          properties.statePlateColor,
+          parseColor(properties.fill, 0x1f2630),
+        ),
+        focusColor: parseColor(
+          properties.focusColor,
+          parseColor(properties.accent, 0xc4c4c4),
+        ),
+      },
       decor: [],
       lights: [],
       windows: [],
