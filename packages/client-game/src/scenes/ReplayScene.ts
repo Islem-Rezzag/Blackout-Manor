@@ -26,13 +26,11 @@ const resolveSeatResolver = (phaseId: PhaseId): SeatResolver => {
   return worldSeatResolver;
 };
 
-const replayContextLine = (
+const replayTimerLine = (
   frameIndex: number,
   totalFrames: number,
   tick: number,
-  phaseId: PhaseId,
-) =>
-  `Frame ${frameIndex + 1}/${totalFrames} · Tick ${tick} · ${phaseId.toUpperCase()}`;
+) => `Frame ${frameIndex + 1}/${totalFrames} | Tick ${tick}`;
 
 export class ReplayScene extends Phaser.Scene {
   readonly #director: GameDirector;
@@ -77,12 +75,13 @@ export class ReplayScene extends Phaser.Scene {
 
       this.#hud?.setContent({
         surveillance: state.surveillance,
-        contextText: `${replayContextLine(
+        phaseLabel: phaseId.toUpperCase(),
+        timerText: replayTimerLine(
           state.replay.frameIndex,
           state.replay.totalFrames,
           state.replay.snapshot.tick,
-          phaseId,
-        )} · ${highlightText}`,
+        ),
+        contextText: highlightText,
       });
       this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({

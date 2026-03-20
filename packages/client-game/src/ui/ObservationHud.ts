@@ -15,6 +15,8 @@ type StatusChip = {
 
 type ObservationHudContent = {
   surveillance: SurveillancePresentation;
+  phaseLabel: string;
+  timerText?: string | null;
   contextText?: string | null;
 };
 
@@ -38,8 +40,8 @@ const toneColors = {
 
 const hintLine = (mode: SurveillancePresentation["mode"]) =>
   mode === "surveillance"
-    ? "V roam · Q/E or Tab cycle · 1-4 lock feed"
-    : "V surveillance · auto-follow public activity";
+    ? "V roam | Q/E or Tab cycle | 1-4 lock feed"
+    : "V surveillance | auto-follow public activity";
 
 const lightLabel = (
   lightLevel: SurveillancePresentation["statusIndicators"][number]["lightLevel"],
@@ -68,7 +70,6 @@ const doorLabel = (
 };
 
 export class ObservationHud {
-  readonly #scene: Phaser.Scene;
   readonly #statePlate: Phaser.GameObjects.Container;
   readonly #stateBackplate: Phaser.GameObjects.Rectangle;
   readonly #stateEyebrow: Phaser.GameObjects.Text;
@@ -82,34 +83,33 @@ export class ObservationHud {
   readonly #statusChips: StatusChip[];
 
   constructor(options: ObservationHudOptions) {
-    this.#scene = options.scene;
     this.#stateBackplate = options.scene.add
-      .rectangle(0, 0, 468, 96, 0x061018, 0.74)
-      .setStrokeStyle(1, 0x73a8c9, 0.18);
-    this.#stateEyebrow = options.scene.add.text(-210, -28, "", {
+      .rectangle(0, 0, 500, 102, 0x061018, 0.78)
+      .setStrokeStyle(1, 0x73a8c9, 0.2);
+    this.#stateEyebrow = options.scene.add.text(-226, -30, "", {
       color: "#8ec9e4",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "10px",
-      letterSpacing: 2,
+      letterSpacing: 1.8,
     });
-    this.#stateTitle = options.scene.add.text(-210, -8, "", {
+    this.#stateTitle = options.scene.add.text(-226, -6, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
       fontSize: "22px",
       fontStyle: "bold",
-      wordWrap: { width: 410 },
+      wordWrap: { width: 440 },
     });
-    this.#stateDetail = options.scene.add.text(-210, 22, "", {
+    this.#stateDetail = options.scene.add.text(-226, 22, "", {
       color: "#d7dee9",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "12px",
-      wordWrap: { width: 410 },
+      wordWrap: { width: 440 },
     });
-    this.#stateHint = options.scene.add.text(-210, 46, "", {
+    this.#stateHint = options.scene.add.text(-226, 46, "", {
       color: "#9eb9ca",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "11px",
-      wordWrap: { width: 410 },
+      wordWrap: { width: 440 },
     });
     this.#statePlate = options.scene.add.container(0, 0, [
       this.#stateBackplate,
@@ -122,19 +122,19 @@ export class ObservationHud {
     this.#statePlate.setDepth(320);
 
     this.#subtitlePlate = options.scene.add
-      .rectangle(0, 0, 820, 58, 0x071018, 0.78)
+      .rectangle(0, 0, 860, 60, 0x071018, 0.8)
       .setStrokeStyle(1, 0x73a8c9, 0.18);
-    this.#subtitleSpeaker = options.scene.add.text(-382, -10, "", {
+    this.#subtitleSpeaker = options.scene.add.text(-402, -10, "", {
       color: "#8ec9e4",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "11px",
       letterSpacing: 1.6,
     });
-    this.#subtitleText = options.scene.add.text(-382, 10, "", {
+    this.#subtitleText = options.scene.add.text(-402, 10, "", {
       color: "#f5f0e4",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "13px",
-      wordWrap: { width: 744 },
+      wordWrap: { width: 782 },
     });
     this.#subtitleContainer = options.scene.add.container(0, 0, [
       this.#subtitlePlate,
@@ -146,20 +146,20 @@ export class ObservationHud {
 
     this.#statusChips = Array.from({ length: 3 }, () => {
       const plate = options.scene.add
-        .rectangle(0, 0, 196, 48, 0x071018, 0.72)
+        .rectangle(0, 0, 204, 50, 0x071018, 0.74)
         .setStrokeStyle(1, 0x73a8c9, 0.16);
-      const label = options.scene.add.text(-82, -8, "", {
+      const label = options.scene.add.text(-86, -8, "", {
         color: "#f5f0e4",
         fontFamily: "Palatino Linotype, Georgia, serif",
         fontSize: "15px",
         fontStyle: "bold",
-        wordWrap: { width: 116 },
+        wordWrap: { width: 122 },
       });
-      const detail = options.scene.add.text(-82, 12, "", {
+      const detail = options.scene.add.text(-86, 12, "", {
         color: "#d7dee9",
         fontFamily: "Segoe UI, sans-serif",
         fontSize: "11px",
-        wordWrap: { width: 158 },
+        wordWrap: { width: 164 },
       });
 
       const container = options.scene.add.container(0, 0, [
@@ -182,18 +182,22 @@ export class ObservationHud {
   }
 
   setContent(content: ObservationHudContent) {
-    const { contextText, surveillance } = content;
+    const { contextText, phaseLabel, surveillance, timerText } = content;
 
     this.#stateEyebrow.setText(
-      surveillance.mode === "surveillance" ? "SURVEILLANCE" : "OBSERVATION",
+      `${phaseLabel} | ${surveillance.mode === "surveillance" ? "SURVEILLANCE" : "OBSERVATION"}`,
     );
-    this.#stateTitle.setText(surveillance.indicatorLabel);
+    this.#stateTitle.setText(surveillance.cameraLabel);
     this.#stateDetail.setText(
-      contextText
-        ? `${surveillance.cameraLabel} · ${contextText}`
-        : surveillance.cameraLabel,
+      timerText
+        ? `${timerText} | ${surveillance.indicatorLabel}`
+        : surveillance.indicatorLabel,
     );
-    this.#stateHint.setText(hintLine(surveillance.mode));
+    this.#stateHint.setText(
+      contextText
+        ? `${contextText} | ${hintLine(surveillance.mode)}`
+        : hintLine(surveillance.mode),
+    );
 
     const subtitle = surveillance.subtitle;
     if (subtitle) {
@@ -236,7 +240,7 @@ export class ObservationHud {
       chip.container.setVisible(true);
       chip.label.setText(indicator.label);
       chip.detail.setText(
-        `${indicator.occupantCount} present · ${lightLabel(indicator.lightLevel)} · ${doorLabel(indicator.doorState)}`,
+        `${indicator.occupantCount} present | ${lightLabel(indicator.lightLevel)} | ${doorLabel(indicator.doorState)}`,
       );
       chip.plate.setFillStyle(
         indicator.flagged ? 0x1d1415 : 0x071018,
@@ -251,11 +255,11 @@ export class ObservationHud {
   }
 
   resize(width: number, height: number) {
-    this.#statePlate.setPosition(258, 86);
-    this.#subtitleContainer.setPosition(width / 2, height - 54);
+    this.#statePlate.setPosition(274, 90);
+    this.#subtitleContainer.setPosition(width / 2, height - 56);
 
     for (const [index, chip] of this.#statusChips.entries()) {
-      chip.container.setPosition(width - 126, 86 + index * 58);
+      chip.container.setPosition(width - 130, 90 + index * 60);
     }
   }
 

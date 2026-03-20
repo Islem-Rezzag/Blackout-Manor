@@ -2,17 +2,21 @@ import type { BodyLanguageId } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import type {
+  AvatarActionIconId,
   AvatarAppearance,
   AvatarBubbleStyle,
   AvatarFacing,
   AvatarGesture,
   AvatarInteractionCue,
+  VisiblePostureId,
 } from "./presentation";
+import { actionIconLabel } from "./presentation";
 
 type AvatarRigMode = "world" | "portrait";
 
 type AvatarRigState = {
   pose: BodyLanguageId;
+  visiblePosture: VisiblePostureId;
   facing: AvatarFacing;
   cue: AvatarInteractionCue;
   connected: boolean;
@@ -94,6 +98,71 @@ const poseProfile = (pose: BodyLanguageId) => {
   }
 };
 
+const posturePalette = (
+  posture: VisiblePostureId,
+  trimColor: number,
+  suspiciousness: number,
+) => {
+  switch (posture) {
+    case "alert":
+      return {
+        aura: mixColor(trimColor, 0xf4c181, 0.62),
+        accent: 0xf2cf91,
+        badgeFill: 0x211815,
+        badgeStroke: 0xf0b784,
+        badgeText: "#fff1e8",
+      };
+    case "suspicious":
+      return {
+        aura: mixColor(trimColor, 0xff8f7d, 0.54 + suspiciousness * 0.18),
+        accent: 0xe59d8d,
+        badgeFill: 0x24161a,
+        badgeStroke: 0xff9b84,
+        badgeText: "#fff0ea",
+      };
+    case "shaken":
+      return {
+        aura: mixColor(trimColor, 0xb8d6ef, 0.42),
+        accent: 0xdce8f7,
+        badgeFill: 0x151d24,
+        badgeStroke: 0xbdd7ef,
+        badgeText: "#eef6fd",
+      };
+    case "confident":
+      return {
+        aura: mixColor(trimColor, 0xf0d89c, 0.38),
+        accent: 0xf2deb0,
+        badgeFill: 0x172012,
+        badgeStroke: 0xcddc8f,
+        badgeText: "#f5f7df",
+      };
+    case "defiant":
+      return {
+        aura: mixColor(trimColor, 0xff8a78, 0.68),
+        accent: 0xffb19d,
+        badgeFill: 0x271416,
+        badgeStroke: 0xff8f79,
+        badgeText: "#fff0eb",
+      };
+    default:
+      return {
+        aura: mixColor(trimColor, 0x9bc7d4, 0.22),
+        accent: 0xc8dbe7,
+        badgeFill: 0x12202a,
+        badgeStroke: 0x8eb8da,
+        badgeText: "#eef4fb",
+      };
+  }
+};
+
+const actionAnchor = (actionIcon: AvatarActionIconId | null) => {
+  if (actionIcon === "report" || actionIcon === "sabotage") {
+    return { x: 20, y: -62 };
+  }
+
+  return { x: 18, y: -58 };
+};
+
 export class AvatarRig {
   readonly container: Phaser.GameObjects.Container;
   readonly #root: Phaser.GameObjects.Container;
@@ -108,10 +177,14 @@ export class AvatarRig {
   readonly #bubble: Phaser.GameObjects.Container;
   readonly #bubbleBg: Phaser.GameObjects.Graphics;
   readonly #bubbleText: Phaser.GameObjects.Text;
+  readonly #actionBadge: Phaser.GameObjects.Container;
+  readonly #actionBadgeBg: Phaser.GameObjects.Graphics;
+  readonly #actionBadgeText: Phaser.GameObjects.Text;
   readonly #appearance: AvatarAppearance;
   readonly #mode: AvatarRigMode;
   #state: AvatarRigState = {
     pose: "calm",
+    visiblePosture: "calm",
     facing: "south",
     cue: {
       eventId: null,
@@ -119,6 +192,7 @@ export class AvatarRig {
       speechText: null,
       targetPlayerId: null,
       emphasis: 0,
+      actionIcon: null,
     },
     connected: true,
     suspiciousness: 0.3,
@@ -179,7 +253,27 @@ export class AvatarRig {
     ]);
     this.#bubble.setVisible(false);
 
-    this.container = scene.add.container(0, 0, [this.#root, this.#bubble]);
+    this.#actionBadgeBg = scene.add.graphics();
+    this.#actionBadgeText = scene.add.text(0, 0, "", {
+      align: "center",
+      color: "#eef4fb",
+      fontFamily: "Segoe UI, sans-serif",
+      fontSize: "10px",
+      fontStyle: "bold",
+      letterSpacing: 0.8,
+    });
+    this.#actionBadgeText.setOrigin(0.5);
+    this.#actionBadge = scene.add.container(0, -58, [
+      this.#actionBadgeBg,
+      this.#actionBadgeText,
+    ]);
+    this.#actionBadge.setVisible(false);
+
+    this.container = scene.add.container(0, 0, [
+      this.#root,
+      this.#bubble,
+      this.#actionBadge,
+    ]);
     this.#render();
   }
 
@@ -225,21 +319,29 @@ export class AvatarRig {
 
   #render() {
     const pose = poseProfile(this.#state.pose);
+    const posture = posturePalette(
+      this.#state.visiblePosture,
+      this.#appearance.trimColor,
+      this.#state.suspiciousness,
+    );
     const facing = FACING[this.#state.facing];
     const mirror = facing.x < 0 ? -1 : 1;
     const side = Math.abs(facing.x);
     const cycle =
       (this.#time + this.#seed) * 0.0017 * this.#appearance.movementCadence;
     const stride = this.#moving ? Math.sin(cycle * 10) : 0;
+    const motionLift = this.#moving ? Math.abs(Math.cos(cycle * 10)) * 1.6 : 0;
     const bob =
       Math.sin(cycle * 2.5) * this.#appearance.idleAmplitude * 0.8 +
-      stride * 0.9;
+      stride * 1.15 +
+      motionLift;
     const jitter =
       pose.jitter > 0
         ? (Math.sin(cycle * 17) + Math.cos(cycle * 23)) * pose.jitter * 0.7
         : 0;
     const lean =
       pose.lean +
+      (this.#moving ? mirror * 0.8 : 0) +
       (this.#activeGesture === "accuse"
         ? 3.2
         : this.#activeGesture === "recoil"
@@ -260,9 +362,11 @@ export class AvatarRig {
     const frontShoulderX = torsoWidth * 0.36 * mirror;
     const backShoulderX = -frontShoulderX;
     const aura = mixColor(
-      this.#appearance.trimColor,
+      posture.aura,
       0xff8d73,
-      this.#state.suspiciousness * 0.75,
+      this.#state.visiblePosture === "defiant"
+        ? 0.32
+        : this.#state.suspiciousness * 0.28,
     );
 
     this.#root.setPosition(jitter, bob * 0.18);
@@ -278,7 +382,12 @@ export class AvatarRig {
     this.#shadow.fillEllipse(0, 4, 28 - facing.y * 2, 9);
 
     this.#aura.clear();
-    this.#aura.fillStyle(aura, pose.aura + this.#state.suspiciousness * 0.14);
+    this.#aura.fillStyle(
+      aura,
+      pose.aura +
+        this.#state.suspiciousness * 0.08 +
+        (this.#state.visiblePosture === "alert" ? 0.08 : 0),
+    );
     this.#aura.fillEllipse(0, -22, 34, 56);
 
     this.#body.clear();
@@ -330,10 +439,24 @@ export class AvatarRig {
         (this.#activeGesture === "accuse" ? -0.03 * mirror : 0),
     );
 
+    this.#back.clear();
+    this.#front.clear();
+    this.#drawPresenceSilhouette(
+      torsoWidth,
+      chestY,
+      hipY,
+      mirror,
+      posture.accent,
+    );
+
     this.#outfit.clear();
     this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
     this.#drawOutfit(torsoWidth, chestY, hipY, lean, mirror);
-    this.#outfit.lineStyle(2, this.#appearance.trimColor, 0.84);
+    this.#outfit.lineStyle(
+      this.#state.visiblePosture === "confident" ? 2.6 : 2,
+      this.#appearance.trimColor,
+      this.#state.visiblePosture === "defiant" ? 1 : 0.84,
+    );
     this.#outfit.beginPath();
     this.#outfit.moveTo(-torsoWidth * 0.45 + lean * 0.08, chestY + 2);
     this.#outfit.lineTo(torsoWidth * 0.45 + lean * 0.08, chestY + 2);
@@ -348,11 +471,10 @@ export class AvatarRig {
     );
     this.#drawMask(headX, headY, mirror, true);
 
-    this.#back.clear();
-    this.#front.clear();
     this.#drawAccessory(headX, headY, chestY, mirror, facing.y);
 
     this.#renderBubble();
+    this.#renderActionBadge(posture);
   }
 
   #armTarget(
@@ -590,6 +712,55 @@ export class AvatarRig {
     this.#front.setAlpha(facingY < 0 ? 0.82 : 1);
   }
 
+  #drawPresenceSilhouette(
+    torsoWidth: number,
+    chestY: number,
+    hipY: number,
+    mirror: number,
+    accentColor: number,
+  ) {
+    this.#back.fillStyle(accentColor, 0.14);
+    this.#back.lineStyle(0, 0, 0);
+
+    switch (this.#appearance.silhouette) {
+      case "broad":
+        this.#back.fillRoundedRect(
+          -torsoWidth * 0.78,
+          chestY - 7,
+          torsoWidth * 1.56,
+          14,
+          6,
+        );
+        break;
+      case "slim":
+        this.#back.fillEllipse(0, chestY - 1, torsoWidth * 1.1, 12);
+        break;
+      case "compact":
+        this.#back.fillPoints(
+          points([
+            { x: -torsoWidth * 0.7, y: chestY + 1 },
+            { x: torsoWidth * 0.7, y: chestY + 1 },
+            { x: torsoWidth * 0.38 * mirror, y: hipY + 4 },
+            { x: -torsoWidth * 0.38 * mirror, y: hipY + 4 },
+          ]),
+          true,
+        );
+        break;
+      default:
+        this.#back.fillRoundedRect(
+          -torsoWidth * 0.64,
+          chestY - 5,
+          torsoWidth * 1.28,
+          11,
+          5,
+        );
+        break;
+    }
+
+    this.#front.fillStyle(accentColor, 0.18);
+    this.#front.fillRoundedRect(-7, hipY + 7, 14, 4, 2);
+  }
+
   #renderBubble() {
     const visible =
       this.#bubbleMs > 0 && this.#bubbleText.text.trim().length > 0;
@@ -598,7 +769,7 @@ export class AvatarRig {
       return;
     }
 
-    const pose = this.#state.pose;
+    const visiblePosture = this.#state.visiblePosture;
     const width = Phaser.Math.Clamp(
       this.#bubbleText.width + 24,
       72,
@@ -609,25 +780,35 @@ export class AvatarRig {
     const stroke = mixColor(
       this.#appearance.bubbleStroke,
       0xffa281,
-      pose === "defiant" ? 0.25 : 0,
+      visiblePosture === "defiant" || visiblePosture === "suspicious"
+        ? 0.25
+        : 0,
     );
     const fill = mixColor(
       this.#appearance.bubbleFill,
       0xffffff,
-      pose === "confident" ? 0.12 : 0,
+      visiblePosture === "confident"
+        ? 0.12
+        : visiblePosture === "alert"
+          ? 0.08
+          : 0,
     );
     const wobble =
-      pose === "shaken"
+      visiblePosture === "shaken"
         ? Math.sin((this.#time + this.#seed) * 0.019) * 0.03
-        : pose === "defiant"
+        : visiblePosture === "defiant"
           ? -0.03
-          : pose === "confident"
+          : visiblePosture === "confident"
             ? -0.01
             : 0;
 
     this.#bubbleBg.clear();
     this.#bubbleBg.fillStyle(fill, alpha);
-    this.#bubbleBg.lineStyle(pose === "defiant" ? 3 : 2, stroke, alpha);
+    this.#bubbleBg.lineStyle(
+      visiblePosture === "defiant" || visiblePosture === "suspicious" ? 3 : 2,
+      stroke,
+      alpha,
+    );
     this.#drawBubbleShape(this.#appearance.bubbleStyle, width, height);
     this.#bubble.setRotation(wobble);
     this.#bubble.setAlpha(alpha);
@@ -635,8 +816,49 @@ export class AvatarRig {
       color: this.#appearance.bubbleTextColor,
       fontFamily: this.#appearance.bubbleFontFamily,
       fontSize: `${MODE[this.#mode].fontSize}px`,
-      fontStyle: pose === "defiant" || pose === "confident" ? "bold" : "600",
+      fontStyle:
+        visiblePosture === "defiant" || visiblePosture === "confident"
+          ? "bold"
+          : "600",
     });
+  }
+
+  #renderActionBadge(posture: ReturnType<typeof posturePalette>) {
+    const actionIcon = this.#state.cue.actionIcon;
+    const label = actionIcon ? actionIconLabel(actionIcon) : "";
+    const visible = Boolean(
+      label &&
+        this.#state.alive &&
+        (this.#state.cue.eventId || this.#state.cue.emphasis >= 0.45),
+    );
+
+    this.#actionBadge.setVisible(visible);
+    if (!visible) {
+      return;
+    }
+
+    const width = Phaser.Math.Clamp(44 + label.length * 5.8, 62, 106);
+    const { x, y } = actionAnchor(actionIcon);
+
+    this.#actionBadge.setPosition(x, y);
+    this.#actionBadge.setAlpha(
+      this.#state.cue.emphasis >= 0.9
+        ? 1
+        : 0.84 + this.#state.cue.emphasis * 0.14,
+    );
+    this.#actionBadgeText.setText(label);
+    this.#actionBadgeText.setStyle({
+      color: posture.badgeText,
+      fontFamily: "Segoe UI, sans-serif",
+      fontSize: `${this.#mode === "portrait" ? 9 : 10}px`,
+      fontStyle: "bold",
+    });
+
+    this.#actionBadgeBg.clear();
+    this.#actionBadgeBg.fillStyle(posture.badgeFill, 0.92);
+    this.#actionBadgeBg.lineStyle(2, posture.badgeStroke, 0.8);
+    this.#actionBadgeBg.fillRoundedRect(-width / 2, -11, width, 22, 8);
+    this.#actionBadgeBg.strokeRoundedRect(-width / 2, -11, width, 22, 8);
   }
 
   #drawBubbleShape(style: AvatarBubbleStyle, width: number, height: number) {

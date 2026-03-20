@@ -9,8 +9,7 @@ import { SurveillanceConsole } from "../ui/SurveillanceConsole";
 import { attachObservationControls } from "./attachObservationControls";
 import { SCENE_KEYS } from "./keys";
 
-const contextLine = (tick: number, phaseId: string) =>
-  `Tick ${tick} · ${phaseId.toUpperCase()}`;
+const timerLine = (tick: number) => `Tick ${tick}`;
 
 export class ManorWorldScene extends Phaser.Scene {
   readonly #runtime: ClientGameRuntime;
@@ -58,7 +57,12 @@ export class ManorWorldScene extends Phaser.Scene {
 
       this.#hud?.setContent({
         surveillance: state.surveillance,
-        contextText: contextLine(state.snapshot.tick, state.snapshot.phaseId),
+        phaseLabel: state.snapshot.phaseId.toUpperCase(),
+        timerText: timerLine(state.snapshot.tick),
+        contextText:
+          state.surveillance.mode === "surveillance"
+            ? "Console mode stays locked to public room feeds."
+            : "Roaming mode follows public manor movement and speech.",
       });
       this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({

@@ -2,10 +2,13 @@ import type { MatchEvent, PublicPlayerState } from "@blackout-manor/shared";
 import { describe, expect, it } from "vitest";
 
 import {
+  actionIconLabel,
   buildAvatarCueMap,
   directionFromVector,
   resolveAvatarAppearance,
   resolveAvatarPose,
+  resolveVisiblePosture,
+  visiblePostureLabel,
 } from "./presentation";
 
 const createPlayer = (
@@ -58,12 +61,16 @@ describe("avatar presentation", () => {
     });
 
     expect(resolveAvatarPose(player)).toBe("confident");
+    expect(resolveVisiblePosture({ ...player, status: "alive" })).toBe(
+      "confident",
+    );
   });
 
   it("classifies accusation and comfort cues from meeting events", () => {
     const players = [
       createPlayer("player-01", "Velvet Host"),
       createPlayer("player-02", "Iron Witness"),
+      createPlayer("player-03", "Silver Alibi"),
     ];
     const events: MatchEvent[] = [
       {
@@ -80,19 +87,22 @@ describe("avatar presentation", () => {
         eventId: "discussion-turn",
         tick: 11,
         phaseId: "meeting",
-        playerId: "player-02",
+        playerId: "player-03",
         text: "He changed his story. Compare that before you trust him.",
-        targetPlayerId: "player-01",
+        targetPlayerId: "player-02",
       },
     ];
 
     const cues = buildAvatarCueMap(players, events, "meeting");
 
     expect(cues.get("player-01")?.gesture).toBe("comfort");
-    expect(cues.get("player-02")?.gesture).toBe("accuse");
+    expect(cues.get("player-01")?.actionIcon).toBe("protection");
+    expect(cues.get("player-03")?.gesture).toBe("accuse");
+    expect(cues.get("player-03")?.actionIcon).toBe("accusation");
+    expect(cues.get("player-02")?.gesture).toBe("recoil");
   });
 
-  it("tracks recoil events and directional facing", () => {
+  it("tracks recoil, report, and directional facing", () => {
     const players = [createPlayer("player-01", "Velvet Host")];
     const events: MatchEvent[] = [
       {
@@ -109,7 +119,41 @@ describe("avatar presentation", () => {
     const cues = buildAvatarCueMap(players, events, "report");
 
     expect(cues.get("player-01")?.gesture).toBe("recoil");
+    expect(cues.get("player-01")?.actionIcon).toBe("report");
     expect(directionFromVector(-10, -5)).toBe("north-west");
     expect(directionFromVector(8, 1)).toBe("east");
+  });
+
+  it("maps public suspicion and public alerts into readable visible postures", () => {
+    const suspiciousPlayer = createPlayer("player-03", "Amber Doubt", {
+      publicImage: {
+        credibility: 0.42,
+        suspiciousness: 0.72,
+      },
+      emotion: {
+        pleasure: -0.08,
+        arousal: 0.42,
+        dominance: 0.16,
+        label: "suspicious",
+        intensity: 0.58,
+        updatedAtTick: 7,
+      },
+    });
+    const alertPlayer = createPlayer("player-04", "Lantern Steward", {
+      bodyLanguage: "agitated",
+      emotion: {
+        pleasure: 0.1,
+        arousal: 0.56,
+        dominance: 0.28,
+        label: "determined",
+        intensity: 0.62,
+        updatedAtTick: 8,
+      },
+    });
+
+    expect(resolveVisiblePosture(suspiciousPlayer)).toBe("suspicious");
+    expect(resolveVisiblePosture(alertPlayer)).toBe("alert");
+    expect(visiblePostureLabel("alert")).toBe("Alert");
+    expect(actionIconLabel("vote-pressure")).toBe("VOTE");
   });
 });

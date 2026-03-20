@@ -24,6 +24,21 @@ export type AvatarGesture =
   | "recoil"
   | "comfort"
   | "reassure";
+export type VisiblePostureId =
+  | "calm"
+  | "alert"
+  | "suspicious"
+  | "shaken"
+  | "confident"
+  | "defiant";
+export type AvatarActionIconId =
+  | "report"
+  | "sabotage"
+  | "clue"
+  | "vote-pressure"
+  | "reassure"
+  | "accusation"
+  | "protection";
 
 export type AvatarSilhouette = "slim" | "poised" | "broad" | "compact";
 export type AvatarMaskStyle = "half" | "wing" | "owl" | "spire";
@@ -68,6 +83,7 @@ export type AvatarInteractionCue = {
   speechText: string | null;
   targetPlayerId: PlayerId | null;
   emphasis: number;
+  actionIcon: AvatarActionIconId | null;
 };
 
 const BODY_PALETTE = [
@@ -193,6 +209,106 @@ export const resolveAvatarPose = (
   return player.bodyLanguage;
 };
 
+export const resolveVisiblePosture = (
+  player: Pick<
+    PublicPlayerState,
+    "status" | "bodyLanguage" | "emotion" | "publicImage"
+  >,
+  cue?: Pick<AvatarInteractionCue, "gesture" | "actionIcon" | "emphasis">,
+): VisiblePostureId => {
+  if (player.status !== "alive") {
+    return "shaken";
+  }
+
+  if (player.bodyLanguage === "defiant") {
+    return "defiant";
+  }
+
+  if (
+    player.bodyLanguage === "shaken" ||
+    cue?.gesture === "recoil" ||
+    player.emotion.label === "afraid" ||
+    player.emotion.label === "shaken" ||
+    player.emotion.label === "guilty" ||
+    (player.emotion.intensity >= 0.76 && player.emotion.pleasure <= -0.15)
+  ) {
+    return "shaken";
+  }
+
+  if (
+    cue?.actionIcon === "accusation" ||
+    cue?.actionIcon === "vote-pressure" ||
+    cue?.gesture === "accuse" ||
+    player.emotion.label === "suspicious" ||
+    player.publicImage.suspiciousness >= 0.62
+  ) {
+    return "suspicious";
+  }
+
+  if (
+    player.bodyLanguage === "confident" ||
+    player.emotion.label === "confident" ||
+    (player.emotion.dominance >= 0.48 &&
+      player.publicImage.credibility >= 0.54 &&
+      player.emotion.intensity <= 0.84)
+  ) {
+    return "confident";
+  }
+
+  if (
+    player.bodyLanguage === "agitated" ||
+    cue?.actionIcon === "report" ||
+    cue?.actionIcon === "sabotage" ||
+    cue?.actionIcon === "clue" ||
+    cue?.actionIcon === "reassure" ||
+    cue?.actionIcon === "protection" ||
+    player.emotion.arousal >= 0.44 ||
+    (cue?.gesture === "move" && (cue.emphasis ?? 0) >= 0.45)
+  ) {
+    return "alert";
+  }
+
+  return "calm";
+};
+
+export const visiblePostureLabel = (posture: VisiblePostureId) => {
+  switch (posture) {
+    case "alert":
+      return "Alert";
+    case "suspicious":
+      return "Suspicious";
+    case "shaken":
+      return "Shaken";
+    case "confident":
+      return "Confident";
+    case "defiant":
+      return "Defiant";
+    default:
+      return "Calm";
+  }
+};
+
+export const actionIconLabel = (actionIcon: AvatarActionIconId) => {
+  switch (actionIcon) {
+    case "report":
+      return "REPORT";
+    case "sabotage":
+      return "SABOTAGE";
+    case "clue":
+      return "CLUE";
+    case "vote-pressure":
+      return "VOTE";
+    case "reassure":
+      return "REASSURE";
+    case "accusation":
+      return "ACCUSE";
+    case "protection":
+      return "PROTECT";
+    default:
+      return "";
+  }
+};
+
 export const resolveAvatarAppearance = (
   player: Pick<PublicPlayerState, "id" | "displayName">,
 ): AvatarAppearance => {
@@ -296,6 +412,30 @@ const classifyDiscussionGesture = (
   return pose === "confident" ? "reassure" : "idle";
 };
 
+const actionIconFromGesture = (
+  gesture: AvatarGesture,
+): AvatarActionIconId | null => {
+  switch (gesture) {
+    case "comfort":
+      return "protection";
+    case "reassure":
+      return "reassure";
+    case "accuse":
+      return "accusation";
+    default:
+      return null;
+  }
+};
+
+const createDefaultCue = (phaseId: PhaseId): AvatarInteractionCue => ({
+  eventId: null,
+  gesture: phaseId === "roam" ? "move" : "idle",
+  speechText: null,
+  targetPlayerId: null,
+  emphasis: 0,
+  actionIcon: null,
+});
+
 export const buildAvatarCueMap = (
   players: readonly PublicPlayerState[],
   recentEvents: readonly MatchEvent[],
@@ -305,13 +445,7 @@ export const buildAvatarCueMap = (
   const cues = new Map<PlayerId, AvatarInteractionCue>();
 
   for (const player of players) {
-    cues.set(player.id, {
-      eventId: null,
-      gesture: phaseId === "roam" ? "move" : "idle",
-      speechText: null,
-      targetPlayerId: null,
-      emphasis: 0,
-    });
+    cues.set(player.id, createDefaultCue(phaseId));
   }
 
   for (const event of [...recentEvents].reverse()) {
@@ -334,17 +468,30 @@ export const buildAvatarCueMap = (
             },
           },
         );
+        const gesture = classifyDiscussionGesture(
+          event.text,
+          event.targetPlayerId,
+          pose,
+        );
         cues.set(event.playerId, {
           eventId: event.id,
-          gesture: classifyDiscussionGesture(
-            event.text,
-            event.targetPlayerId,
-            pose,
-          ),
+          gesture,
           speechText: event.text,
           targetPlayerId: event.targetPlayerId ?? null,
           emphasis: event.targetPlayerId ? 0.9 : 0.6,
+          actionIcon: actionIconFromGesture(gesture),
         });
+
+        if (event.targetPlayerId && !cues.get(event.targetPlayerId)?.eventId) {
+          cues.set(event.targetPlayerId, {
+            eventId: `${event.id}:target`,
+            gesture: "recoil",
+            speechText: null,
+            targetPlayerId: event.playerId,
+            emphasis: 0.62,
+            actionIcon: "accusation",
+          });
+        }
         break;
       }
       case "vote-cast": {
@@ -358,7 +505,19 @@ export const buildAvatarCueMap = (
           speechText: null,
           targetPlayerId: event.targetPlayerId,
           emphasis: event.targetPlayerId ? 0.82 : 0.55,
+          actionIcon: "vote-pressure",
         });
+
+        if (event.targetPlayerId && !cues.get(event.targetPlayerId)?.eventId) {
+          cues.set(event.targetPlayerId, {
+            eventId: `${event.id}:target`,
+            gesture: "recoil",
+            speechText: null,
+            targetPlayerId: event.playerId,
+            emphasis: 0.78,
+            actionIcon: "vote-pressure",
+          });
+        }
         break;
       }
       case "body-reported": {
@@ -369,8 +528,39 @@ export const buildAvatarCueMap = (
             speechText: "Body found.",
             targetPlayerId: event.targetPlayerId,
             emphasis: 1,
+            actionIcon: "report",
           });
         }
+        break;
+      }
+      case "sabotage-triggered": {
+        if (cues.get(event.playerId)?.eventId) {
+          break;
+        }
+
+        cues.set(event.playerId, {
+          eventId: event.id,
+          gesture: phaseId === "roam" ? "move" : "idle",
+          speechText: null,
+          targetPlayerId: null,
+          emphasis: 0.86,
+          actionIcon: "sabotage",
+        });
+        break;
+      }
+      case "clue-discovered": {
+        if (cues.get(event.playerId)?.eventId) {
+          break;
+        }
+
+        cues.set(event.playerId, {
+          eventId: event.id,
+          gesture: phaseId === "roam" ? "move" : "idle",
+          speechText: null,
+          targetPlayerId: null,
+          emphasis: 0.64,
+          actionIcon: "clue",
+        });
         break;
       }
       case "player-eliminated":
@@ -386,6 +576,7 @@ export const buildAvatarCueMap = (
             speechText: null,
             targetPlayerId: null,
             emphasis: 1,
+            actionIcon: "report",
           });
         }
         break;
@@ -406,6 +597,7 @@ export const buildAvatarCueMap = (
             speechText: null,
             targetPlayerId: null,
             emphasis: event.emotion.intensity,
+            actionIcon: null,
           });
         }
         break;

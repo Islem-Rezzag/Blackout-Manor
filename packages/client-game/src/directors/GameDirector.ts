@@ -50,25 +50,24 @@ const buildBanner = (
   if (scene === "replay") {
     return {
       eyebrow: "Replay",
-      title: "Deterministic theater",
-      detail: "Scrub the recorded night through the same world pipeline.",
+      title: "Replay theater",
+      detail: "Revisit the same night through the same in-world camera path.",
     };
   }
 
   if (!snapshot) {
     return {
       eyebrow: "Connecting",
-      title: "Entering the manor",
-      detail: "Waiting for the authoritative state stream.",
+      title: "Storm over Blackout Manor",
+      detail: "The house is drawing the cast into place.",
     };
   }
 
   if (scene === "meeting") {
     return {
       eyebrow: snapshot.phaseId.toUpperCase(),
-      title: "The house convenes",
-      detail:
-        "The server state remains authoritative while the cast converges.",
+      title: "The hall convenes",
+      detail: "Every surviving guest is pulled into the chandelier light.",
     };
   }
 
@@ -76,16 +75,17 @@ const buildBanner = (
     return {
       eyebrow: "Resolution",
       title: "The night resolves",
-      detail: "The final public state settles before the roles are archived.",
+      detail:
+        "The manor gives its last answer before the storm finally breaks.",
     };
   }
 
   if (snapshot.phaseId === "report") {
     return {
       eyebrow: "Report",
-      title: "A body cuts through the storm",
+      title: "A report cuts through the storm",
       detail:
-        "Camera focus follows the discovered room before the meeting begins.",
+        "The camera turns to the discovered room before the hall gathers.",
     };
   }
 
@@ -94,8 +94,8 @@ const buildBanner = (
     title: "Masquerade Night",
     detail:
       state.mode === "live"
-        ? "Real-time authority flows from the server into the manor."
-        : "Demo mode keeps the same world-first flow with a local deterministic stream.",
+        ? "Watch the manor in motion as stories form, fracture, and harden."
+        : "Local demo mode preserves the same world-first night inside the manor.",
   };
 };
 
