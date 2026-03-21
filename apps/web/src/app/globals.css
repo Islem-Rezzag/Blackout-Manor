@@ -40,6 +40,333 @@ a {
   padding: 72px 24px 96px;
 }
 
+.launcher-shell {
+  display: grid;
+  gap: 28px;
+  margin: 0 auto;
+  max-width: 1440px;
+  min-height: 100vh;
+  padding: 24px 24px 48px;
+}
+
+.launcher-stage,
+.launcher-support {
+  backdrop-filter: blur(18px);
+  background: linear-gradient(
+    180deg,
+    rgba(13, 17, 25, 0.88),
+    rgba(8, 11, 17, 0.92)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
+}
+
+.launcher-stage {
+  align-items: stretch;
+  border-radius: 34px;
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.7fr);
+  min-height: min(860px, calc(100vh - 72px));
+  overflow: hidden;
+  padding: 40px;
+  position: relative;
+}
+
+.launcher-atmosphere {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+}
+
+.launcher-atmosphere::before,
+.launcher-atmosphere::after {
+  content: "";
+  position: absolute;
+}
+
+.launcher-atmosphere::before {
+  background:
+    radial-gradient(
+      circle at 18% 16%,
+      rgba(214, 182, 122, 0.18),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 82% 20%,
+      rgba(143, 221, 228, 0.12),
+      transparent 24%
+    ),
+    linear-gradient(180deg, rgba(4, 7, 12, 0.14), rgba(4, 7, 12, 0.46));
+  inset: 0;
+}
+
+.launcher-atmosphere::after {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent 30%),
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.08),
+      transparent 72%
+    );
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: 0.38;
+}
+
+.launcher-rain,
+.launcher-lightning {
+  position: absolute;
+}
+
+.launcher-rain {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), transparent);
+  height: 140%;
+  opacity: 0.18;
+  top: -18%;
+  transform: rotate(14deg);
+  width: 1px;
+}
+
+.launcher-rain-left {
+  box-shadow:
+    20px 0 0 rgba(255, 255, 255, 0.14),
+    78px 32px 0 rgba(255, 255, 255, 0.18),
+    146px 70px 0 rgba(255, 255, 255, 0.16),
+    204px 18px 0 rgba(255, 255, 255, 0.12),
+    274px 104px 0 rgba(255, 255, 255, 0.18),
+    344px 48px 0 rgba(255, 255, 255, 0.16);
+  left: 8%;
+}
+
+.launcher-rain-right {
+  box-shadow:
+    24px 0 0 rgba(255, 255, 255, 0.16),
+    92px 28px 0 rgba(255, 255, 255, 0.2),
+    166px 82px 0 rgba(255, 255, 255, 0.14),
+    236px 30px 0 rgba(255, 255, 255, 0.12),
+    308px 108px 0 rgba(255, 255, 255, 0.17),
+    382px 52px 0 rgba(255, 255, 255, 0.14);
+  right: 10%;
+}
+
+.launcher-lightning {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.82),
+    rgba(255, 221, 173, 0)
+  );
+  filter: blur(1px);
+  height: 320px;
+  opacity: 0.16;
+  right: 18%;
+  top: -18px;
+  transform: skewX(-12deg);
+  width: 2px;
+}
+
+.launcher-copy,
+.launcher-brief {
+  position: relative;
+  z-index: 1;
+}
+
+.launcher-copy {
+  align-content: center;
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+}
+
+.launcher-kicker {
+  color: rgba(245, 247, 250, 0.7);
+  font-size: 0.96rem;
+  letter-spacing: 0.08em;
+  margin: -6px 0 0;
+  text-transform: uppercase;
+}
+
+.launcher-copy h1 {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: clamp(4rem, 8vw, 7.6rem);
+  letter-spacing: -0.05em;
+  line-height: 0.88;
+  margin: 0;
+  max-width: 780px;
+}
+
+.launcher-description {
+  color: rgba(245, 247, 250, 0.84);
+  font-size: 1.08rem;
+  line-height: 1.9;
+  margin: 0;
+  max-width: 680px;
+}
+
+.launcher-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.launcher-link {
+  align-items: center;
+  backdrop-filter: blur(16px);
+  background: rgba(8, 12, 18, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: #edf5ff;
+  display: inline-flex;
+  font-weight: 600;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 22px;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.launcher-link:hover {
+  border-color: rgba(214, 182, 122, 0.42);
+  transform: translateY(-1px);
+}
+
+.launcher-link-primary {
+  background: linear-gradient(135deg, #d6b67a, #ebd8b4);
+  border-color: transparent;
+  color: #160f07;
+}
+
+.launcher-footnote {
+  color: rgba(245, 247, 250, 0.64);
+  margin: 6px 0 0;
+}
+
+.launcher-footnote a {
+  color: var(--manor-gold);
+}
+
+.launcher-brief {
+  align-content: end;
+  display: grid;
+  gap: 18px;
+}
+
+.launcher-brief-card,
+.launcher-moment,
+.launcher-support-link {
+  backdrop-filter: blur(14px);
+  background: rgba(9, 12, 18, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.22);
+}
+
+.launcher-brief-card {
+  border-radius: 28px;
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+}
+
+.launcher-brief-card strong {
+  color: #f7efdf;
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: 1.4rem;
+  line-height: 1.15;
+}
+
+.launcher-brief-card p,
+.launcher-support-copy p,
+.launcher-moment p {
+  color: rgba(245, 247, 250, 0.76);
+  line-height: 1.75;
+  margin: 0;
+}
+
+.launcher-brief-card code {
+  color: var(--manor-gold);
+  font-family:
+    "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.launcher-brief-timeline {
+  display: grid;
+  gap: 14px;
+}
+
+.launcher-moment {
+  border-radius: 22px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto 1fr;
+  padding: 18px 18px 18px 16px;
+}
+
+.launcher-moment span {
+  color: var(--manor-teal);
+  font-family:
+    "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding-top: 4px;
+}
+
+.launcher-support {
+  align-items: end;
+  border-radius: 30px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.86fr);
+  padding: 28px 30px;
+}
+
+.launcher-support-copy h2 {
+  font-family:
+    "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 1.02;
+  margin: 10px 0 12px;
+  max-width: 720px;
+}
+
+.launcher-support-links {
+  display: grid;
+  gap: 14px;
+}
+
+.launcher-support-link {
+  border-radius: 22px;
+  color: inherit;
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease;
+}
+
+.launcher-support-link:hover {
+  border-color: rgba(143, 221, 228, 0.34);
+  transform: translateY(-1px);
+}
+
+.launcher-support-link strong {
+  color: #f5f0e4;
+  font-size: 1.02rem;
+}
+
+.launcher-support-link small {
+  color: rgba(245, 247, 250, 0.64);
+}
+
 .hero {
   display: grid;
   gap: 16px;
@@ -1071,6 +1398,33 @@ a {
 @media (max-width: 720px) {
   .page-shell {
     padding: 56px 18px 72px;
+  }
+
+  .launcher-shell {
+    padding: 16px 16px 32px;
+  }
+
+  .launcher-stage,
+  .launcher-support {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+  }
+
+  .launcher-stage {
+    min-height: auto;
+  }
+
+  .launcher-copy h1 {
+    font-size: clamp(3rem, 14vw, 4.6rem);
+  }
+
+  .launcher-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .launcher-link {
+    justify-content: center;
   }
 
   .fairness-shell {
