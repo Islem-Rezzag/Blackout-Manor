@@ -86,6 +86,73 @@ export type RateMetric = {
   rate: number;
 };
 
+export type ContradictionHandlingMetrics = {
+  contradictionCount: number;
+  handledCount: number;
+  explicitCalloutCount: number;
+  ignoredCount: number;
+  handlingRate: number;
+};
+
+export type FalseAccusationRecoveryMetrics = {
+  falseAccusationCount: number;
+  repairAttemptCount: number;
+  recoveredCount: number;
+  redirectedVoteCount: number;
+  recoveryRate: number;
+};
+
+export type WitnessStabilizationMetrics = {
+  reportCount: number;
+  calmingAttemptCount: number;
+  stabilizedCount: number;
+  stabilizationRate: number;
+};
+
+export type PromiseIntegrityMetrics = {
+  promiseCount: number;
+  keptCount: number;
+  brokenCount: number;
+  unresolvedCount: number;
+  keptRate: number;
+  brokenRate: number;
+};
+
+export type AllianceShiftMetrics = {
+  allianceEpisodeCount: number;
+  shiftCount: number;
+  betrayalShiftCount: number;
+  volatilityRate: number;
+};
+
+export type EvidenceGroundedAccusationQualityMetrics = {
+  accusationCount: number;
+  groundedCount: number;
+  groundedRate: number;
+  groundedShadowHitCount: number;
+  groundedShadowHitRate: number;
+  groundedPrecision: number;
+};
+
+export type MeetingInfluenceQualityMetrics = {
+  speechTurnCount: number;
+  influentialTurnCount: number;
+  alignedVoteCount: number;
+  correctInfluenceCount: number;
+  misleadingInfluenceCount: number;
+  influenceScore: number;
+};
+
+export type ReplayEqMetrics = {
+  contradictionHandling: ContradictionHandlingMetrics;
+  falseAccusationRecovery: FalseAccusationRecoveryMetrics;
+  witnessStabilization: WitnessStabilizationMetrics;
+  promiseIntegrity: PromiseIntegrityMetrics;
+  allianceShift: AllianceShiftMetrics;
+  evidenceGroundedAccusationQuality: EvidenceGroundedAccusationQualityMetrics;
+  meetingInfluenceQuality: MeetingInfluenceQualityMetrics;
+};
+
 export type PromiseBreakCostMetrics = {
   breakCount: number;
   averageTrustDrop: number;

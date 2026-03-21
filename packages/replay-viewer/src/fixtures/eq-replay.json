@@ -1,0 +1,547 @@
+{
+  "formatVersion": "1.0.0",
+  "exportedAt": "2026-03-21T14:00:00.000Z",
+  "replay": {
+    "replayId": "eq-fixture-replay",
+    "matchId": "eq-fixture-match",
+    "seed": 19,
+    "config": {
+      "matchId": "eq-fixture-match",
+      "seed": 19,
+      "speedProfileId": "headless-regression"
+    },
+    "events": [
+      {
+        "sequence": 1,
+        "type": "roles-assigned",
+        "tick": 0,
+        "assignments": [
+          { "playerId": "agent-1", "role": "shadow", "team": "shadow" },
+          { "playerId": "agent-2", "role": "shadow", "team": "shadow" },
+          { "playerId": "agent-3", "role": "household", "team": "household" },
+          { "playerId": "agent-4", "role": "household", "team": "household" },
+          { "playerId": "agent-5", "role": "household", "team": "household" },
+          { "playerId": "agent-6", "role": "household", "team": "household" }
+        ],
+        "rngState": 19
+      },
+      {
+        "sequence": 2,
+        "type": "action-recorded",
+        "tick": 1,
+        "proposal": {
+          "actorId": "agent-6",
+          "phaseId": "report",
+          "confidence": 0.86,
+          "emotionalIntent": "defensive",
+          "actionId": "report-body",
+          "discoveredPlayerId": "agent-5"
+        }
+      },
+      {
+        "sequence": 3,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-3",
+          "phaseId": "meeting",
+          "confidence": 0.78,
+          "emotionalIntent": "warm",
+          "actionId": "comfort",
+          "targetPlayerId": "agent-6",
+          "speech": {
+            "channel": "meeting",
+            "text": "Steady. Tell us exactly what you saw.",
+            "tone": "warm"
+          }
+        }
+      },
+      {
+        "sequence": 4,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-4",
+          "phaseId": "meeting",
+          "confidence": 0.73,
+          "emotionalIntent": "aggressive",
+          "actionId": "press",
+          "targetPlayerId": "agent-6",
+          "speech": {
+            "channel": "meeting",
+            "text": "Agent 6 is panicking and might be covering for someone.",
+            "tone": "aggressive"
+          }
+        }
+      },
+      {
+        "sequence": 5,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-4",
+          "phaseId": "meeting",
+          "confidence": 0.81,
+          "emotionalIntent": "warm",
+          "actionId": "promise",
+          "targetPlayerId": "agent-6",
+          "promiseText": "I will back your report this round."
+        }
+      },
+      {
+        "sequence": 6,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-4",
+          "phaseId": "meeting",
+          "confidence": 0.79,
+          "emotionalIntent": "warm",
+          "actionId": "apologize",
+          "targetPlayerId": "agent-6",
+          "speech": {
+            "channel": "meeting",
+            "text": "I pushed too fast. Your report still matters.",
+            "tone": "warm"
+          }
+        }
+      },
+      {
+        "sequence": 7,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-6",
+          "phaseId": "meeting",
+          "confidence": 0.88,
+          "emotionalIntent": "confident",
+          "actionId": "press",
+          "targetPlayerId": "agent-1",
+          "speech": {
+            "channel": "meeting",
+            "text": "I saw Agent 1 leave the cellar.",
+            "tone": "confident"
+          }
+        }
+      },
+      {
+        "sequence": 8,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-1",
+          "phaseId": "meeting",
+          "confidence": 0.77,
+          "emotionalIntent": "defensive",
+          "actionId": "press",
+          "targetPlayerId": "agent-6",
+          "speech": {
+            "channel": "meeting",
+            "text": "I was in the library.",
+            "tone": "defensive"
+          }
+        }
+      },
+      {
+        "sequence": 9,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-1",
+          "phaseId": "meeting",
+          "confidence": 0.68,
+          "emotionalIntent": "defensive",
+          "actionId": "reassure",
+          "targetPlayerId": "agent-2",
+          "speech": {
+            "channel": "meeting",
+            "text": "I was in the kitchen.",
+            "tone": "defensive"
+          }
+        }
+      },
+      {
+        "sequence": 10,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-3",
+          "phaseId": "meeting",
+          "confidence": 0.75,
+          "emotionalIntent": "warm",
+          "actionId": "promise",
+          "targetPlayerId": "agent-4",
+          "promiseText": "I will protect you this round."
+        }
+      },
+      {
+        "sequence": 11,
+        "type": "action-recorded",
+        "tick": 2,
+        "proposal": {
+          "actorId": "agent-3",
+          "phaseId": "meeting",
+          "confidence": 0.72,
+          "emotionalIntent": "aggressive",
+          "actionId": "press",
+          "targetPlayerId": "agent-4",
+          "speech": {
+            "channel": "meeting",
+            "text": "You pushed the blame too fast.",
+            "tone": "aggressive"
+          }
+        }
+      },
+      {
+        "sequence": 12,
+        "type": "action-recorded",
+        "tick": 3,
+        "proposal": {
+          "actorId": "agent-3",
+          "phaseId": "vote",
+          "confidence": 0.84,
+          "emotionalIntent": "confident",
+          "actionId": "vote-player",
+          "targetPlayerId": "agent-1"
+        }
+      },
+      {
+        "sequence": 13,
+        "type": "action-recorded",
+        "tick": 3,
+        "proposal": {
+          "actorId": "agent-4",
+          "phaseId": "vote",
+          "confidence": 0.84,
+          "emotionalIntent": "confident",
+          "actionId": "vote-player",
+          "targetPlayerId": "agent-1"
+        }
+      },
+      {
+        "sequence": 14,
+        "type": "action-recorded",
+        "tick": 3,
+        "proposal": {
+          "actorId": "agent-6",
+          "phaseId": "vote",
+          "confidence": 0.9,
+          "emotionalIntent": "confident",
+          "actionId": "vote-player",
+          "targetPlayerId": "agent-1"
+        }
+      },
+      {
+        "sequence": 15,
+        "type": "action-recorded",
+        "tick": 3,
+        "proposal": {
+          "actorId": "agent-2",
+          "phaseId": "vote",
+          "confidence": 0.82,
+          "emotionalIntent": "aggressive",
+          "actionId": "vote-player",
+          "targetPlayerId": "agent-6"
+        }
+      },
+      {
+        "sequence": 16,
+        "type": "vote-resolved",
+        "tick": 3,
+        "voteTotals": {
+          "agent-1": 3,
+          "agent-6": 1
+        },
+        "exiledPlayerId": "agent-1",
+        "skippedPlayerIds": []
+      }
+    ],
+    "frames": [
+      {
+        "tick": 0,
+        "phaseId": "intro",
+        "events": [{ "sequence": 1, "type": "roles-assigned", "tick": 0 }],
+        "players": [
+          {
+            "id": "agent-1",
+            "displayName": "Agent 1",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-2",
+            "displayName": "Agent 2",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-3",
+            "displayName": "Agent 3",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-4",
+            "displayName": "Agent 4",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-5",
+            "displayName": "Agent 5",
+            "role": "household",
+            "status": "eliminated",
+            "roomId": null
+          },
+          {
+            "id": "agent-6",
+            "displayName": "Agent 6",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          }
+        ],
+        "rooms": [],
+        "tasks": [],
+        "winner": null
+      },
+      {
+        "tick": 1,
+        "phaseId": "report",
+        "events": [{ "sequence": 2, "type": "action-recorded", "tick": 1 }],
+        "players": [
+          {
+            "id": "agent-1",
+            "displayName": "Agent 1",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-2",
+            "displayName": "Agent 2",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-3",
+            "displayName": "Agent 3",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-4",
+            "displayName": "Agent 4",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-5",
+            "displayName": "Agent 5",
+            "role": "household",
+            "status": "eliminated",
+            "roomId": null
+          },
+          {
+            "id": "agent-6",
+            "displayName": "Agent 6",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          }
+        ],
+        "rooms": [],
+        "tasks": [],
+        "winner": null
+      },
+      {
+        "tick": 2,
+        "phaseId": "meeting",
+        "events": [
+          { "sequence": 3, "type": "action-recorded", "tick": 2 },
+          { "sequence": 4, "type": "action-recorded", "tick": 2 },
+          { "sequence": 5, "type": "action-recorded", "tick": 2 },
+          { "sequence": 6, "type": "action-recorded", "tick": 2 },
+          { "sequence": 7, "type": "action-recorded", "tick": 2 },
+          { "sequence": 8, "type": "action-recorded", "tick": 2 },
+          { "sequence": 9, "type": "action-recorded", "tick": 2 },
+          { "sequence": 10, "type": "action-recorded", "tick": 2 },
+          { "sequence": 11, "type": "action-recorded", "tick": 2 }
+        ],
+        "players": [
+          {
+            "id": "agent-1",
+            "displayName": "Agent 1",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-2",
+            "displayName": "Agent 2",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-3",
+            "displayName": "Agent 3",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-4",
+            "displayName": "Agent 4",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-5",
+            "displayName": "Agent 5",
+            "role": "household",
+            "status": "eliminated",
+            "roomId": null
+          },
+          {
+            "id": "agent-6",
+            "displayName": "Agent 6",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          }
+        ],
+        "rooms": [],
+        "tasks": [],
+        "winner": null
+      },
+      {
+        "tick": 3,
+        "phaseId": "vote",
+        "events": [
+          { "sequence": 12, "type": "action-recorded", "tick": 3 },
+          { "sequence": 13, "type": "action-recorded", "tick": 3 },
+          { "sequence": 14, "type": "action-recorded", "tick": 3 },
+          { "sequence": 15, "type": "action-recorded", "tick": 3 }
+        ],
+        "players": [
+          {
+            "id": "agent-1",
+            "displayName": "Agent 1",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-2",
+            "displayName": "Agent 2",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-3",
+            "displayName": "Agent 3",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-4",
+            "displayName": "Agent 4",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-5",
+            "displayName": "Agent 5",
+            "role": "household",
+            "status": "eliminated",
+            "roomId": null
+          },
+          {
+            "id": "agent-6",
+            "displayName": "Agent 6",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          }
+        ],
+        "rooms": [],
+        "tasks": [],
+        "winner": null
+      },
+      {
+        "tick": 3,
+        "phaseId": "reveal",
+        "events": [{ "sequence": 16, "type": "vote-resolved", "tick": 3 }],
+        "players": [
+          {
+            "id": "agent-1",
+            "displayName": "Agent 1",
+            "role": "shadow",
+            "status": "exiled",
+            "roomId": null
+          },
+          {
+            "id": "agent-2",
+            "displayName": "Agent 2",
+            "role": "shadow",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-3",
+            "displayName": "Agent 3",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-4",
+            "displayName": "Agent 4",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          },
+          {
+            "id": "agent-5",
+            "displayName": "Agent 5",
+            "role": "household",
+            "status": "eliminated",
+            "roomId": null
+          },
+          {
+            "id": "agent-6",
+            "displayName": "Agent 6",
+            "role": "household",
+            "status": "alive",
+            "roomId": "grand-hall"
+          }
+        ],
+        "rooms": [],
+        "tasks": [],
+        "winner": null
+      }
+    ]
+  },
+  "highlights": [],
+  "summary": {
+    "replayId": "eq-fixture-replay",
+    "matchId": "eq-fixture-match",
+    "seed": 19,
+    "finalTick": 3,
+    "totalEvents": 16,
+    "totalHighlights": 0,
+    "winner": null
+  }
+}

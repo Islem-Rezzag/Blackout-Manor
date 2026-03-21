@@ -1,10 +1,19 @@
 export {
+  AllianceShiftMetricsSchema,
+  ContradictionHandlingMetricsSchema,
   createFairnessMetrics,
   createPersonaRotationSchedule,
+  createReplayEqMetrics,
+  EvidenceGroundedAccusationQualityMetricsSchema,
   evaluateFairnessThresholds,
+  FalseAccusationRecoveryMetricsSchema,
   fairnessThresholdsPassed,
+  MeetingInfluenceQualityMetricsSchema,
+  PromiseIntegrityMetricsSchema,
+  ReplayEqMetricsSchema,
   runInstrumentedSimulation,
   runSeedSwapTournament,
+  WitnessStabilizationMetricsSchema,
 } from "./analytics";
 export type * from "./analytics/types";
 export { extractReplayHighlights } from "./highlights";

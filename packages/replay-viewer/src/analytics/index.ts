@@ -1,3 +1,4 @@
+export { createReplayEqMetrics } from "./eq";
 export {
   createFairnessMetrics,
   evaluateFairnessThresholds,
@@ -5,4 +6,14 @@ export {
 } from "./metrics";
 export { runInstrumentedSimulation, runSeedSwapTournament } from "./runner";
 export { createPersonaRotationSchedule } from "./scheduler";
+export {
+  AllianceShiftMetricsSchema,
+  ContradictionHandlingMetricsSchema,
+  EvidenceGroundedAccusationQualityMetricsSchema,
+  FalseAccusationRecoveryMetricsSchema,
+  MeetingInfluenceQualityMetricsSchema,
+  PromiseIntegrityMetricsSchema,
+  ReplayEqMetricsSchema,
+  WitnessStabilizationMetricsSchema,
+} from "./schemas";
 export type * from "./types";
