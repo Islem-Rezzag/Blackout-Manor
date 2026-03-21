@@ -54,6 +54,15 @@ const main = async () => {
   console.info(`base-seeds: ${baseSeeds.join(", ")}`);
   console.info(`simulation-count: ${tournament.report.simulationCount}`);
   console.info(`passed: ${tournament.report.passed}`);
+  console.info(
+    `eq.contradiction-handling: ${tournament.report.eqMetrics.contradictionHandling.handlingRate.toFixed(3)}`,
+  );
+  console.info(
+    `eq.witness-stabilization: ${tournament.report.eqMetrics.witnessStabilization.stabilizationRate.toFixed(3)}`,
+  );
+  console.info(
+    `eq.meeting-influence: ${tournament.report.eqMetrics.meetingInfluenceQuality.influenceScore.toFixed(3)}`,
+  );
   console.info(`report: ${reportPath}`);
   console.info(`dashboard: ${dashboardPath}`);
 

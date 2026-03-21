@@ -82,6 +82,28 @@ pnpm media:capture --source open
 pnpm fairness:report
 ```
 
+## Fairness And EQ Reports
+- `pnpm fairness:report` now exports both balance metrics and replay-backed EQ metrics for the `/dev/fairness` dashboard.
+- The EQ section covers contradiction handling, false-accusation recovery, witness stabilization, promise integrity, alliance shifts, evidence-grounded accusations, and meeting influence quality.
+- These metrics are derived from replay events, replay frames, public speech, and revealed post-match roles only.
+- They do not use private summaries, hidden chain-of-thought, or model-internal reasoning.
+
+To regenerate the dev dashboard data locally:
+
+```bash
+pnpm fairness:report
+```
+
+That writes:
+- `artifacts/fairness/latest/fairness-report.json`
+- `apps/web/public/data/fairness-report.latest.json`
+
+Required replay inputs for the EQ layer:
+- `roles-assigned`
+- `action-recorded`
+- `vote-resolved`
+- replay frame player snapshots for public display names and status
+
 ## Quality Gates
 ```bash
 pnpm ci:quality

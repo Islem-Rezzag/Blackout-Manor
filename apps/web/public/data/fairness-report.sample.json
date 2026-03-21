@@ -1,24 +1,24 @@
 {
   "formatVersion": "1.0.0",
-  "generatedAt": "2026-03-15T21:54:49.146Z",
+  "generatedAt": "2026-03-21T15:01:33.857Z",
   "simulationCount": 10,
-  "passed": false,
+  "passed": true,
   "thresholds": [
     {
       "id": "household-win-rate",
       "label": "Household win rate",
       "min": 0.47,
       "max": 0.53,
-      "actual": 0,
-      "pass": false
+      "actual": 0.5,
+      "pass": true
     },
     {
       "id": "shadow-win-rate",
       "label": "Shadow win rate",
       "min": 0.47,
       "max": 0.53,
-      "actual": 1,
-      "pass": false
+      "actual": 0.5,
+      "pass": true
     },
     {
       "id": "investigator-swing",
@@ -41,7 +41,7 @@
     "scheduleEntries": [
       {
         "entryId": "1001:forward:0",
-        "matchId": "fairness-1001-f0",
+        "matchId": "fairness-sample-1001-f0",
         "baseSeed": 1001,
         "matchSeed": 1001,
         "rotationIndex": 0,
@@ -112,7 +112,7 @@
       },
       {
         "entryId": "1001:swapped:0",
-        "matchId": "fairness-1001-s0",
+        "matchId": "fairness-sample-1001-s0",
         "baseSeed": 1001,
         "matchSeed": 51001,
         "rotationIndex": 0,
@@ -183,7 +183,7 @@
       },
       {
         "entryId": "1001:forward:1",
-        "matchId": "fairness-1001-f1",
+        "matchId": "fairness-sample-1001-f1",
         "baseSeed": 1001,
         "matchSeed": 1098,
         "rotationIndex": 1,
@@ -254,7 +254,7 @@
       },
       {
         "entryId": "1001:swapped:1",
-        "matchId": "fairness-1001-s1",
+        "matchId": "fairness-sample-1001-s1",
         "baseSeed": 1001,
         "matchSeed": 51098,
         "rotationIndex": 1,
@@ -325,7 +325,7 @@
       },
       {
         "entryId": "1001:forward:2",
-        "matchId": "fairness-1001-f2",
+        "matchId": "fairness-sample-1001-f2",
         "baseSeed": 1001,
         "matchSeed": 1195,
         "rotationIndex": 2,
@@ -396,7 +396,7 @@
       },
       {
         "entryId": "1001:swapped:2",
-        "matchId": "fairness-1001-s2",
+        "matchId": "fairness-sample-1001-s2",
         "baseSeed": 1001,
         "matchSeed": 51195,
         "rotationIndex": 2,
@@ -467,7 +467,7 @@
       },
       {
         "entryId": "1001:forward:3",
-        "matchId": "fairness-1001-f3",
+        "matchId": "fairness-sample-1001-f3",
         "baseSeed": 1001,
         "matchSeed": 1292,
         "rotationIndex": 3,
@@ -538,7 +538,7 @@
       },
       {
         "entryId": "1001:swapped:3",
-        "matchId": "fairness-1001-s3",
+        "matchId": "fairness-sample-1001-s3",
         "baseSeed": 1001,
         "matchSeed": 51292,
         "rotationIndex": 3,
@@ -609,7 +609,7 @@
       },
       {
         "entryId": "1001:forward:4",
-        "matchId": "fairness-1001-f4",
+        "matchId": "fairness-sample-1001-f4",
         "baseSeed": 1001,
         "matchSeed": 1389,
         "rotationIndex": 4,
@@ -680,7 +680,7 @@
       },
       {
         "entryId": "1001:swapped:4",
-        "matchId": "fairness-1001-s4",
+        "matchId": "fairness-sample-1001-s4",
         "baseSeed": 1001,
         "matchSeed": 51389,
         "rotationIndex": 4,
@@ -754,41 +754,41 @@
   "overallWinRates": [
     {
       "teamId": "household",
-      "wins": 0,
+      "wins": 5,
       "matches": 10,
-      "winRate": 0
+      "winRate": 0.5
     },
     {
       "teamId": "shadow",
-      "wins": 10,
+      "wins": 5,
       "matches": 10,
-      "winRate": 1
+      "winRate": 0.5
     }
   ],
   "roleNormalizedWinRates": [
     {
       "roleId": "shadow",
       "appearances": 20,
-      "wins": 20,
-      "winRate": 1
+      "wins": 10,
+      "winRate": 0.5
     },
     {
       "roleId": "investigator",
       "appearances": 10,
-      "wins": 0,
-      "winRate": 0
+      "wins": 5,
+      "winRate": 0.5
     },
     {
       "roleId": "steward",
       "appearances": 10,
-      "wins": 0,
-      "winRate": 0
+      "wins": 5,
+      "winRate": 0.5
     },
     {
       "roleId": "household",
       "appearances": 60,
-      "wins": 0,
-      "winRate": 0
+      "wins": 30,
+      "winRate": 0.5
     }
   ],
   "specialRoleSwing": {
@@ -809,10 +809,10 @@
         "household": 4
       },
       "winsByRole": {
-        "shadow": 2,
-        "investigator": 0,
-        "steward": 0,
-        "household": 0
+        "shadow": 1,
+        "investigator": 1,
+        "steward": 1,
+        "household": 2
       }
     },
     {
@@ -828,10 +828,10 @@
         "household": 6
       },
       "winsByRole": {
-        "shadow": 4,
+        "shadow": 3,
         "investigator": 0,
         "steward": 0,
-        "household": 0
+        "household": 4
       }
     },
     {
@@ -847,10 +847,10 @@
         "household": 7
       },
       "winsByRole": {
-        "shadow": 1,
+        "shadow": 0,
         "investigator": 0,
-        "steward": 0,
-        "household": 0
+        "steward": 1,
+        "household": 3
       }
     },
     {
@@ -866,10 +866,10 @@
         "household": 6
       },
       "winsByRole": {
-        "shadow": 2,
+        "shadow": 1,
         "investigator": 0,
-        "steward": 0,
-        "household": 0
+        "steward": 1,
+        "household": 3
       }
     },
     {
@@ -888,7 +888,7 @@
         "shadow": 0,
         "investigator": 0,
         "steward": 0,
-        "household": 0
+        "household": 5
       }
     },
     {
@@ -904,10 +904,10 @@
         "household": 3
       },
       "winsByRole": {
-        "shadow": 5,
+        "shadow": 2,
         "investigator": 0,
-        "steward": 0,
-        "household": 0
+        "steward": 1,
+        "household": 1
       }
     },
     {
@@ -923,10 +923,10 @@
         "household": 8
       },
       "winsByRole": {
-        "shadow": 1,
-        "investigator": 0,
+        "shadow": 0,
+        "investigator": 1,
         "steward": 0,
-        "household": 0
+        "household": 3
       }
     },
     {
@@ -942,10 +942,10 @@
         "household": 6
       },
       "winsByRole": {
-        "shadow": 1,
-        "investigator": 0,
+        "shadow": 0,
+        "investigator": 1,
         "steward": 0,
-        "household": 0
+        "household": 3
       }
     },
     {
@@ -962,9 +962,9 @@
       },
       "winsByRole": {
         "shadow": 1,
-        "investigator": 0,
+        "investigator": 2,
         "steward": 0,
-        "household": 0
+        "household": 3
       }
     },
     {
@@ -980,19 +980,19 @@
         "household": 6
       },
       "winsByRole": {
-        "shadow": 3,
+        "shadow": 2,
         "investigator": 0,
-        "steward": 0,
-        "household": 0
+        "steward": 1,
+        "household": 3
       }
     }
   ],
   "metrics": {
     "suspicionCalibration": {
-      "sampleCount": 3492,
-      "brierScore": 0.2808112256586533,
-      "meanShadowScore": 0.587766423357665,
-      "meanHouseholdScore": 0.5512219451371501,
+      "sampleCount": 7767,
+      "brierScore": 0.2533328183339748,
+      "meanShadowScore": 0.5326781002638494,
+      "meanHouseholdScore": 0.5100719884818393,
       "buckets": [
         {
           "bucketLabel": "0.0-0.2",
@@ -1011,10 +1011,10 @@
             "min": 0.2,
             "max": 0.4
           },
-          "sampleCount": 0,
-          "meanPrediction": 0,
+          "sampleCount": 2,
+          "meanPrediction": 0.39,
           "actualShadowRate": 0,
-          "absoluteError": 0
+          "absoluteError": 0.39
         },
         {
           "bucketLabel": "0.4-0.6",
@@ -1022,10 +1022,10 @@
             "min": 0.4,
             "max": 0.6000000000000001
           },
-          "sampleCount": 2803,
-          "meanPrediction": 0.5357081698180449,
-          "actualShadowRate": 0.15483410631466285,
-          "absoluteError": 0.38087406350338204
+          "sampleCount": 7493,
+          "meanPrediction": 0.5103723475243552,
+          "actualShadowRate": 0.18630722007206726,
+          "absoluteError": 0.324065127452288
         },
         {
           "bucketLabel": "0.6-0.8",
@@ -1033,10 +1033,10 @@
             "min": 0.6000000000000001,
             "max": 0.8
           },
-          "sampleCount": 684,
-          "meanPrediction": 0.6494883040935698,
-          "actualShadowRate": 0.3611111111111111,
-          "absoluteError": 0.28837719298245873
+          "sampleCount": 272,
+          "meanPrediction": 0.6286764705882362,
+          "actualShadowRate": 0.4411764705882353,
+          "absoluteError": 0.1875000000000009
         },
         {
           "bucketLabel": "0.8-1.0",
@@ -1044,17 +1044,17 @@
             "min": 0.8,
             "max": 1
           },
-          "sampleCount": 5,
-          "meanPrediction": 0.812,
-          "actualShadowRate": 0.8,
-          "absoluteError": 0.01200000000000001
+          "sampleCount": 0,
+          "meanPrediction": 0,
+          "actualShadowRate": 0,
+          "absoluteError": 0
         }
       ]
     },
     "evidenceGroundedAccusationRate": {
-      "numerator": 216,
-      "denominator": 276,
-      "rate": 0.782608695652174
+      "numerator": 92,
+      "denominator": 154,
+      "rate": 0.5974025974025974
     },
     "promiseBreakCost": {
       "breakCount": 0,
@@ -1069,20 +1069,72 @@
       "rate": 0
     },
     "falseAccusationRepairScore": {
-      "repairCount": 0,
-      "averageTrustRepair": 0,
-      "averageSuspectRepair": 0,
-      "repairScore": 0
+      "repairCount": 8,
+      "averageTrustRepair": 0.08750000000000005,
+      "averageSuspectRepair": 0.032500000000000015,
+      "repairScore": 0.06000000000000003
     },
     "tomPredictionBrier": {
-      "sampleCount": 2396,
-      "brierScore": 0.10049147236396015,
-      "hitRate": 0.14858096828046743
+      "sampleCount": 12274,
+      "brierScore": 0.15678964202091178,
+      "hitRate": 0.059463057466163746
+    }
+  },
+  "eqMetrics": {
+    "contradictionHandling": {
+      "contradictionCount": 0,
+      "handledCount": 0,
+      "explicitCalloutCount": 0,
+      "ignoredCount": 0,
+      "handlingRate": 0
+    },
+    "falseAccusationRecovery": {
+      "falseAccusationCount": 98,
+      "repairAttemptCount": 0,
+      "recoveredCount": 0,
+      "redirectedVoteCount": 0,
+      "recoveryRate": 0
+    },
+    "witnessStabilization": {
+      "reportCount": 31,
+      "calmingAttemptCount": 6,
+      "stabilizedCount": 0,
+      "stabilizationRate": 0
+    },
+    "promiseIntegrity": {
+      "promiseCount": 3,
+      "keptCount": 3,
+      "brokenCount": 0,
+      "unresolvedCount": 0,
+      "keptRate": 1,
+      "brokenRate": 0
+    },
+    "allianceShift": {
+      "allianceEpisodeCount": 240,
+      "shiftCount": 30,
+      "betrayalShiftCount": 20,
+      "volatilityRate": 0.125
+    },
+    "evidenceGroundedAccusationQuality": {
+      "accusationCount": 154,
+      "groundedCount": 0,
+      "groundedRate": 0,
+      "groundedShadowHitCount": 0,
+      "groundedShadowHitRate": 0,
+      "groundedPrecision": 0
+    },
+    "meetingInfluenceQuality": {
+      "speechTurnCount": 0,
+      "influentialTurnCount": 0,
+      "alignedVoteCount": 0,
+      "correctInfluenceCount": 0,
+      "misleadingInfluenceCount": 0,
+      "influenceScore": 0
     }
   },
   "runs": [
     {
-      "matchId": "fairness-1001-f0",
+      "matchId": "fairness-sample-1001-f0",
       "baseSeed": 1001,
       "matchSeed": 1001,
       "rotationIndex": 0,
@@ -1091,9 +1143,9 @@
       "winner": {
         "team": "shadow",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 24,
+      "finalTick": 48,
       "roleAssignments": [
         {
           "playerId": "agent-09",
@@ -1167,15 +1219,15 @@
         }
       ],
       "metrics": {
-        "accusations": 25,
-        "evidenceGroundedAccusations": 17,
+        "accusations": 11,
+        "evidenceGroundedAccusations": 5,
         "promiseBreaks": 0,
-        "falseAccusations": 23,
-        "repairs": 0
+        "falseAccusations": 9,
+        "repairs": 12
       }
     },
     {
-      "matchId": "fairness-1001-s0",
+      "matchId": "fairness-sample-1001-s0",
       "baseSeed": 1001,
       "matchSeed": 51001,
       "rotationIndex": 0,
@@ -1184,9 +1236,9 @@
       "winner": {
         "team": "shadow",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 28,
+      "finalTick": 49,
       "roleAssignments": [
         {
           "playerId": "agent-06",
@@ -1260,26 +1312,26 @@
         }
       ],
       "metrics": {
-        "accusations": 32,
-        "evidenceGroundedAccusations": 20,
+        "accusations": 17,
+        "evidenceGroundedAccusations": 10,
         "promiseBreaks": 0,
-        "falseAccusations": 21,
-        "repairs": 0
+        "falseAccusations": 11,
+        "repairs": 8
       }
     },
     {
-      "matchId": "fairness-1001-f1",
+      "matchId": "fairness-sample-1001-f1",
       "baseSeed": 1001,
       "matchSeed": 1098,
       "rotationIndex": 1,
       "slotOffset": 1,
       "variant": "forward",
       "winner": {
-        "team": "shadow",
+        "team": "household",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 24,
+      "finalTick": 50,
       "roleAssignments": [
         {
           "playerId": "agent-08",
@@ -1353,26 +1405,26 @@
         }
       ],
       "metrics": {
-        "accusations": 18,
+        "accusations": 17,
         "evidenceGroundedAccusations": 12,
         "promiseBreaks": 0,
         "falseAccusations": 13,
-        "repairs": 0
+        "repairs": 8
       }
     },
     {
-      "matchId": "fairness-1001-s1",
+      "matchId": "fairness-sample-1001-s1",
       "baseSeed": 1001,
       "matchSeed": 51098,
       "rotationIndex": 1,
       "slotOffset": 6,
       "variant": "swapped",
       "winner": {
-        "team": "shadow",
+        "team": "household",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 27,
+      "finalTick": 51,
       "roleAssignments": [
         {
           "playerId": "agent-02",
@@ -1446,15 +1498,15 @@
         }
       ],
       "metrics": {
-        "accusations": 32,
-        "evidenceGroundedAccusations": 30,
+        "accusations": 15,
+        "evidenceGroundedAccusations": 12,
         "promiseBreaks": 0,
-        "falseAccusations": 14,
-        "repairs": 0
+        "falseAccusations": 7,
+        "repairs": 2
       }
     },
     {
-      "matchId": "fairness-1001-f2",
+      "matchId": "fairness-sample-1001-f2",
       "baseSeed": 1001,
       "matchSeed": 1195,
       "rotationIndex": 2,
@@ -1463,9 +1515,9 @@
       "winner": {
         "team": "shadow",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 24,
+      "finalTick": 48,
       "roleAssignments": [
         {
           "playerId": "agent-09",
@@ -1539,26 +1591,26 @@
         }
       ],
       "metrics": {
-        "accusations": 24,
-        "evidenceGroundedAccusations": 20,
+        "accusations": 14,
+        "evidenceGroundedAccusations": 3,
         "promiseBreaks": 0,
-        "falseAccusations": 15,
-        "repairs": 0
+        "falseAccusations": 11,
+        "repairs": 11
       }
     },
     {
-      "matchId": "fairness-1001-s2",
+      "matchId": "fairness-sample-1001-s2",
       "baseSeed": 1001,
       "matchSeed": 51195,
       "rotationIndex": 2,
       "slotOffset": 7,
       "variant": "swapped",
       "winner": {
-        "team": "shadow",
+        "team": "household",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 27,
+      "finalTick": 51,
       "roleAssignments": [
         {
           "playerId": "agent-03",
@@ -1632,26 +1684,26 @@
         }
       ],
       "metrics": {
-        "accusations": 32,
-        "evidenceGroundedAccusations": 29,
+        "accusations": 16,
+        "evidenceGroundedAccusations": 6,
         "promiseBreaks": 0,
-        "falseAccusations": 21,
-        "repairs": 0
+        "falseAccusations": 11,
+        "repairs": 5
       }
     },
     {
-      "matchId": "fairness-1001-f3",
+      "matchId": "fairness-sample-1001-f3",
       "baseSeed": 1001,
       "matchSeed": 1292,
       "rotationIndex": 3,
       "slotOffset": 3,
       "variant": "forward",
       "winner": {
-        "team": "shadow",
+        "team": "household",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 24,
+      "finalTick": 50,
       "roleAssignments": [
         {
           "playerId": "agent-10",
@@ -1725,15 +1777,15 @@
         }
       ],
       "metrics": {
-        "accusations": 25,
-        "evidenceGroundedAccusations": 20,
+        "accusations": 16,
+        "evidenceGroundedAccusations": 12,
         "promiseBreaks": 0,
-        "falseAccusations": 21,
-        "repairs": 0
+        "falseAccusations": 8,
+        "repairs": 10
       }
     },
     {
-      "matchId": "fairness-1001-s3",
+      "matchId": "fairness-sample-1001-s3",
       "baseSeed": 1001,
       "matchSeed": 51292,
       "rotationIndex": 3,
@@ -1742,9 +1794,9 @@
       "winner": {
         "team": "shadow",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 28,
+      "finalTick": 48,
       "roleAssignments": [
         {
           "playerId": "agent-02",
@@ -1818,15 +1870,15 @@
         }
       ],
       "metrics": {
-        "accusations": 30,
-        "evidenceGroundedAccusations": 20,
+        "accusations": 16,
+        "evidenceGroundedAccusations": 9,
         "promiseBreaks": 0,
-        "falseAccusations": 18,
-        "repairs": 0
+        "falseAccusations": 11,
+        "repairs": 8
       }
     },
     {
-      "matchId": "fairness-1001-f4",
+      "matchId": "fairness-sample-1001-f4",
       "baseSeed": 1001,
       "matchSeed": 1389,
       "rotationIndex": 4,
@@ -1835,9 +1887,9 @@
       "winner": {
         "team": "shadow",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 28,
+      "finalTick": 48,
       "roleAssignments": [
         {
           "playerId": "agent-07",
@@ -1911,26 +1963,26 @@
         }
       ],
       "metrics": {
-        "accusations": 32,
-        "evidenceGroundedAccusations": 27,
+        "accusations": 15,
+        "evidenceGroundedAccusations": 11,
         "promiseBreaks": 0,
-        "falseAccusations": 28,
-        "repairs": 0
+        "falseAccusations": 9,
+        "repairs": 3
       }
     },
     {
-      "matchId": "fairness-1001-s4",
+      "matchId": "fairness-sample-1001-s4",
       "baseSeed": 1001,
       "matchSeed": 51389,
       "rotationIndex": 4,
       "slotOffset": 9,
       "variant": "swapped",
       "winner": {
-        "team": "shadow",
+        "team": "household",
         "reason": "hard-cap",
-        "decidedAtTick": 24
+        "decidedAtTick": 48
       },
-      "finalTick": 24,
+      "finalTick": 52,
       "roleAssignments": [
         {
           "playerId": "agent-02",
@@ -2004,11 +2056,11 @@
         }
       ],
       "metrics": {
-        "accusations": 26,
-        "evidenceGroundedAccusations": 21,
+        "accusations": 17,
+        "evidenceGroundedAccusations": 12,
         "promiseBreaks": 0,
-        "falseAccusations": 21,
-        "repairs": 0
+        "falseAccusations": 8,
+        "repairs": 6
       }
     }
   ]

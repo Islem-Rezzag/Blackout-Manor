@@ -6,18 +6,20 @@ type FairnessDashboardProps = {
 };
 
 const asPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
+const asSignedScore = (value: number) =>
+  `${value > 0 ? "+" : ""}${value.toFixed(3)}`;
 
 export function FairnessDashboard({ report, source }: FairnessDashboardProps) {
   return (
     <main className="fairness-shell">
       <section className="fairness-hero">
         <div>
-          <span className="eyebrow">Fairness Suite</span>
-          <h1>Season 01 balance telemetry</h1>
+          <span className="eyebrow">Fairness And EQ Suite</span>
+          <h1>Season 01 balance and replay telemetry</h1>
           <p>
             {report.simulationCount} seeded simulations, persona rotation
-            scheduling, and threshold checks exported as JSON for repeatable
-            balance review.
+            scheduling, threshold checks, and replay-backed EQ analytics
+            exported as JSON for repeatable balance review.
           </p>
         </div>
         <div
@@ -123,6 +125,113 @@ export function FairnessDashboard({ report, source }: FairnessDashboardProps) {
               <strong>
                 {report.metrics.tomPredictionBrier.brierScore.toFixed(3)}
               </strong>
+            </div>
+          </div>
+        </article>
+
+        <article className="metric-card metric-card-wide">
+          <h2>Replay-backed EQ Metrics</h2>
+          <p className="analysis-lock">
+            These EQ metrics are derived from replay events, replay frames, and
+            public speech only. They do not use private summaries or hidden
+            model reasoning.
+          </p>
+          <div className="metric-grid">
+            <div className="metric-block">
+              <span>Contradiction handling</span>
+              <strong>
+                {asPercent(report.eqMetrics.contradictionHandling.handlingRate)}
+              </strong>
+              <small>
+                {report.eqMetrics.contradictionHandling.handledCount}/
+                {report.eqMetrics.contradictionHandling.contradictionCount}{" "}
+                contradictions acted on
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>False accusation recovery</span>
+              <strong>
+                {asPercent(
+                  report.eqMetrics.falseAccusationRecovery.recoveryRate,
+                )}
+              </strong>
+              <small>
+                {report.eqMetrics.falseAccusationRecovery.recoveredCount}/
+                {report.eqMetrics.falseAccusationRecovery.falseAccusationCount}{" "}
+                false accusations repaired
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>Witness stabilization</span>
+              <strong>
+                {asPercent(
+                  report.eqMetrics.witnessStabilization.stabilizationRate,
+                )}
+              </strong>
+              <small>
+                {report.eqMetrics.witnessStabilization.stabilizedCount}/
+                {report.eqMetrics.witnessStabilization.calmingAttemptCount}{" "}
+                calming attempts stabilized a witness
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>Promise keeping</span>
+              <strong>
+                {asPercent(report.eqMetrics.promiseIntegrity.keptRate)}
+              </strong>
+              <small>
+                {report.eqMetrics.promiseIntegrity.keptCount} kept /
+                {report.eqMetrics.promiseIntegrity.brokenCount} broken
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>Alliance shift volatility</span>
+              <strong>
+                {asPercent(report.eqMetrics.allianceShift.volatilityRate)}
+              </strong>
+              <small>
+                {report.eqMetrics.allianceShift.shiftCount}/
+                {report.eqMetrics.allianceShift.allianceEpisodeCount} public
+                alliance episodes turned hostile
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>Evidence-grounded accusation quality</span>
+              <strong>
+                {asPercent(
+                  report.eqMetrics.evidenceGroundedAccusationQuality
+                    .groundedPrecision,
+                )}
+              </strong>
+              <small>
+                {
+                  report.eqMetrics.evidenceGroundedAccusationQuality
+                    .groundedShadowHitCount
+                }
+                /
+                {
+                  report.eqMetrics.evidenceGroundedAccusationQuality
+                    .groundedCount
+                }{" "}
+                grounded accusations landed on Shadows
+              </small>
+            </div>
+            <div className="metric-block">
+              <span>Meeting influence quality</span>
+              <strong>
+                {asSignedScore(
+                  report.eqMetrics.meetingInfluenceQuality.influenceScore,
+                )}
+              </strong>
+              <small>
+                {report.eqMetrics.meetingInfluenceQuality.correctInfluenceCount}{" "}
+                correct /
+                {
+                  report.eqMetrics.meetingInfluenceQuality
+                    .misleadingInfluenceCount
+                }{" "}
+                misleading influence turns
+              </small>
             </div>
           </div>
         </article>

@@ -54,6 +54,12 @@ test("keeps fairness behind the dev route", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/dev\/fairness$/);
   await expect(
-    page.getByRole("heading", { level: 1, name: /Season 01 balance telemetry/i }),
+    page.getByRole("heading", {
+      level: 1,
+      name: /Season 01 balance and replay telemetry/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: /Replay-backed EQ Metrics/i }),
   ).toBeVisible();
 });

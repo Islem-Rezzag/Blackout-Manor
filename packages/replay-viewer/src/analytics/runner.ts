@@ -22,6 +22,7 @@ import {
   type PlayerId,
 } from "@blackout-manor/shared";
 
+import { aggregateReplayEqMetrics, createReplayEqMetrics } from "./eq";
 import { createFairnessMetrics, fairnessThresholdsPassed } from "./metrics";
 import { createPersonaRotationSchedule } from "./scheduler";
 import type {
@@ -355,6 +356,9 @@ export const runSeedSwapTournament = async (
   }
 
   const summary = createFairnessMetrics(runs);
+  const eqMetrics = aggregateReplayEqMetrics(
+    runs.map((run) => createReplayEqMetrics(run.replay)),
+  );
   const report = {
     formatVersion: "1.0.0" as const,
     generatedAt: options.nowIso ?? new Date().toISOString(),
@@ -371,6 +375,7 @@ export const runSeedSwapTournament = async (
     specialRoleSwing: summary.specialRoleSwing,
     personaCoverage: summary.personaCoverage,
     metrics: summary.metrics,
+    eqMetrics,
     runs: summary.runSummaries,
   };
 

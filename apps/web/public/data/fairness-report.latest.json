@@ -1,6 +1,6 @@
 {
   "formatVersion": "1.0.0",
-  "generatedAt": "2026-03-16T02:07:07.961Z",
+  "generatedAt": "2026-03-21T15:10:26.488Z",
   "simulationCount": 100,
   "passed": true,
   "thresholds": [
@@ -7593,6 +7593,58 @@
       "sampleCount": 116666,
       "brierScore": 0.1590084880686856,
       "hitRate": 0.08292298601536341
+    }
+  },
+  "eqMetrics": {
+    "contradictionHandling": {
+      "contradictionCount": 0,
+      "handledCount": 0,
+      "explicitCalloutCount": 0,
+      "ignoredCount": 0,
+      "handlingRate": 0
+    },
+    "falseAccusationRecovery": {
+      "falseAccusationCount": 870,
+      "repairAttemptCount": 0,
+      "recoveredCount": 0,
+      "redirectedVoteCount": 0,
+      "recoveryRate": 0
+    },
+    "witnessStabilization": {
+      "reportCount": 307,
+      "calmingAttemptCount": 54,
+      "stabilizedCount": 0,
+      "stabilizationRate": 0
+    },
+    "promiseIntegrity": {
+      "promiseCount": 20,
+      "keptCount": 16,
+      "brokenCount": 1,
+      "unresolvedCount": 3,
+      "keptRate": 0.8,
+      "brokenRate": 0.05
+    },
+    "allianceShift": {
+      "allianceEpisodeCount": 2347,
+      "shiftCount": 268,
+      "betrayalShiftCount": 190,
+      "volatilityRate": 0.11418832552194291
+    },
+    "evidenceGroundedAccusationQuality": {
+      "accusationCount": 1424,
+      "groundedCount": 0,
+      "groundedRate": 0,
+      "groundedShadowHitCount": 0,
+      "groundedShadowHitRate": 0,
+      "groundedPrecision": 0
+    },
+    "meetingInfluenceQuality": {
+      "speechTurnCount": 2,
+      "influentialTurnCount": 2,
+      "alignedVoteCount": 4,
+      "correctInfluenceCount": 0,
+      "misleadingInfluenceCount": 2,
+      "influenceScore": -1
     }
   },
   "runs": [

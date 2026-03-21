@@ -227,6 +227,7 @@ export type TournamentFairnessReport = {
   };
   personaCoverage: PersonaRoleCoverage[];
   metrics: FairnessMetrics;
+  eqMetrics: ReplayEqMetrics;
   runs: FairnessRunSummary[];
 };
 

@@ -1,4 +1,4 @@
-export { createReplayEqMetrics } from "./eq";
+export { aggregateReplayEqMetrics, createReplayEqMetrics } from "./eq";
 export {
   createFairnessMetrics,
   evaluateFairnessThresholds,

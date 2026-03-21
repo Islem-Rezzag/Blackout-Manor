@@ -1,5 +1,6 @@
 export {
   AllianceShiftMetricsSchema,
+  aggregateReplayEqMetrics,
   ContradictionHandlingMetricsSchema,
   createFairnessMetrics,
   createPersonaRotationSchedule,

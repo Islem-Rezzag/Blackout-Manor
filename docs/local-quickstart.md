@@ -44,3 +44,19 @@ pnpm ci:quality
 pnpm test:e2e
 pnpm fairness:check
 ```
+
+## Generate Fairness And EQ Reports
+```bash
+pnpm fairness:report
+```
+
+This refreshes the dev fairness dashboard data at:
+- `artifacts/fairness/latest/fairness-report.json`
+- `apps/web/public/data/fairness-report.latest.json`
+
+Open `http://127.0.0.1:3000/dev/fairness` to inspect the exported balance and replay-backed EQ metrics.
+
+The EQ section uses replay/public data only:
+- replay events such as `roles-assigned`, `action-recorded`, and `vote-resolved`
+- replay frame player snapshots and public meeting speech
+- no private summaries or chain-of-thought

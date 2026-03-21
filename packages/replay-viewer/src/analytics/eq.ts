@@ -737,6 +737,186 @@ const collectMeetingInfluenceQuality = (
   };
 };
 
+export const aggregateReplayEqMetrics = (
+  metricsList: readonly ReplayEqMetrics[],
+): ReplayEqMetrics => {
+  const contradictionCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.contradictionHandling.contradictionCount,
+    0,
+  );
+  const contradictionHandledCount = metricsList.reduce(
+    (total, metrics) => total + metrics.contradictionHandling.handledCount,
+    0,
+  );
+  const explicitCalloutCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.contradictionHandling.explicitCalloutCount,
+    0,
+  );
+  const falseAccusationCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.falseAccusationRecovery.falseAccusationCount,
+    0,
+  );
+  const repairAttemptCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.falseAccusationRecovery.repairAttemptCount,
+    0,
+  );
+  const recoveredCount = metricsList.reduce(
+    (total, metrics) => total + metrics.falseAccusationRecovery.recoveredCount,
+    0,
+  );
+  const redirectedVoteCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.falseAccusationRecovery.redirectedVoteCount,
+    0,
+  );
+  const reportCount = metricsList.reduce(
+    (total, metrics) => total + metrics.witnessStabilization.reportCount,
+    0,
+  );
+  const calmingAttemptCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.witnessStabilization.calmingAttemptCount,
+    0,
+  );
+  const stabilizedCount = metricsList.reduce(
+    (total, metrics) => total + metrics.witnessStabilization.stabilizedCount,
+    0,
+  );
+  const promiseCount = metricsList.reduce(
+    (total, metrics) => total + metrics.promiseIntegrity.promiseCount,
+    0,
+  );
+  const keptCount = metricsList.reduce(
+    (total, metrics) => total + metrics.promiseIntegrity.keptCount,
+    0,
+  );
+  const brokenCount = metricsList.reduce(
+    (total, metrics) => total + metrics.promiseIntegrity.brokenCount,
+    0,
+  );
+  const unresolvedCount = metricsList.reduce(
+    (total, metrics) => total + metrics.promiseIntegrity.unresolvedCount,
+    0,
+  );
+  const allianceEpisodeCount = metricsList.reduce(
+    (total, metrics) => total + metrics.allianceShift.allianceEpisodeCount,
+    0,
+  );
+  const shiftCount = metricsList.reduce(
+    (total, metrics) => total + metrics.allianceShift.shiftCount,
+    0,
+  );
+  const betrayalShiftCount = metricsList.reduce(
+    (total, metrics) => total + metrics.allianceShift.betrayalShiftCount,
+    0,
+  );
+  const accusationCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.evidenceGroundedAccusationQuality.accusationCount,
+    0,
+  );
+  const groundedCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.evidenceGroundedAccusationQuality.groundedCount,
+    0,
+  );
+  const groundedShadowHitCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.evidenceGroundedAccusationQuality.groundedShadowHitCount,
+    0,
+  );
+  const speechTurnCount = metricsList.reduce(
+    (total, metrics) => total + metrics.meetingInfluenceQuality.speechTurnCount,
+    0,
+  );
+  const influentialTurnCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.meetingInfluenceQuality.influentialTurnCount,
+    0,
+  );
+  const alignedVoteCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.meetingInfluenceQuality.alignedVoteCount,
+    0,
+  );
+  const correctInfluenceCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.meetingInfluenceQuality.correctInfluenceCount,
+    0,
+  );
+  const misleadingInfluenceCount = metricsList.reduce(
+    (total, metrics) =>
+      total + metrics.meetingInfluenceQuality.misleadingInfluenceCount,
+    0,
+  );
+
+  return ReplayEqMetricsSchema.parse({
+    contradictionHandling: {
+      contradictionCount,
+      handledCount: contradictionHandledCount,
+      explicitCalloutCount,
+      ignoredCount: contradictionCount - contradictionHandledCount,
+      handlingRate: averageRate(contradictionHandledCount, contradictionCount),
+    },
+    falseAccusationRecovery: {
+      falseAccusationCount,
+      repairAttemptCount,
+      recoveredCount,
+      redirectedVoteCount,
+      recoveryRate: averageRate(recoveredCount, falseAccusationCount),
+    },
+    witnessStabilization: {
+      reportCount,
+      calmingAttemptCount,
+      stabilizedCount,
+      stabilizationRate: averageRate(stabilizedCount, calmingAttemptCount),
+    },
+    promiseIntegrity: {
+      promiseCount,
+      keptCount,
+      brokenCount,
+      unresolvedCount,
+      keptRate: averageRate(keptCount, promiseCount),
+      brokenRate: averageRate(brokenCount, promiseCount),
+    },
+    allianceShift: {
+      allianceEpisodeCount,
+      shiftCount,
+      betrayalShiftCount,
+      volatilityRate: averageRate(shiftCount, allianceEpisodeCount),
+    },
+    evidenceGroundedAccusationQuality: {
+      accusationCount,
+      groundedCount,
+      groundedRate: averageRate(groundedCount, accusationCount),
+      groundedShadowHitCount,
+      groundedShadowHitRate: averageRate(
+        groundedShadowHitCount,
+        accusationCount,
+      ),
+      groundedPrecision: averageRate(groundedShadowHitCount, groundedCount),
+    },
+    meetingInfluenceQuality: {
+      speechTurnCount,
+      influentialTurnCount,
+      alignedVoteCount,
+      correctInfluenceCount,
+      misleadingInfluenceCount,
+      influenceScore:
+        influentialTurnCount === 0
+          ? 0
+          : clamp01(averageRate(correctInfluenceCount, influentialTurnCount)) -
+            clamp01(
+              averageRate(misleadingInfluenceCount, influentialTurnCount),
+            ),
+    },
+  });
+};
+
 export const createReplayEqMetrics = (
   replay: EngineReplayLog,
 ): ReplayEqMetrics => {

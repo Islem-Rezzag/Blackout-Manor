@@ -36,6 +36,15 @@ describe("fairness analytics", () => {
     expect(tournament.report.schedule.scheduleEntries).toHaveLength(10);
     expect(tournament.report.roleNormalizedWinRates).toHaveLength(4);
     expect(
+      tournament.report.eqMetrics.contradictionHandling.contradictionCount,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      tournament.report.eqMetrics.promiseIntegrity.promiseCount,
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      tournament.report.eqMetrics.meetingInfluenceQuality.influenceScore,
+    ).toBeGreaterThanOrEqual(-1);
+    expect(
       tournament.report.metrics.suspicionCalibration.sampleCount,
     ).toBeGreaterThan(0);
     expect(
