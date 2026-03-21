@@ -1,6 +1,6 @@
 # Migration Plan
 
-This plan tracks presentation ownership and product-surface work only. It does not change game rules, server authority, replay guarantees, or fairness assumptions.
+This plan tracks presentation ownership, product-surface work, and benchmark-surface integration only. It does not change game rules, server authority, replay guarantees, or fairness assumptions.
 
 ## What Stays Untouched
 - `packages/engine` gameplay rules, role behavior rules, round structure, legality flow, seeded determinism, and replay event semantics
@@ -19,12 +19,6 @@ This plan tracks presentation ownership and product-surface work only. It does n
 - `/play` is compatibility only.
 - fairness and replay-heavy tooling live behind developer-oriented routes instead of defining the default player path.
 
-#### File and Folder Changes
-- `apps/web/src/app/game/`
-- `apps/web/src/app/dev/`
-- `apps/web/src/app/play/`
-- docs clarifying `packages/client-game` ownership and `apps/web` shell responsibilities
-
 #### Acceptance Criteria
 - Live players enter through a game-first route instead of a dashboard-first route.
 - `packages/client-game` is documented as the primary product surface.
@@ -36,12 +30,6 @@ This plan tracks presentation ownership and product-surface work only. It does n
 - `packages/client-game` now uses scene and director ownership instead of a single monolithic live scene.
 - runtime flow is staged through `GameDirector`, `PhaseDirector`, `CameraDirector`, `MeetingDirector`, and `ReplayDirector`.
 - live play, meetings, endgame, and replay now share a world-first rendering pipeline.
-
-#### File and Folder Changes
-- `packages/client-game/src/directors/`
-- `packages/client-game/src/scenes/`
-- `packages/client-game/src/stage/`
-- minimal runtime boot adjustments in `apps/web/src/features/game/`
 
 #### Acceptance Criteria
 - reports, meetings, voting, and endgame are staged through the runtime instead of host-side panels.
@@ -56,72 +44,85 @@ This plan tracks presentation ownership and product-surface work only. It does n
 - camera focus is event-driven for sabotage, reports, meetings, and visible public interactions.
 - live mode keeps a minimal observation HUD without surfacing fairness or debug analytics.
 
-#### File and Folder Changes
-- `packages/client-game/src/directors/SurveillanceDirector.ts`
-- `packages/client-game/src/ui/ObservationHud.ts`
-- `packages/client-game/src/ui/SurveillanceConsole.ts`
-- scene integration in `packages/client-game/src/scenes/ManorWorldScene.ts` and `packages/client-game/src/scenes/ReplayScene.ts`
-
 #### Acceptance Criteria
 - live and replay observation stay visually coherent.
 - surveillance mode remains in-world instead of becoming a separate website surface.
 - hidden-role analytics remain sealed in live mode.
 
-### Upcoming: Milestone 4 - Premium Rendering Pipeline
+### Completed: Milestone 4A - Premium Manor Rendering Pipeline
 
-#### Goal
-Raise the environmental rendering quality so the manor reads as a premium storm thriller rather than a strong prototype.
-
-#### Planned Focus
-- richer room materials, lighting, and storm atmosphere
-- stronger cutaway treatment and spatial depth
-- better in-world transition and focus polish
+#### Outcome
+- the manor now renders through clearer layered stage ownership for backdrop, floor, walls, props, lighting, weather, and focus framing.
+- Tiled-driven room structure and shared render theme hooks support future art swaps without rewriting the stage architecture.
+- blackout, storm, sabotage emphasis, and surveillance feeds all use the upgraded rendering path.
 
 #### Acceptance Criteria
 - blackout, storm, and room mood read clearly at a glance.
 - visual upgrades do not require engine, server, or replay contract changes.
 
-### Upcoming: Milestone 5 - Character Readability and Live HUD Polish
+### Completed: Milestone 4B - Character Readability and Live HUD Polish
 
-#### Goal
-Make character presence, posture, speech, and key room state more readable during live observation.
-
-#### Planned Focus
-- improve at-a-glance avatar readability
-- tighten speech and status presentation
-- refine the live HUD without turning it into a benchmark dashboard
+#### Outcome
+- avatar readability, public posture, speech/action presentation, meeting portraits, and the minimal live HUD were upgraded for spectator clarity.
+- public-visible postures now read as calm, alert, suspicious, shaken, confident, or defiant without exposing private cognition.
+- meeting scenes feel more like a game presentation and less like a debug overlay.
 
 #### Acceptance Criteria
 - players and spectators can follow public action without relying on secondary tooling.
 - the HUD remains minimal and game-first.
 
-### Upcoming: Milestone 6 - Public Launcher and Attract-Mode Polish
+### Completed: Milestone 4C - Public Launcher and Attract-Mode Polish
 
-#### Goal
-Polish the public entry flow so launching the game feels intentional and commercial before the match begins.
-
-#### Planned Focus
-- stronger `/game` bootstrap experience
-- improved onboarding and demo-room presentation
-- cleaner handoff into live runtime and replay entry paths
+#### Outcome
+- `/` now acts as a branded launcher and attract-mode entry.
+- `/game` and `/game/demo` are the clear first-time review path into the live runtime.
+- dev and fairness tooling remain available, but no longer define the public entry.
 
 #### Acceptance Criteria
 - the launcher feels like a game entry surface, not a dev shell.
 - compatibility routes remain secondary and do not replace `/game`.
 
-### Upcoming: Milestone 7 - EQ Benchmark Hardening
+### Completed: Milestone 5A - Replay-Backed EQ Analytics Foundation
 
-#### Goal
-Harden replay, observation, and benchmark validation around the already-implemented live runtime.
-
-#### Planned Focus
-- stronger observation validation and replay assertions
-- stricter checks around information boundaries and fairness assumptions
-- better tooling confidence without moving those tools back into the player path
+#### Outcome
+- replay analyzers now derive contradiction handling, false-accusation recovery, witness stabilization, promise integrity, alliance shifts, evidence-grounded accusation quality, and meeting influence quality from replay/public data.
+- the metrics are deterministic and fixture-backed.
+- no private summaries or chain-of-thought are required.
 
 #### Acceptance Criteria
-- benchmark tooling stays secondary to the live product surface.
-- added hardening does not leak hidden-role analytics into live mode.
+- EQ claims are tied to replay data, not just UI impressions.
+- metric families are typed, schema-backed, and validated by deterministic tests.
+
+### Completed: Milestone 5B - Dev Fairness And EQ Surfacing
+
+#### Outcome
+- `/dev/fairness` now surfaces fairness metrics together with replay-backed EQ metrics.
+- fairness report exports now carry the integrated EQ section.
+- reviewer and contributor docs explain how to regenerate and inspect those reports locally.
+
+#### Acceptance Criteria
+- EQ metrics remain out of `/game`.
+- contributors can regenerate the fairness + EQ report locally and inspect it through the dev route.
+
+## Post-Alpha Milestones
+
+### Upcoming: Milestone 6 - Original Production Asset Pass
+
+#### Goal
+Replace the remaining placeholder and procedural presentation assets with bespoke art, audio, and higher-fidelity authored content.
+
+#### Acceptance Criteria
+- the runtime no longer depends on prototype-grade presentation for reviewer-first routes.
+- asset swaps preserve current scene/director and replay-safe architecture.
+
+### Upcoming: Milestone 7 - Alpha Hardening And Review Packaging
+
+#### Goal
+Tighten release docs, smoke checks, reviewer onboarding, and benchmark confidence around the current spectator-first alpha.
+
+#### Acceptance Criteria
+- first-time reviewers can understand what the branch is, what they will see, and which routes matter.
+- hardening does not leak hidden-role analytics into live mode.
 
 ## Risks
 - Duplicating UI state between React host code and Phaser runtime
@@ -147,8 +148,9 @@ Harden replay, observation, and benchmark validation around the already-implemen
 - `pnpm sim --seed 42 --mode showcase`
 
 For presentation milestones, also manually verify:
+- `/` reads as a launcher, not a workspace shell
 - `/game/[roomId]` launches into a live-match-first view
-- `/game` only bootstraps or redirects to a demo or local room
+- `/game` bootstraps or redirects to a demo or local room
 - `/dev/play?view=replay` still works as the replay-oriented dev path
+- `/dev/fairness` still contains fairness and EQ tooling only
 - hidden-role analytics remain absent from default live mode
-- `/play` remains compatibility only

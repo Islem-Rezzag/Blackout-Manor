@@ -1,27 +1,49 @@
 # Blackout Manor
 
-Blackout Manor is an open-source AI social-deduction game set inside a storm-locked manor. Ten agents move through a premium 2.5D map, perform evidence-generating tasks, build trust, lie, panic, accuse, vote, and leave behind deterministic replay data for fairness and replay analysis. The primary live product surface is the Phaser runtime in `packages/client-game`; the Next.js app in `apps/web` is a thin shell that boots that runtime and exposes secondary surfaces.
+Blackout Manor is currently a spectator-first AI social-deduction alpha. Ten AI agents move through a storm-locked manor, perform evidence-generating tasks, lie, accuse, panic, vote, and leave behind deterministic replay data for review. The main experience on this branch is a real full-screen Phaser runtime, not a dashboard.
 
-## Gameplay Loop
-- Ten masked characters enter the manor with hidden roles.
-- Roam rounds create alibis through movement, cooperation, sabotage, and task evidence.
-- Reports and meetings turn the match into a social reasoning game.
-- Votes shift trust, expose contradictions, or hand momentum to the Shadows.
-- Replays preserve the full night for spectator analysis, fairness runs, and highlight export.
+This branch matters: the game-first work lives on `feat/world-first-runtime`, not on `main`.
 
-## Workspace Layout
-- `apps/web`: thin Next.js shell for bootstrapping the game runtime and exposing opt-in replay, fairness, debug, admin, and contributor-facing secondary surfaces.
-- `apps/server`: Colyseus rooms, authoritative simulation orchestration, admin APIs.
-- `packages/shared`: shared contracts, schemas, protocol messages, constants.
-- `packages/engine`: deterministic seeded rules engine and replay log output.
-- `packages/agents`: HEART runtime, model gateway, policy, scripted fallback bots.
-- `packages/client-game`: primary live game runtime, Phaser renderer, networking client, manor presentation, and player-facing match UX.
-- `packages/content`: season data, map metadata, personas, tasks, sabotage definitions.
-- `packages/replay-viewer`: replay serialization, highlight extraction, fairness analytics.
-- `packages/db`: SQLite local fallback and PostgreSQL production persistence.
+## What Blackout Manor Is Right Now
+- A game-first launcher at `/`
+- A live spectator runtime at `/game/[roomId]`
+- A bootstrap route at `/game`
+- A direct demo-room path at `/game/demo`
+- A replay-oriented dev route at `/dev/play?view=replay`
+- A fairness and replay-backed EQ route at `/dev/fairness`
 
-## Quickstart
-1. Install the toolchain.
+The primary live product surface is `packages/client-game`. `apps/web` is the thin shell that boots the runtime and exposes secondary dev surfaces.
+
+## What You Will See When You Run It
+
+### Launcher / Attract Mode
+Open `/` and you will see a branded launcher page with game-first entry points, not a workspace shell. From there you can enter the default room through `/game` or jump straight to the demo room.
+
+### Live Spectator Runtime
+Open `/game/demo` and you will see the manor rendered in the Phaser runtime: rooms, lighting, storm ambience, avatar movement/presence, camera-driven report and meeting focus, and the minimal live HUD.
+
+### Surveillance Observation
+Inside the runtime you can switch between roaming observation and surveillance observation. Surveillance mode shows multiple room feeds in-world instead of sending you to a separate dashboard.
+
+### Replay And Dev Routes
+Open `/dev/play?view=replay` to inspect a staged replay through the same runtime pipeline. Open `/dev/fairness` to inspect the fairness report plus replay-backed EQ metrics.
+
+### What Is Working Now
+- Game-first routing and launcher flow
+- World-first runtime scenes and directors
+- Surveillance mode and observation controls
+- Manor render pipeline upgrade
+- Character readability and live HUD polish
+- Public launcher flow
+- Replay-backed EQ analytics in dev fairness tooling
+
+### What Is Still Alpha
+- Some art remains placeholder or procedural rather than final bespoke production art
+- This is not the final public release build
+- Documentation is being tightened for external review, but still evolving
+
+## Recommended First-Time Reviewer Path
+1. Install dependencies.
 
 ```bash
 corepack prepare pnpm@10.32.1 --activate
@@ -38,36 +60,72 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-3. Start the local shell and authoritative server.
+3. Start the app and server.
 
 ```bash
 pnpm dev
 ```
 
-The browser entry point lives in `apps/web`, but the intended live experience is the full-screen game runtime mounted from `packages/client-game`. The documented primary live route is `/game/[roomId]`. `/game` bootstraps or redirects to a demo or local room. `/play` is a legacy compatibility route that now forwards live entry traffic to `/game/[roomId]`. Replay, fairness, and other tool-heavy surfaces stay behind developer-oriented routes such as `/dev/play` and `/dev/fairness`.
-
-4. Run a 10-agent local simulation in a second terminal.
+4. Open the launcher at [http://127.0.0.1:3000/](http://127.0.0.1:3000/).
+5. Click `Watch demo room`, or go directly to [http://127.0.0.1:3000/game/demo](http://127.0.0.1:3000/game/demo).
+6. Try the observation controls:
+   - `V`: toggle roaming and surveillance observation
+   - `Q` / `E` or `Tab`: cycle surveillance feeds
+   - `1` to `4`: lock a surveillance feed
+   - `Esc`: return to roaming observation
+7. Generate and open a replay:
 
 ```bash
 pnpm sim --seed 42 --mode fast
-```
-
-5. Stage that replay for the theater and open it in the browser.
-
-```bash
 pnpm replay:open artifacts/replays/fast-42.replay.json
 ```
 
-6. Visit `http://127.0.0.1:3000/dev/play?view=replay&source=open` if the browser did not open automatically. To enter the live game directly, use `http://127.0.0.1:3000/game/demo`.
+Then open [http://127.0.0.1:3000/dev/play?view=replay&source=open](http://127.0.0.1:3000/dev/play?view=replay&source=open).
 
-Local development works without production infra. By default the server uses SQLite at `.local/blackout-manor-dev.sqlite`.
+8. Generate the fairness and EQ report:
+
+```bash
+pnpm fairness:report
+```
+
+Then open [http://127.0.0.1:3000/dev/fairness](http://127.0.0.1:3000/dev/fairness).
 
 ## Route Map
-- `/game/[roomId]`: primary live route
-- `/game`: bootstrap route for a demo or local room
+- `/`: public launcher / attract-mode entry
+- `/game`: bootstrap route for the default or demo room
+- `/game/[roomId]`: primary live runtime
+- `/game/demo`: easiest direct route for first-time review
 - `/play`: compatibility route only
 - `/dev/play?view=replay`: replay-oriented dev route
-- `/dev/fairness`: fairness and balance tooling
+- `/dev/fairness`: fairness and replay-backed EQ route
+
+## Current Product Status
+
+### Complete On This Branch
+- Game-first routing
+- World-first runtime
+- Surveillance mode
+- Render pipeline upgrade
+- Character and HUD polish
+- Public launcher
+- Replay-backed EQ analytics in dev fairness tooling
+
+### Still Placeholder Or Alpha-Quality
+- Placeholder or procedural assets still exist in parts of the presentation stack
+- Tooling and docs are strong enough for alpha review, but not yet final-release polished
+- The branch is ready for spectator-first alpha review, not for a finished public launch
+
+## Fairness And EQ Reports
+- `pnpm fairness:report` exports both balance metrics and replay-backed EQ metrics for `/dev/fairness`.
+- The EQ section covers contradiction handling, false-accusation recovery, witness stabilization, promise integrity, alliance shifts, evidence-grounded accusation quality, and meeting influence quality.
+- These metrics are derived from replay events, replay frames, public speech, and revealed post-match roles only.
+- They do not use private summaries, hidden chain-of-thought, or model-internal reasoning.
+
+Required replay inputs for the EQ layer:
+- `roles-assigned`
+- `action-recorded`
+- `vote-resolved`
+- replay frame player snapshots for public display names and status
 
 ## Core Commands
 ```bash
@@ -82,27 +140,11 @@ pnpm media:capture --source open
 pnpm fairness:report
 ```
 
-## Fairness And EQ Reports
-- `pnpm fairness:report` now exports both balance metrics and replay-backed EQ metrics for the `/dev/fairness` dashboard.
-- The EQ section covers contradiction handling, false-accusation recovery, witness stabilization, promise integrity, alliance shifts, evidence-grounded accusations, and meeting influence quality.
-- These metrics are derived from replay events, replay frames, public speech, and revealed post-match roles only.
-- They do not use private summaries, hidden chain-of-thought, or model-internal reasoning.
-
-To regenerate the dev dashboard data locally:
-
-```bash
-pnpm fairness:report
-```
-
-That writes:
-- `artifacts/fairness/latest/fairness-report.json`
-- `apps/web/public/data/fairness-report.latest.json`
-
-Required replay inputs for the EQ layer:
-- `roles-assigned`
-- `action-recorded`
-- `vote-resolved`
-- replay frame player snapshots for public display names and status
+## Known Limitations
+- The presentation quality is stronger than earlier milestones, but some visuals are still prototype-grade and meant to be swapped for bespoke art later.
+- The current experience is spectator-first. It is optimized for review, observation, replay, and analysis rather than a final player-facing shipping loop.
+- Dev and fairness tooling are intentionally separate from live routes; reviewers should use `/game` or `/game/demo` first.
+- `main` does not reflect the full current alpha. Review the `feat/world-first-runtime` branch.
 
 ## Quality Gates
 ```bash
@@ -111,32 +153,9 @@ pnpm test:e2e
 pnpm fairness:check
 ```
 
-`pnpm ci:quality` runs lint, typecheck, unit tests, and workspace builds. `pnpm test:e2e` runs the Playwright smoke suite. `pnpm fairness:check` runs the 100-seed balance gate and exits non-zero when official thresholds fail.
-
-## Local Infra
-Use the bundled Compose file only when you want local parity with the production persistence stack.
-
-```bash
-pnpm db:up
-pnpm db:logs
-pnpm db:down
-```
-
-## Replay and Simulation Notes
-- `pnpm sim` writes replay files into `artifacts/replays/`.
-- `pnpm sim:batch` writes a summary into `artifacts/batch/`. Add `--write-replays` if you want one replay file per run.
-- `pnpm seed-suite` writes regression packs into `artifacts/seed-packs/`.
-- `pnpm replay:open <file>` validates and stages a replay at `.local/replay-open/current.replay.json`.
-- `pnpm media:capture` saves screenshots and, when `ffmpeg` is available, a GIF into `artifacts/media/latest/`.
-
-## Observation Controls
-- `V`: toggle roaming and surveillance observation
-- `Q` / `E` or `Tab`: cycle surveillance feeds
-- `1` to `4`: lock a surveillance feed
-- `Esc`: return to roaming observation
-
 ## Documentation
 - [Local Quickstart](./docs/local-quickstart.md)
+- [Alpha Review Guide](./docs/release/alpha-review.md)
 - [Contribution Guide](./CONTRIBUTING.md)
 - [Architecture Index](./docs/architecture/README.md)
 - [Presentation Direction](./docs/architecture/presentation.md)
