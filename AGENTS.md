@@ -1,6 +1,7 @@
 # Blackout Manor Agent Guide
 
 ## Product Surface
+- Before changing `packages/client-game` presentation, read `docs/design/SPECTATOR_MODE_BIBLE.md`.
 - `packages/client-game` is the primary product surface.
 - `apps/web` is only a thin shell that boots the runtime, provides route entry points, and mounts non-default secondary tools.
 - `/game/[roomId]` is the primary live match route.

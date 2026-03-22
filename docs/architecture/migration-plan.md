@@ -104,16 +104,101 @@ This plan tracks presentation ownership, product-surface work, and benchmark-sur
 - EQ metrics remain out of `/game`.
 - contributors can regenerate the fairness + EQ report locally and inspect it through the dev route.
 
-## Post-Alpha Milestones
+## Milestone 6 - Embodied Spectator Overhaul
 
-### Upcoming: Milestone 6 - Original Production Asset Pass
+### Completed: 6A Donor Audit And Art-Direction Lock
 
 #### Goal
-Replace the remaining placeholder and procedural presentation assets with bespoke art, audio, and higher-fidelity authored content.
+Lock donor strategy, visual language, house program, asset boundaries, and execution order before changing runtime presentation again.
 
 #### Acceptance Criteria
-- the runtime no longer depends on prototype-grade presentation for reviewer-first routes.
-- asset swaps preserve current scene/director and replay-safe architecture.
+- `docs/design/SPECTATOR_MODE_BIBLE.md` is the source of truth
+- donor boundaries and license implications are documented
+- the manor floorplan vision is locked before implementation work starts
+
+### Upcoming: 6B Floorplan Rebuild
+
+#### Goal
+Rebuild the manor into a cleaner connected floorplan with better thresholds, circulation, and room anchors.
+
+#### Acceptance Criteria
+- the whole house reads as one connected space
+- room adjacency matches the locked house program
+- cutaway readability survives the rebuild
+
+### Upcoming: 6C Movement And Navigation Rewrite
+
+#### Goal
+Make traversal embodied through doors, corridors, and hotspots instead of room-hop feeling.
+
+#### Acceptance Criteria
+- movement is visibly spatial
+- room entry and exit are readable
+- client presentation remains non-authoritative
+
+### Upcoming: 6D Meeting Blocking And Seating
+
+#### Goal
+Stage meetings as physical gathering, seating, and in-world table drama.
+
+#### Acceptance Criteria
+- all surviving agents physically gather before meeting presentation fully settles
+- seating for ten is stable and readable
+- exile presentation remains in-world
+
+### Upcoming: 6E Task Readability
+
+#### Goal
+Improve spectator understanding of what task or sabotage response is happening in each room.
+
+#### Acceptance Criteria
+- task interactions are readable at hotspot level
+- sabotage responses are visually obvious without dashboarding the live route
+
+### Upcoming: 6F Character Identity Pass
+
+#### Goal
+Upgrade cast distinctiveness through silhouettes, outfit kits, masks, posture, and portraits.
+
+#### Acceptance Criteria
+- all ten agents are distinguishable at a glance
+- portrait and in-world identity stay aligned
+
+### Upcoming: 6G Audio And Event Feedback
+
+#### Goal
+Introduce stronger room-aware audio, storm texture, and public event feedback.
+
+#### Acceptance Criteria
+- major events have readable sound feedback
+- audio remains supportive rather than noisy
+
+### Upcoming: 6H Room Zoom / Inspection Mode
+
+#### Goal
+Add a more deliberate room focus mode on top of overview and surveillance.
+
+#### Acceptance Criteria
+- room zoom feels cinematic and reversible
+- surveillance and room focus stay visually coherent
+
+### Upcoming: 6I Asset And License Integration
+
+#### Goal
+Integrate approved donor assets and placeholders through manifest and credits discipline.
+
+#### Acceptance Criteria
+- imported assets are documented and separable
+- asset swaps do not require logic rewrites
+
+### Upcoming: 6J Benchmark Safety Pass
+
+#### Goal
+Verify the embodied spectator overhaul does not leak analytics into live mode or damage replay safety.
+
+#### Acceptance Criteria
+- live mode remains analytics-free
+- replay compatibility and authority boundaries remain intact
 
 ### Upcoming: Milestone 7 - Alpha Hardening And Review Packaging
 
