@@ -6,9 +6,7 @@ test("presents the public root as a game-first launcher", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 1, name: /blackout manor/i }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /enter game/i }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /enter game/i })).toBeVisible();
   await expect(
     page.getByRole("link", { name: /watch demo room/i }),
   ).toBeVisible();
@@ -22,7 +20,9 @@ test("renders the live manor canvas", async ({ page }) => {
   await page.goto("/game/demo");
 
   await expect(page.getByTestId("game-runtime-host")).toBeVisible();
-  await expect(page.locator(".game-runtime-canvas-host canvas").first()).toBeVisible();
+  await expect(
+    page.locator(".game-runtime-canvas-host canvas").first(),
+  ).toBeVisible();
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
@@ -37,13 +37,17 @@ test("keeps the legacy play route as a compatibility redirect", async ({
   await expect(page.getByTestId("game-runtime-host")).toBeVisible();
 });
 
-test("loads replay through the runtime from the dev shell", async ({ page }) => {
+test("loads replay through the runtime from the dev shell", async ({
+  page,
+}) => {
   await page.goto("/dev/play?view=replay");
 
   await expect(page.getByTestId("game-runtime-host")).toBeVisible({
     timeout: 20_000,
   });
-  await expect(page.locator(".game-runtime-canvas-host canvas").first()).toBeVisible();
+  await expect(
+    page.locator(".game-runtime-canvas-host canvas").first(),
+  ).toBeVisible();
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
