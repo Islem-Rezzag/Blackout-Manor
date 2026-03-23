@@ -3,6 +3,8 @@
 ## Core Floorplan Vision
 Blackout Manor is one connected house with a central circulation spine, readable wings, and visible thresholds. The viewer should be able to trace movement from one space to another through actual doors and corridors.
 
+North-star reference asset: [`blackout-manor-concept-v1.png`](./reference/blackout-manor-concept-v1.png). The concept locks the manor hierarchy and mood; the playable adaptation is defined in [`FLOORPLAN_FROM_CONCEPT.md`](./FLOORPLAN_FROM_CONCEPT.md).
+
 ## Final Room List
 - Grand Hall
 - Dining / Meeting Room

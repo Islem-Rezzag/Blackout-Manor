@@ -3,6 +3,8 @@
 ## Purpose
 This document defines the locked spectator-facing visual and staging language for Blackout Manor on the `feat/world-first-runtime` branch. It is the source of truth for future presentation work in `packages/client-game`.
 
+North-star reference asset: [`blackout-manor-concept-v1.png`](./reference/blackout-manor-concept-v1.png). Use it as a mood and hierarchy target, then adapt it through [`CONCEPT_ART_REVIEW.md`](./CONCEPT_ART_REVIEW.md) and [`FLOORPLAN_FROM_CONCEPT.md`](./FLOORPLAN_FROM_CONCEPT.md) rather than copying it literally.
+
 ## Product Reality
 - Blackout Manor is currently a spectator-first alpha.
 - The public entry is the launcher at `/`.

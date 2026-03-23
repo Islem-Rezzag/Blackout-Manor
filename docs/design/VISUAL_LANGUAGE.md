@@ -5,6 +5,8 @@ Blackout Manor should read as a premium 2D/2.5D cutaway manor thriller: Sims-lik
 
 It is explicitly not Among Us visual identity.
 
+North-star reference asset: [`blackout-manor-concept-v1.png`](./reference/blackout-manor-concept-v1.png). Use it to lock tone, room hierarchy, and cast readability, then interpret it through [`CONCEPT_ART_REVIEW.md`](./CONCEPT_ART_REVIEW.md) and [`CHARACTER_AND_UI_STYLE_GUIDE.md`](./CHARACTER_AND_UI_STYLE_GUIDE.md).
+
 ## Identity Lock
 - Not Among Us visual identity
 - Not beans, capsules, or simplified widgets

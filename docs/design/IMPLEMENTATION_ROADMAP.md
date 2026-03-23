@@ -2,6 +2,8 @@
 
 Milestone 6 is now the Embodied Spectator Overhaul.
 
+North-star reference asset: [`blackout-manor-concept-v1.png`](./reference/blackout-manor-concept-v1.png). Milestones 6B through 6J should treat the concept image plus the 6A.5 extraction docs as the implementation target, not just loose mood inspiration.
+
 ## 6A Donor Audit And Art-Direction Lock
 
 ### Goal
