@@ -155,7 +155,14 @@ const posturePalette = (
   }
 };
 
-const actionAnchor = (actionIcon: AvatarActionIconId | null) => {
+const actionAnchor = (
+  actionIcon: AvatarActionIconId | null,
+  hasCustomLabel: boolean,
+) => {
+  if (hasCustomLabel && !actionIcon) {
+    return { x: 0, y: -60 };
+  }
+
   if (actionIcon === "report" || actionIcon === "sabotage") {
     return { x: 20, y: -62 };
   }
@@ -825,7 +832,9 @@ export class AvatarRig {
 
   #renderActionBadge(posture: ReturnType<typeof posturePalette>) {
     const actionIcon = this.#state.cue.actionIcon;
-    const label = actionIcon ? actionIconLabel(actionIcon) : "";
+    const label =
+      this.#state.cue.badgeText ??
+      (actionIcon ? actionIconLabel(actionIcon) : "");
     const visible = Boolean(
       label &&
         this.#state.alive &&
@@ -838,7 +847,10 @@ export class AvatarRig {
     }
 
     const width = Phaser.Math.Clamp(44 + label.length * 5.8, 62, 106);
-    const { x, y } = actionAnchor(actionIcon);
+    const { x, y } = actionAnchor(
+      actionIcon,
+      Boolean(this.#state.cue.badgeText),
+    );
 
     this.#actionBadge.setPosition(x, y);
     this.#actionBadge.setAlpha(

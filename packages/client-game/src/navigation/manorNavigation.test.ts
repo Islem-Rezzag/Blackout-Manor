@@ -108,4 +108,29 @@ describe("manor navigation", () => {
       y: room.cluePoint.y,
     });
   });
+
+  it("routes task work through an approach point before settling on the hotspot", () => {
+    const target = getRoomSeatPosition("generator-room", 0, 2);
+    const plan = buildEmbodiedMovementPlan({
+      fromRoomId: "generator-room",
+      toRoomId: "generator-room",
+      currentPosition: {
+        x: target.x - 68,
+        y: target.y - 42,
+      },
+      targetPosition: target,
+      phaseId: "roam",
+      cue: {
+        ...idleCue,
+        taskId: "reset-breaker-lattice",
+        badgeText: "REPAIR",
+      },
+    });
+
+    expect(plan.waypoints.map((waypoint) => waypoint.kind)).toEqual([
+      "task-approach",
+      "hotspot",
+    ]);
+    expect(plan.hotspotPosition).not.toEqual(target);
+  });
 });

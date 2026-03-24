@@ -5,6 +5,7 @@ import type {
   PhaseId,
   PlayerId,
   PublicPlayerState,
+  TaskId,
 } from "@blackout-manor/shared";
 
 export type AvatarFacing =
@@ -84,6 +85,9 @@ export type AvatarInteractionCue = {
   targetPlayerId: PlayerId | null;
   emphasis: number;
   actionIcon: AvatarActionIconId | null;
+  taskId?: TaskId | null;
+  badgeText?: string | null;
+  lookAt?: { x: number; y: number } | null;
 };
 
 const BODY_PALETTE = [

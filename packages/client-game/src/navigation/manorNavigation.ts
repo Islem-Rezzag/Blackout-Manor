@@ -2,6 +2,7 @@ import { MANOR_V1_MAP } from "@blackout-manor/content";
 import type { PhaseId, RoomId } from "@blackout-manor/shared";
 
 import type { AvatarInteractionCue } from "../entities/avatar/presentation";
+import { getTaskInteractionGeometry } from "../tasking/taskReadability";
 import {
   getDoorNodesForRoom,
   getRoomRenderData,
@@ -20,6 +21,7 @@ export type NavigationWaypointKind =
   | "door-threshold"
   | "corridor"
   | "room-entry"
+  | "task-approach"
   | "hotspot";
 
 export type NavigationWaypoint = NavigationPoint & {
@@ -432,6 +434,14 @@ const resolveRoomHotspotTarget = (
   phaseId: PhaseId,
   cue: AvatarInteractionCue,
 ) => {
+  if (cue.taskId) {
+    const taskGeometry = getTaskInteractionGeometry(cue.taskId);
+
+    if (taskGeometry.roomId === roomId) {
+      return taskGeometry.hotspotPoint;
+    }
+  }
+
   if (
     phaseId === "meeting" ||
     phaseId === "vote" ||
@@ -514,8 +524,39 @@ export const buildEmbodiedMovementPlan = (options: {
     phaseId,
     cue,
   );
+  const taskGeometry =
+    cue.taskId && getTaskInteractionGeometry(cue.taskId).roomId === toRoomId
+      ? getTaskInteractionGeometry(cue.taskId)
+      : null;
 
   if (fromRoomId === toRoomId) {
+    const waypoints: NavigationWaypoint[] = [];
+
+    if (
+      taskGeometry &&
+      !roughlySamePoint(currentPosition, taskGeometry.approachPoint)
+    ) {
+      waypoints.push(
+        createWaypoint(
+          taskGeometry.approachPoint,
+          "task-approach",
+          toRoomId,
+          ROOM_SPEED_PX_PER_SECOND,
+          THRESHOLD_PAUSE_MS,
+        ),
+      );
+    }
+
+    waypoints.push(
+      createWaypoint(
+        hotspotPosition,
+        "hotspot",
+        toRoomId,
+        ROOM_SPEED_PX_PER_SECOND,
+        TASK_SETTLE_DELAY_MS,
+      ),
+    );
+
     return {
       fromRoomId,
       toRoomId,
@@ -523,15 +564,7 @@ export const buildEmbodiedMovementPlan = (options: {
       targetPosition,
       hotspotPosition,
       usesEmbodiedTraversal: false,
-      waypoints: [
-        createWaypoint(
-          hotspotPosition,
-          "hotspot",
-          toRoomId,
-          ROOM_SPEED_PX_PER_SECOND,
-          TASK_SETTLE_DELAY_MS,
-        ),
-      ],
+      waypoints,
     };
   }
 
@@ -618,6 +651,22 @@ export const buildEmbodiedMovementPlan = (options: {
     } else {
       traversalPoint = getDoorCenter(exitDoor);
     }
+  }
+
+  if (
+    taskGeometry &&
+    !roughlySamePoint(traversalPoint, taskGeometry.approachPoint)
+  ) {
+    pushWaypoint(
+      waypoints,
+      createWaypoint(
+        taskGeometry.approachPoint,
+        "task-approach",
+        toRoomId,
+        ROOM_SPEED_PX_PER_SECOND,
+        THRESHOLD_PAUSE_MS,
+      ),
+    );
   }
 
   pushWaypoint(

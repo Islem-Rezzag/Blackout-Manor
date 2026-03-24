@@ -16,6 +16,10 @@ import {
 import { AtmosphereVeil } from "../fx/AtmosphereVeil";
 import { StormLayer } from "../fx/StormLayer";
 import {
+  buildTaskReadabilityPresentation,
+  type TaskReadabilityPresentation,
+} from "../tasking/taskReadability";
+import {
   getRoomRenderData,
   MANOR_RENDER_MAP,
   MANOR_WORLD_BOUNDS,
@@ -33,6 +37,7 @@ import {
   type RoomSignal,
   readableTaskLabel,
 } from "./signals";
+import { TaskReadabilityLayer } from "./TaskReadabilityLayer";
 
 type RoomLayerContainers = {
   floor: Phaser.GameObjects.Container;
@@ -183,6 +188,7 @@ export class ManorWorldStage {
   readonly #corridorVisuals: CorridorVisual[] = [];
   readonly #doorNodeVisuals: DoorNodeVisual[] = [];
   readonly #playerLayer: PlayerAvatarLayer;
+  readonly #taskReadabilityLayer: TaskReadabilityLayer;
   readonly #stormLayer: StormLayer;
   readonly #atmosphereVeil: AtmosphereVeil;
   readonly #layers: StageLayers;
@@ -209,6 +215,9 @@ export class ManorWorldStage {
       focus: this.#scene.add.container(0, 0).setDepth(STAGE_DEPTH.focus),
     };
     this.#playerLayer = new PlayerAvatarLayer(this.#scene);
+    this.#taskReadabilityLayer = new TaskReadabilityLayer({
+      scene: this.#scene,
+    });
     this.#stormLayer = new StormLayer(this.#scene);
     this.#atmosphereVeil = new AtmosphereVeil(this.#scene);
 
@@ -258,6 +267,7 @@ export class ManorWorldStage {
   render(options: ManorWorldStageRenderOptions) {
     const phaseId = options.phaseId ?? options.snapshot.phaseId;
     const signals = createRoomSignalMap(options.snapshot);
+    const taskReadability = buildTaskReadabilityPresentation(options.snapshot);
     const focusedRoomId =
       options.focusRoomId ??
       [...options.snapshot.recentEvents]
@@ -295,9 +305,17 @@ export class ManorWorldStage {
         signal,
         options.showTaskChips ?? false,
         options.snapshot,
+        taskReadability,
       );
     }
 
+    this.#taskReadabilityLayer.render({
+      presentation: taskReadability,
+      phaseId,
+      focusRoomId: this.#focusedRoomId,
+      hoveredRoomId: this.#hoveredRoomId,
+      showTaskChips: options.showTaskChips ?? false,
+    });
     this.#playerLayer.render(
       options.snapshot.players,
       options.snapshot.recentEvents,
@@ -305,6 +323,7 @@ export class ManorWorldStage {
       options.seatResolver,
       options.positionOverrides,
       options.movementOrigins,
+      taskReadability,
     );
     this.#atmosphereVeil.setBlackoutLevel(
       blackoutStrengthFromSnapshot(options.snapshot),
@@ -315,6 +334,7 @@ export class ManorWorldStage {
 
   destroy() {
     this.#playerLayer.destroy();
+    this.#taskReadabilityLayer.destroy();
     this.#stormLayer.destroy();
     this.#atmosphereVeil.destroy();
 
@@ -873,6 +893,7 @@ export class ManorWorldStage {
     signal: RoomSignal,
     showTaskChips: boolean,
     snapshot: MatchSnapshot,
+    taskReadability: TaskReadabilityPresentation,
   ) {
     const focused = this.#focusedRoomId === room.roomId;
     const palette = createRoomRenderPalette({
@@ -1017,6 +1038,7 @@ export class ManorWorldStage {
       roomState.lightLevel,
       snapshot,
       showTaskChips,
+      taskReadability,
     );
   }
 
@@ -1026,14 +1048,21 @@ export class ManorWorldStage {
     lightLevel: MatchSnapshot["rooms"][number]["lightLevel"],
     snapshot: MatchSnapshot,
     showTaskChips: boolean,
+    taskReadability: TaskReadabilityPresentation,
   ) {
     const roomTasks = snapshot.tasks.filter((task) => task.roomId === roomId);
     const lightFactor = lightLevelToFactor(lightLevel);
+    const hasImportantTaskCue =
+      taskReadability.rooms
+        .get(roomId)
+        ?.some((task) => task.tone !== "available") ?? false;
+    const showRoomTaskChips =
+      showTaskChips && (this.#focusedRoomId === roomId || hasImportantTaskCue);
 
     for (const [index, chip] of visual.taskChips.entries()) {
       const task = roomTasks[index];
 
-      if (!showTaskChips || !task) {
+      if (!showRoomTaskChips || !task) {
         chip.setVisible(false);
         continue;
       }

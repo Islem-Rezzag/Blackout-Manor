@@ -12,6 +12,10 @@ import {
   type NavigationPoint,
   type NavigationWaypoint,
 } from "../../navigation/manorNavigation";
+import type {
+  TaskPlayerCue,
+  TaskReadabilityPresentation,
+} from "../../tasking/taskReadability";
 import { AvatarRig } from "./AvatarRig";
 import {
   type AvatarFacing,
@@ -29,6 +33,28 @@ const TARGET_EPSILON = 10;
 
 const distanceBetween = (from: NavigationPoint, to: NavigationPoint) =>
   Math.hypot(to.x - from.x, to.y - from.y);
+
+const mergeAvatarCue = (
+  baseCue: AvatarInteractionCue,
+  taskCue: TaskPlayerCue | undefined,
+): AvatarInteractionCue => {
+  if (!taskCue) {
+    return baseCue;
+  }
+
+  if (baseCue.eventId) {
+    return baseCue;
+  }
+
+  return {
+    ...baseCue,
+    eventId: taskCue.eventId,
+    emphasis: Math.max(baseCue.emphasis, taskCue.emphasis),
+    taskId: taskCue.taskId,
+    badgeText: taskCue.badgeText,
+    lookAt: taskCue.lookAt,
+  };
+};
 
 export type AvatarMovementOrigin = {
   roomId: RoomId;
@@ -122,6 +148,7 @@ class PlayerAvatar {
 
     const visiblePosture = resolveVisiblePosture(player, cue);
     const currentPosition = this.#position ?? targetPosition;
+    const moving = this.#isMoving();
     const navigationVector =
       Math.abs(this.#velocity.x) > 0.1 || Math.abs(this.#velocity.y) > 0.1
         ? this.#velocity
@@ -132,12 +159,18 @@ class PlayerAvatar {
             }
           : { x: 0, y: 0 };
     const targetVector =
-      cue.targetPlayerId && targetSeat
+      cue.lookAt &&
+      (!moving || distanceBetween(currentPosition, cue.lookAt) <= 110)
         ? {
-            x: targetSeat.x - currentPosition.x,
-            y: targetSeat.y - currentPosition.y,
+            x: cue.lookAt.x - currentPosition.x,
+            y: cue.lookAt.y - currentPosition.y,
           }
-        : navigationVector;
+        : cue.targetPlayerId && targetSeat
+          ? {
+              x: targetSeat.x - currentPosition.x,
+              y: targetSeat.y - currentPosition.y,
+            }
+          : navigationVector;
 
     this.#facing = directionFromVector(
       targetVector.x,
@@ -145,7 +178,6 @@ class PlayerAvatar {
       this.#facing,
     );
 
-    const moving = this.#isMoving();
     this.#rig.setMovementState(moving);
     this.#rig.applyState({
       pose: resolveAvatarPose(player),
@@ -277,6 +309,8 @@ class PlayerAvatar {
       Math.round(targetPosition.y),
       phaseId,
       cue.actionIcon ?? "none",
+      cue.taskId ?? "task:none",
+      cue.badgeText ?? "badge:none",
     ].join(":");
 
     this.#authoritativeRoomId = roomId;
@@ -414,7 +448,10 @@ export class PlayerAvatarLayer {
     ) => NavigationPoint,
     positionOverrides?: ReadonlyMap<PlayerId, NavigationPoint>,
     movementOrigins?: ReadonlyMap<PlayerId, AvatarMovementOrigin>,
+    taskReadability?: TaskReadabilityPresentation | null,
   ) {
+    const activeTaskReadability =
+      phaseId === "roam" || phaseId === "report" ? taskReadability : null;
     const byRoom = new Map<RoomId, PublicPlayerState[]>();
     const positions = new Map<PublicPlayerState["id"], NavigationPoint>();
 
@@ -472,14 +509,20 @@ export class PlayerAvatarLayer {
         emphasis: 0,
         actionIcon: null,
       };
+      const mergedCue = mergeAvatarCue(
+        cue,
+        activeTaskReadability?.playerCues.get(player.id),
+      );
 
       avatar.apply(
         player,
         player.roomId,
         position,
         phaseId,
-        cue,
-        cue.targetPlayerId ? (positions.get(cue.targetPlayerId) ?? null) : null,
+        mergedCue,
+        mergedCue.targetPlayerId
+          ? (positions.get(mergedCue.targetPlayerId) ?? null)
+          : null,
         movementOrigins?.get(player.id) ?? null,
       );
     }
