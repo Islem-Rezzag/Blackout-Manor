@@ -1,11 +1,23 @@
 import * as Phaser from "phaser";
 
 import type { GameDirector } from "../directors/GameDirector";
+import type { GamePresentationState } from "../directors/types";
 import { MeetingPortraitStrip } from "../entities/avatar/MeetingPortraitStrip";
 import { ManorWorldStage } from "../stage/ManorWorldStage";
-import { createMeetingSeatResolver } from "../stage/seatResolvers";
+import {
+  createMeetingBlocking,
+  deriveMeetingTravelStatuses,
+  MEETING_ALARM_FOCUS_MS,
+  MEETING_PANEL_DELAY_MS,
+  MEETING_PORTRAIT_DELAY_MS,
+} from "../stage/meetingBlocking";
 import { RuntimeBanner } from "../ui/RuntimeBanner";
 import { SCENE_KEYS } from "./keys";
+
+type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
+  id: string;
+  startedAt: number;
+};
 
 export class MeetingScene extends Phaser.Scene {
   readonly #director: GameDirector;
@@ -17,6 +29,8 @@ export class MeetingScene extends Phaser.Scene {
   #meetingDetail: Phaser.GameObjects.Text | null = null;
   #portraitStrip: MeetingPortraitStrip | null = null;
   #unsubscribe: (() => void) | null = null;
+  #presentationState: GamePresentationState | null = null;
+  #meetingSequence: MeetingSequenceState | null = null;
 
   constructor(director: GameDirector) {
     super(SCENE_KEYS.meeting);
@@ -70,24 +84,20 @@ export class MeetingScene extends Phaser.Scene {
         return;
       }
 
+      this.#presentationState = state;
       this.#banner?.setContent(state.banner);
       this.#meetingHeader?.setText(state.meeting.header);
       this.#meetingDetail?.setText(state.meeting.detail);
-      this.#portraitStrip?.render(
-        state.meeting.stagedSnapshot.players,
-        state.meeting.stagedSnapshot.phaseId,
-        state.meeting.stagedSnapshot.recentEvents,
-      );
-      this.#stage?.render({
-        snapshot: state.meeting.stagedSnapshot,
-        focusRoomId: state.camera.roomId,
-        immediateFocus: state.camera.immediate,
-        seatResolver: createMeetingSeatResolver(
-          state.meeting.meetingRoomId,
-          state.meeting.stagedSnapshot.phaseId,
-        ),
-        showTaskChips: false,
-      });
+
+      if (this.#meetingSequence?.id !== state.meeting.sequenceId) {
+        this.#meetingSequence = {
+          id: state.meeting.sequenceId,
+          startedAt: this.time.now,
+          ...createMeetingBlocking(state.meeting),
+        };
+      }
+
+      this.#renderMeetingState();
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -106,12 +116,65 @@ export class MeetingScene extends Phaser.Scene {
       this.#meetingPlate = null;
       this.#meetingHeader = null;
       this.#meetingDetail = null;
+      this.#presentationState = null;
+      this.#meetingSequence = null;
     });
   }
 
   update(_time: number, delta: number) {
+    this.#renderMeetingState();
     this.#stage?.update(delta);
     this.#portraitStrip?.update(delta);
+  }
+
+  #renderMeetingState() {
+    const state = this.#presentationState;
+    const sequence = this.#meetingSequence;
+
+    if (!state?.snapshot || !state.meeting || !sequence) {
+      return;
+    }
+
+    const elapsedMs = Math.max(0, this.time.now - sequence.startedAt);
+    const focusRoomId =
+      elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
+        ? state.meeting.alarmRoomId
+        : state.camera.roomId;
+    const panelVisible = elapsedMs >= MEETING_PANEL_DELAY_MS;
+    const portraitsVisible = elapsedMs >= MEETING_PORTRAIT_DELAY_MS;
+
+    this.#meetingPlate?.setVisible(panelVisible);
+    this.#meetingGlow?.setAlpha(
+      elapsedMs < MEETING_ALARM_FOCUS_MS ? 0.22 : 0.14,
+    );
+    this.#portraitStrip?.setVisible(portraitsVisible);
+
+    this.#stage?.render({
+      snapshot: state.meeting.stagedSnapshot,
+      focusRoomId,
+      immediateFocus:
+        elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
+          ? false
+          : state.camera.immediate,
+      seatResolver: () => ({ x: 0, y: 0 }),
+      positionOverrides: sequence.seatPositions,
+      movementOrigins: sequence.movementOrigins,
+      showTaskChips: false,
+    });
+
+    const travelStatuses = deriveMeetingTravelStatuses({
+      meeting: state.meeting,
+      navigationStates: this.#stage?.getAvatarNavigationStates() ?? new Map(),
+      travelDurationsMs: sequence.travelDurationsMs,
+      elapsedMs,
+    });
+
+    this.#portraitStrip?.render(
+      portraitsVisible ? state.meeting.stagedSnapshot.players : [],
+      state.meeting.stagedSnapshot.phaseId,
+      state.meeting.stagedSnapshot.recentEvents,
+      portraitsVisible ? travelStatuses : new Map(),
+    );
   }
 
   #resizePanels() {

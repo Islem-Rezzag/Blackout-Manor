@@ -9,7 +9,10 @@ import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import { SoundBus } from "../audio/SoundBus";
-import { PlayerAvatarLayer } from "../entities/avatar/PlayerAvatarLayer";
+import {
+  type AvatarMovementOrigin,
+  PlayerAvatarLayer,
+} from "../entities/avatar/PlayerAvatarLayer";
 import { AtmosphereVeil } from "../fx/AtmosphereVeil";
 import { StormLayer } from "../fx/StormLayer";
 import {
@@ -114,6 +117,8 @@ export type ManorWorldStageRenderOptions = {
   focusRoomId: RoomId | null;
   phaseId?: PhaseId;
   seatResolver: SeatResolver;
+  positionOverrides?: ReadonlyMap<string, { x: number; y: number }>;
+  movementOrigins?: ReadonlyMap<string, AvatarMovementOrigin>;
   showTaskChips?: boolean;
   immediateFocus?: boolean;
 };
@@ -242,6 +247,10 @@ export class ManorWorldStage {
     this.#atmosphereVeil.update();
   }
 
+  getAvatarNavigationStates() {
+    return this.#playerLayer.getNavigationStates();
+  }
+
   resize(gameSize?: Phaser.Structs.Size) {
     this.#handleResize(gameSize);
   }
@@ -294,6 +303,8 @@ export class ManorWorldStage {
       options.snapshot.recentEvents,
       phaseId,
       options.seatResolver,
+      options.positionOverrides,
+      options.movementOrigins,
     );
     this.#atmosphereVeil.setBlackoutLevel(
       blackoutStrengthFromSnapshot(options.snapshot),

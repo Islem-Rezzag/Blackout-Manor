@@ -105,6 +105,7 @@ class PortraitCard {
     cue: AvatarInteractionCue,
     spotlightPlayerId: PublicPlayerState["id"] | null,
     targetPlayerId: PublicPlayerState["id"] | null,
+    travelStatusLabel: string | null,
   ) {
     const appearance = resolveAvatarAppearance(player);
     const visiblePosture = resolveVisiblePosture(player, cue);
@@ -143,11 +144,12 @@ class PortraitCard {
       spotlight ? 0.5 : 0.3,
     );
     this.#eyebrow.setText(
-      spotlight
-        ? phaseId.toUpperCase()
-        : player.status === "alive"
-          ? "SURVIVOR"
-          : "REMOVED",
+      travelStatusLabel ??
+        (spotlight
+          ? phaseId.toUpperCase()
+          : player.status === "alive"
+            ? "SURVIVOR"
+            : "REMOVED"),
     );
     this.#name.setText(player.displayName);
     this.#name.setAlpha(player.status === "alive" ? 1 : 0.5);
@@ -212,9 +214,10 @@ export class MeetingPortraitStrip {
     players: readonly PublicPlayerState[],
     phaseId: PhaseId,
     recentEvents: readonly MatchEvent[],
+    travelStatusByPlayerId?: ReadonlyMap<PublicPlayerState["id"], string>,
   ) {
-    this.#container.setVisible(MEETING_PHASES.has(phaseId));
     if (!MEETING_PHASES.has(phaseId)) {
+      this.#container.setVisible(false);
       return;
     }
 
@@ -263,6 +266,7 @@ export class MeetingPortraitStrip {
         },
         spotlightPlayerId,
         targetPlayerId,
+        travelStatusByPlayerId?.get(player.id) ?? null,
       );
     });
 
@@ -276,6 +280,10 @@ export class MeetingPortraitStrip {
 
   resize(width: number, height: number) {
     this.#container.setPosition(width / 2, height - 172);
+  }
+
+  setVisible(visible: boolean) {
+    this.#container.setVisible(visible);
   }
 
   update(delta: number) {

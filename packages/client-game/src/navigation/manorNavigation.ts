@@ -641,3 +641,19 @@ export const buildEmbodiedMovementPlan = (options: {
     waypoints,
   };
 };
+
+export const estimateMovementPlanDurationMs = (
+  plan: Pick<EmbodiedMovementPlan, "waypoints">,
+) =>
+  plan.waypoints.reduce((totalMs, waypoint, index) => {
+    const previousPoint = index > 0 ? plan.waypoints[index - 1] : null;
+    const distance = previousPoint
+      ? distanceBetween(previousPoint, waypoint)
+      : 0;
+
+    return (
+      totalMs +
+      waypoint.pauseMs +
+      (distance > 0 ? (distance / waypoint.speedPxPerSecond) * 1000 : 0)
+    );
+  }, 0);

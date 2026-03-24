@@ -33,6 +33,9 @@ export type CameraPlan = {
 
 export type MeetingPresentation = {
   meetingRoomId: RoomId;
+  sequenceId: string;
+  originSnapshot: MatchSnapshot;
+  alarmRoomId: RoomId | null;
   stagedSnapshot: MatchSnapshot;
   speakerId: PlayerId | null;
   targetPlayerId: PlayerId | null;

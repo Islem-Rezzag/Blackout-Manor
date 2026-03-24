@@ -1,6 +1,7 @@
 import type {
   MatchEvent,
   PhaseId,
+  PlayerId,
   PublicPlayerState,
   RoomId,
 } from "@blackout-manor/shared";
@@ -28,6 +29,19 @@ const TARGET_EPSILON = 10;
 
 const distanceBetween = (from: NavigationPoint, to: NavigationPoint) =>
   Math.hypot(to.x - from.x, to.y - from.y);
+
+export type AvatarMovementOrigin = {
+  roomId: RoomId;
+  position: NavigationPoint;
+};
+
+export type AvatarNavigationState = {
+  roomId: RoomId | null;
+  moving: boolean;
+  paused: boolean;
+  arrived: boolean;
+  waypointKind: NavigationWaypoint["kind"] | null;
+};
 
 class PlayerAvatar {
   readonly id: PublicPlayerState["id"];
@@ -101,9 +115,10 @@ class PlayerAvatar {
     phaseId: PhaseId,
     cue: AvatarInteractionCue,
     targetSeat: NavigationPoint | null,
+    movementOrigin: AvatarMovementOrigin | null,
   ) {
     const appearance = resolveAvatarAppearance(player);
-    this.#syncNavigation(roomId, targetPosition, phaseId, cue);
+    this.#syncNavigation(roomId, targetPosition, phaseId, cue, movementOrigin);
 
     const visiblePosture = resolveVisiblePosture(player, cue);
     const currentPosition = this.#position ?? targetPosition;
@@ -215,6 +230,18 @@ class PlayerAvatar {
     this.#velocity = { x: 0, y: 0 };
   }
 
+  getNavigationState(): AvatarNavigationState {
+    const activeWaypoint = this.#waypoints[this.#waypointIndex] ?? null;
+
+    return {
+      roomId: this.#authoritativeRoomId,
+      moving: this.#isMoving(),
+      paused: this.#pauseMs > 0,
+      arrived: activeWaypoint === null,
+      waypointKind: activeWaypoint?.kind ?? null,
+    };
+  }
+
   destroy() {
     this.container.destroy(true);
   }
@@ -224,15 +251,18 @@ class PlayerAvatar {
     targetPosition: NavigationPoint,
     phaseId: PhaseId,
     cue: AvatarInteractionCue,
+    movementOrigin: AvatarMovementOrigin | null,
   ) {
     if (!this.#position) {
-      this.#position = targetPosition;
-      this.#targetPosition = targetPosition;
-      this.#authoritativeRoomId = roomId;
+      const initialPosition = movementOrigin?.position ?? targetPosition;
+      const initialRoomId = movementOrigin?.roomId ?? roomId;
+
+      this.#position = initialPosition;
+      this.#targetPosition = initialPosition;
+      this.#authoritativeRoomId = initialRoomId;
       this.#waypoints = [];
       this.#waypointIndex = 0;
       this.#pauseMs = 0;
-      return;
     }
 
     const previousRoomId = this.#authoritativeRoomId ?? roomId;
@@ -382,6 +412,8 @@ export class PlayerAvatarLayer {
       seatIndex: number,
       seatCount: number,
     ) => NavigationPoint,
+    positionOverrides?: ReadonlyMap<PlayerId, NavigationPoint>,
+    movementOrigins?: ReadonlyMap<PlayerId, AvatarMovementOrigin>,
   ) {
     const byRoom = new Map<RoomId, PublicPlayerState[]>();
     const positions = new Map<PublicPlayerState["id"], NavigationPoint>();
@@ -407,7 +439,8 @@ export class PlayerAvatarLayer {
       );
       positions.set(
         player.id,
-        roomSeatResolver(player.roomId, seatIndex, roomPlayers.length),
+        positionOverrides?.get(player.id) ??
+          roomSeatResolver(player.roomId, seatIndex, roomPlayers.length),
       );
     }
 
@@ -447,6 +480,7 @@ export class PlayerAvatarLayer {
         phaseId,
         cue,
         cue.targetPlayerId ? (positions.get(cue.targetPlayerId) ?? null) : null,
+        movementOrigins?.get(player.id) ?? null,
       );
     }
 
@@ -462,6 +496,15 @@ export class PlayerAvatarLayer {
     for (const avatar of this.#avatars.values()) {
       avatar.update(delta);
     }
+  }
+
+  getNavigationStates() {
+    return new Map(
+      [...this.#avatars.entries()].map(([playerId, avatar]) => [
+        playerId,
+        avatar.getNavigationState(),
+      ]),
+    );
   }
 
   destroy() {

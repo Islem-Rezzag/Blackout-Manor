@@ -23,6 +23,10 @@ const CONTENT_SCENE_KEYS = {
   replay: "replay",
 } as const;
 
+const MEETING_PHASES = new Set<
+  NonNullable<ClientGameState["snapshot"]>["phaseId"]
+>(["meeting", "vote", "reveal"]);
+
 type Listener = (state: GamePresentationState) => void;
 
 const roleTitle = (
@@ -238,8 +242,11 @@ export class GameDirector {
     const replay = this.#replayDirector.derive(runtimeState);
     const activeScene = this.#phaseDirector.resolveScene(runtimeState, replay);
     const snapshot = replay?.snapshot ?? runtimeState.snapshot;
+    if (snapshot) {
+      this.#meetingDirector.track(snapshot);
+    }
     const meeting =
-      snapshot && activeScene === "meeting"
+      snapshot && MEETING_PHASES.has(snapshot.phaseId)
         ? this.#meetingDirector.derive(snapshot)
         : null;
     const stageSnapshot =

@@ -2,8 +2,13 @@ import type { PhaseId } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import type { GameDirector } from "../directors/GameDirector";
+import type { GamePresentationState } from "../directors/types";
 import type { SeatResolver } from "../stage/ManorWorldStage";
 import { ManorWorldStage } from "../stage/ManorWorldStage";
+import {
+  createMeetingBlocking,
+  MEETING_ALARM_FOCUS_MS,
+} from "../stage/meetingBlocking";
 import {
   createFinaleSeatResolver,
   createMeetingSeatResolver,
@@ -32,6 +37,11 @@ const replayTimerLine = (
   tick: number,
 ) => `Frame ${frameIndex + 1}/${totalFrames} | Tick ${tick}`;
 
+type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
+  id: string;
+  startedAt: number;
+};
+
 export class ReplayScene extends Phaser.Scene {
   readonly #director: GameDirector;
   #stage: ManorWorldStage | null = null;
@@ -40,6 +50,8 @@ export class ReplayScene extends Phaser.Scene {
   #unsubscribe: (() => void) | null = null;
   #detachControls: (() => void) | null = null;
   #detachReplayControls: (() => void) | null = null;
+  #presentationState: GamePresentationState | null = null;
+  #meetingSequence: MeetingSequenceState | null = null;
 
   constructor(director: GameDirector) {
     super(SCENE_KEYS.replay);
@@ -68,30 +80,18 @@ export class ReplayScene extends Phaser.Scene {
         return;
       }
 
-      const phaseId = state.replay.snapshot.phaseId;
-      const highlightText =
-        state.replay.highlightMarkers[0]?.description ??
-        "Left and right step the deterministic frame log.";
-
-      this.#hud?.setContent({
-        surveillance: state.surveillance,
-        phaseLabel: phaseId.toUpperCase(),
-        timerText: replayTimerLine(
-          state.replay.frameIndex,
-          state.replay.totalFrames,
-          state.replay.snapshot.tick,
-        ),
-        contextText: highlightText,
-      });
-      this.#console?.setPresentation(state.surveillance);
-      this.#stage?.render({
-        snapshot: state.replay.snapshot,
-        focusRoomId: state.camera.roomId,
-        immediateFocus: state.camera.immediate,
-        seatResolver: resolveSeatResolver(phaseId),
-        showTaskChips:
-          phaseId === "roam" && state.surveillance.mode === "roaming",
-      });
+      this.#presentationState = state;
+      if (
+        state.meeting &&
+        this.#meetingSequence?.id !== state.meeting.sequenceId
+      ) {
+        this.#meetingSequence = {
+          id: state.meeting.sequenceId,
+          startedAt: this.time.now,
+          ...createMeetingBlocking(state.meeting),
+        };
+      }
+      this.#renderReplayState();
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -108,11 +108,72 @@ export class ReplayScene extends Phaser.Scene {
       this.#console = null;
       this.#stage?.destroy();
       this.#stage = null;
+      this.#presentationState = null;
+      this.#meetingSequence = null;
     });
   }
 
   update(_time: number, delta: number) {
+    this.#renderReplayState();
     this.#stage?.update(delta);
+  }
+
+  #renderReplayState() {
+    const state = this.#presentationState;
+
+    if (!state?.replay?.snapshot) {
+      return;
+    }
+
+    const phaseId = state.replay.snapshot.phaseId;
+    const highlightText =
+      state.replay.highlightMarkers[0]?.description ??
+      "Left and right step the deterministic frame log.";
+    const meetingPresentation =
+      phaseId === "meeting" || phaseId === "vote" || phaseId === "reveal"
+        ? state.meeting
+        : null;
+    const elapsedMs = this.#meetingSequence
+      ? Math.max(0, this.time.now - this.#meetingSequence.startedAt)
+      : 0;
+    const focusRoomId =
+      meetingPresentation &&
+      elapsedMs < MEETING_ALARM_FOCUS_MS &&
+      meetingPresentation.alarmRoomId
+        ? meetingPresentation.alarmRoomId
+        : state.camera.roomId;
+    const snapshot =
+      meetingPresentation?.stagedSnapshot ?? state.replay.snapshot;
+
+    this.#hud?.setContent({
+      surveillance: state.surveillance,
+      phaseLabel: phaseId.toUpperCase(),
+      timerText: replayTimerLine(
+        state.replay.frameIndex,
+        state.replay.totalFrames,
+        state.replay.snapshot.tick,
+      ),
+      contextText: highlightText,
+    });
+    this.#console?.setPresentation(state.surveillance);
+    this.#stage?.render({
+      snapshot,
+      focusRoomId,
+      immediateFocus:
+        meetingPresentation &&
+        elapsedMs < MEETING_ALARM_FOCUS_MS &&
+        meetingPresentation.alarmRoomId
+          ? false
+          : state.camera.immediate,
+      seatResolver: resolveSeatResolver(phaseId),
+      ...(meetingPresentation && this.#meetingSequence
+        ? {
+            positionOverrides: this.#meetingSequence.seatPositions,
+          }
+        : {}),
+      showTaskChips:
+        phaseId === "roam" && state.surveillance.mode === "roaming",
+    });
   }
 
   #attachReplayControls() {

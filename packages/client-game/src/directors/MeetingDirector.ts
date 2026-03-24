@@ -7,6 +7,11 @@ import type {
 import type { MeetingPresentation } from "./types";
 
 const MEETING_ROOM_ID = "grand-hall" as const;
+const MEETING_PHASES = new Set<MatchSnapshot["phaseId"]>([
+  "meeting",
+  "vote",
+  "reveal",
+]);
 
 const findLatestMeetingEvent = (snapshot: MatchSnapshot) =>
   [...snapshot.recentEvents]
@@ -20,6 +25,25 @@ const findLatestMeetingEvent = (snapshot: MatchSnapshot) =>
         "player-exiled",
       ].includes(event.eventId),
     );
+
+const findMeetingTriggerEvent = (snapshot: MatchSnapshot) =>
+  [...snapshot.recentEvents]
+    .reverse()
+    .find((event) =>
+      ["body-reported", "meeting-called"].includes(event.eventId),
+    );
+
+const eventRoomId = (event: MatchEvent | undefined) => {
+  if (!event) {
+    return null;
+  }
+
+  if ("roomId" in event) {
+    return event.roomId ?? null;
+  }
+
+  return null;
+};
 
 const describeMeetingHeader = (
   snapshot: MatchSnapshot,
@@ -88,9 +112,48 @@ const reorderPlayersForReveal = (
   });
 };
 
+const cloneSnapshot = (snapshot: MatchSnapshot) => ({
+  ...snapshot,
+  players: snapshot.players.map((player) => ({ ...player })),
+  rooms: snapshot.rooms.map((room) => ({
+    ...room,
+    occupantIds: [...room.occupantIds],
+  })),
+  tasks: snapshot.tasks.map((task) => ({
+    ...task,
+    assignedPlayerIds: [...task.assignedPlayerIds],
+  })),
+  recentEvents: [...snapshot.recentEvents],
+});
+
 export class MeetingDirector {
+  #lastNonMeetingSnapshot: MatchSnapshot | null = null;
+  #activeOriginSnapshot: MatchSnapshot | null = null;
+  #activeSequenceId: string | null = null;
+
+  track(snapshot: MatchSnapshot) {
+    if (!MEETING_PHASES.has(snapshot.phaseId)) {
+      this.#lastNonMeetingSnapshot = cloneSnapshot(snapshot);
+    }
+  }
+
   derive(snapshot: MatchSnapshot): MeetingPresentation {
     const latestEvent = findLatestMeetingEvent(snapshot);
+    const triggerEvent = findMeetingTriggerEvent(snapshot) ?? latestEvent;
+    const sequenceId = `${triggerEvent?.id ?? snapshot.matchId}:${triggerEvent?.tick ?? snapshot.tick}`;
+
+    if (this.#activeSequenceId !== sequenceId) {
+      this.#activeSequenceId = sequenceId;
+      this.#activeOriginSnapshot =
+        this.#lastNonMeetingSnapshot !== null
+          ? cloneSnapshot(this.#lastNonMeetingSnapshot)
+          : cloneSnapshot(snapshot);
+    }
+
+    const originSnapshot =
+      this.#activeOriginSnapshot !== null
+        ? cloneSnapshot(this.#activeOriginSnapshot)
+        : cloneSnapshot(snapshot);
     const speakerId =
       latestEvent && "playerId" in latestEvent ? latestEvent.playerId : null;
     const targetPlayerId =
@@ -154,6 +217,9 @@ export class MeetingDirector {
 
     return {
       meetingRoomId: MEETING_ROOM_ID,
+      sequenceId,
+      originSnapshot,
+      alarmRoomId: eventRoomId(triggerEvent),
       stagedSnapshot: {
         ...snapshot,
         players: stagedPlayers,
