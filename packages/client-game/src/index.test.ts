@@ -10,6 +10,7 @@ import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
 import { ReplayMatchConnection } from "./network/replayMatchConnection";
 import {
+  getDoorNodesForRoom,
   getRoomSeatPosition,
   MANOR_RENDER_MAP,
   MANOR_ROOM_LAYOUTS,
@@ -36,17 +37,29 @@ describe("client-game package", () => {
 
   it("parses the external tiled manor map into render data", () => {
     expect(MANOR_RENDER_MAP.roomOrder).toHaveLength(10);
+    expect(MANOR_RENDER_MAP.corridors.length).toBeGreaterThan(0);
+    expect(MANOR_RENDER_MAP.doorNodes.length).toBeGreaterThan(0);
     expect(MANOR_RENDER_MAP.rooms["grand-hall"].lights.length).toBeGreaterThan(
       0,
     );
     expect(MANOR_RENDER_MAP.rooms.greenhouse.windows.length).toBeGreaterThan(0);
-    expect(MANOR_RENDER_MAP.rooms["grand-hall"].cameraAnchor).toEqual(
+    expect(MANOR_RENDER_MAP.rooms["grand-hall"].cameraAnchor).not.toEqual(
       MANOR_RENDER_MAP.rooms["grand-hall"].focusPoint,
     );
     expect(MANOR_RENDER_MAP.rooms.ballroom.anchors.sabotageY).toBeLessThan(0);
     expect(MANOR_RENDER_MAP.rooms.library.surfaces.shellColor).toBeGreaterThan(
       0,
     );
+    expect(
+      getDoorNodesForRoom("grand-hall").some((doorNode) =>
+        doorNode.targetRoomIds.includes("kitchen"),
+      ),
+    ).toBe(true);
+    expect(
+      MANOR_RENDER_MAP.corridors.some(
+        (segment) => segment.className === "meeting-wing",
+      ),
+    ).toBe(true);
   });
 
   it("exposes a replaceable client asset manifest for the manor renderer", () => {

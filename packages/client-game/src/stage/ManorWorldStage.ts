@@ -16,6 +16,8 @@ import {
   getRoomRenderData,
   MANOR_RENDER_MAP,
   MANOR_WORLD_BOUNDS,
+  type ManorCorridorSegment,
+  type ManorDoorNode,
   type ManorRenderRoom,
 } from "../tiled/manorLayout";
 import { createRoomRenderPalette } from "./renderTheme";
@@ -81,6 +83,24 @@ type StageLayers = {
   walls: Phaser.GameObjects.Container;
   interaction: Phaser.GameObjects.Container;
   focus: Phaser.GameObjects.Container;
+};
+
+type CorridorVisual = {
+  segment: ManorCorridorSegment;
+  shellShadow: Phaser.GameObjects.Image;
+  shell: Phaser.GameObjects.Image;
+  floor: Phaser.GameObjects.Image;
+  specular: Phaser.GameObjects.Image;
+  glow: Phaser.GameObjects.Image;
+  trim: Phaser.GameObjects.Rectangle;
+};
+
+type DoorNodeVisual = {
+  node: ManorDoorNode;
+  threshold: Phaser.GameObjects.Rectangle;
+  frame: Phaser.GameObjects.Rectangle;
+  glow: Phaser.GameObjects.Image;
+  marker: Phaser.GameObjects.Rectangle;
 };
 
 export type SeatResolver = (
@@ -155,6 +175,8 @@ export class ManorWorldStage {
   readonly #scene: Phaser.Scene;
   readonly #soundBus = new SoundBus();
   readonly #roomVisuals = new Map<RoomId, RoomVisual>();
+  readonly #corridorVisuals: CorridorVisual[] = [];
+  readonly #doorNodeVisuals: DoorNodeVisual[] = [];
   readonly #playerLayer: PlayerAvatarLayer;
   readonly #stormLayer: StormLayer;
   readonly #atmosphereVeil: AtmosphereVeil;
@@ -186,7 +208,9 @@ export class ManorWorldStage {
     this.#atmosphereVeil = new AtmosphereVeil(this.#scene);
 
     this.#drawBackdrop();
+    this.#drawCirculation();
     this.#drawRooms();
+    this.#drawDoorNodes();
     this.#stormLayer.setBackdropBands(MANOR_RENDER_MAP.backdropRects);
     this.#stormLayer.setWindows(
       MANOR_RENDER_MAP.roomOrder.flatMap(
@@ -328,6 +352,81 @@ export class ManorWorldStage {
       .setAlpha(0.16);
 
     this.#layers.backdrop.add([manorShadow, coldRim]);
+  }
+
+  #drawCirculation() {
+    for (const segment of MANOR_RENDER_MAP.corridors) {
+      const centerX = segment.x + segment.width / 2;
+      const centerY = segment.y + segment.height / 2;
+      const isTechnical =
+        segment.className === "service-band" ||
+        segment.className === "service-link";
+      const isMeetingWing = segment.className === "meeting-wing";
+      const shellTint = isTechnical
+        ? 0x243039
+        : isMeetingWing
+          ? 0x433127
+          : 0x2f2823;
+      const floorTint = isTechnical
+        ? 0x2b3d44
+        : isMeetingWing
+          ? 0x4a3529
+          : 0x322a24;
+      const accentTint = isTechnical ? 0x7fb7cf : 0xd5b183;
+      const shellShadow = this.#scene.add
+        .image(centerX, centerY + 10, "room-shadow")
+        .setDisplaySize(segment.width + 36, segment.height + 28)
+        .setAlpha(0.26);
+      const shell = this.#scene.add
+        .image(centerX, centerY + 4, "room-shell")
+        .setDisplaySize(segment.width + 18, segment.height + 16)
+        .setTint(shellTint)
+        .setAlpha(0.95);
+      const floor = this.#scene.add
+        .image(centerX, centerY + 4, "room-floor")
+        .setDisplaySize(segment.width, segment.height)
+        .setTint(floorTint)
+        .setAlpha(0.96);
+      const specular = this.#scene.add
+        .image(centerX, centerY + 4, "room-specular")
+        .setDisplaySize(
+          Math.max(42, segment.width - 10),
+          Math.max(32, segment.height - 10),
+        )
+        .setBlendMode(Phaser.BlendModes.SCREEN)
+        .setTint(isTechnical ? 0x96daf0 : 0xf0d39a)
+        .setAlpha(0.12);
+      const glow = this.#scene.add
+        .image(centerX, centerY, "room-glow")
+        .setDisplaySize(segment.width * 1.18, segment.height * 0.82)
+        .setBlendMode(Phaser.BlendModes.SCREEN)
+        .setTint(isTechnical ? 0x79bfd8 : 0xd9ac72)
+        .setAlpha(isTechnical ? 0.12 : 0.08);
+      const trim = this.#scene.add
+        .rectangle(
+          centerX,
+          centerY - segment.height / 2 + 6,
+          segment.width - 10,
+          8,
+          accentTint,
+          0.22,
+        )
+        .setOrigin(0.5);
+
+      this.#layers.floor.add([shellShadow, shell, floor, specular]);
+      this.#layers.lights.add(glow);
+      this.#layers.walls.add(trim);
+
+      this.#corridorVisuals.push({
+        segment,
+        shellShadow,
+        shell,
+        floor,
+        specular,
+        glow,
+        trim,
+      });
+    }
   }
 
   #drawRooms() {
@@ -698,6 +797,64 @@ export class ManorWorldStage {
     }
   }
 
+  #drawDoorNodes() {
+    for (const node of MANOR_RENDER_MAP.doorNodes) {
+      const threshold = this.#scene.add
+        .rectangle(
+          node.x,
+          node.y,
+          node.width,
+          node.height,
+          node.fill,
+          node.alpha,
+        )
+        .setOrigin(0.5);
+      const frame = this.#scene.add
+        .rectangle(
+          node.x,
+          node.y,
+          node.width + 10,
+          node.height + 10,
+          0xffffff,
+          0,
+        )
+        .setStrokeStyle(2, node.stroke ?? 0xe4c391, 0.28)
+        .setOrigin(0.5);
+      const glow = this.#scene.add
+        .image(node.x, node.y, "focus-beam")
+        .setDisplaySize(
+          Math.max(42, node.width * 2.1),
+          Math.max(42, node.height * 2.1),
+        )
+        .setBlendMode(Phaser.BlendModes.SCREEN)
+        .setTint(node.kind === "stair" ? 0xf1e3b6 : 0xdab37c)
+        .setAlpha(0.05);
+      const marker = this.#scene.add
+        .rectangle(
+          node.x,
+          node.y,
+          Math.max(8, Math.min(node.width, 14)),
+          Math.max(8, Math.min(node.height, 14)),
+          node.stroke ?? 0xe4c391,
+          0.72,
+        )
+        .setOrigin(0.5);
+
+      this.#layers.floor.add(threshold);
+      this.#layers.lights.add(glow);
+      this.#layers.walls.add(frame);
+      this.#layers.interaction.add(marker);
+
+      this.#doorNodeVisuals.push({
+        node,
+        threshold,
+        frame,
+        glow,
+        marker,
+      });
+    }
+  }
+
   #applyRoomState(
     visual: RoomVisual,
     room: ManorRenderRoom,
@@ -937,6 +1094,29 @@ export class ManorWorldStage {
         0xffffff,
         hovered && !focused ? 0.03 : 0.001,
       );
+    }
+
+    for (const visual of this.#doorNodeVisuals) {
+      const emphasized =
+        visual.node.roomId === this.#focusedRoomId ||
+        visual.node.roomId === this.#hoveredRoomId ||
+        visual.node.targetRoomIds.includes(
+          this.#focusedRoomId ?? visual.node.roomId,
+        ) ||
+        visual.node.targetRoomIds.includes(
+          this.#hoveredRoomId ?? visual.node.roomId,
+        );
+
+      visual.threshold.setAlpha(
+        emphasized ? visual.node.alpha : visual.node.alpha * 0.74,
+      );
+      visual.frame.setStrokeStyle(
+        2,
+        visual.node.stroke ?? 0xe4c391,
+        emphasized ? 0.6 : 0.22,
+      );
+      visual.glow.setAlpha(emphasized ? 0.12 : 0.035);
+      visual.marker.setAlpha(emphasized ? 0.9 : 0.5);
     }
   }
 

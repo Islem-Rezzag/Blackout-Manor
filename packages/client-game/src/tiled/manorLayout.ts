@@ -29,6 +29,18 @@ export type ManorBackdropRect = {
   depth: number;
 };
 
+export type ManorCorridorSegment = {
+  id: number;
+  className: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: number;
+  stroke: number | null;
+  alpha: number;
+};
+
 export type ManorDecorShape = {
   id: number;
   className: string;
@@ -61,6 +73,22 @@ export type ManorWeatherWindow = {
   height: number;
   fill: number;
   alpha: number;
+};
+
+export type ManorDoorNode = {
+  id: number;
+  className: string;
+  roomId: RoomId;
+  targetRoomIds: readonly RoomId[];
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: number;
+  stroke: number | null;
+  alpha: number;
+  kind: "door" | "arch" | "stair";
+  orientation: "north" | "south" | "east" | "west";
 };
 
 export type ManorRenderRoom = ManorRoomLayout & {
@@ -114,6 +142,8 @@ export type ManorRenderMap = {
   width: number;
   height: number;
   backdropRects: ManorBackdropRect[];
+  corridors: ManorCorridorSegment[];
+  doorNodes: ManorDoorNode[];
   roomOrder: RoomId[];
   rooms: Record<RoomId, ManorRenderRoom>;
 };
@@ -136,6 +166,23 @@ const asString = (
   const value = properties[key];
 
   return typeof value === "string" && value.length > 0 ? value : fallback;
+};
+
+const asRoomIdList = (
+  properties: TiledPropertyBag,
+  key: string,
+): readonly RoomId[] => {
+  const value = properties[key];
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0)
+    .map(assertRoomId);
 };
 
 const asNumber = (
@@ -213,11 +260,62 @@ const buildRenderMap = (mapJson: TiledMapJson): ManorRenderMap => {
     },
   );
 
+  const corridors = getObjectLayer(mapJson, "corridors").objects.map(
+    (object) => {
+      const properties = asPropertyBag(object);
+
+      return {
+        id: object.id,
+        className: object.class ?? "corridor",
+        x: object.x,
+        y: object.y,
+        width: object.width,
+        height: object.height,
+        fill: parseColor(properties.fill, 0x231d1a),
+        stroke:
+          typeof properties.stroke === "string"
+            ? parseColor(properties.stroke, 0x4e4237)
+            : null,
+        alpha: asNumber(properties, "alpha", 1),
+      } satisfies ManorCorridorSegment;
+    },
+  );
+
+  const doorNodes = getObjectLayer(mapJson, "door_nodes").objects.map(
+    (object) => {
+      const properties = asPropertyBag(object);
+
+      return {
+        id: object.id,
+        className: object.class ?? "door-node",
+        roomId: assertRoomId(asString(properties, "roomId", "")),
+        targetRoomIds: asRoomIdList(properties, "targetRoomIds"),
+        x: object.x + object.width / 2,
+        y: object.y + object.height / 2,
+        width: object.width,
+        height: object.height,
+        fill: parseColor(properties.fill, 0x8c6a44),
+        stroke:
+          typeof properties.stroke === "string"
+            ? parseColor(properties.stroke, 0xd9be8c)
+            : null,
+        alpha: asNumber(properties, "alpha", 0.9),
+        kind: asString(properties, "kind", "door") as ManorDoorNode["kind"],
+        orientation: asString(
+          properties,
+          "orientation",
+          object.width >= object.height ? "north" : "east",
+        ) as ManorDoorNode["orientation"],
+      } satisfies ManorDoorNode;
+    },
+  );
+
   const rooms = {} as Record<RoomId, ManorRenderRoom>;
   const roomLayer = getObjectLayer(mapJson, "rooms_floor");
   const cutawayLayer = getObjectLayer(mapJson, "cutaway_walls");
   const decorLayer = getObjectLayer(mapJson, "decor");
   const lightLayer = getObjectLayer(mapJson, "light_nodes");
+  const cameraLayer = getObjectLayer(mapJson, "camera_points");
   const focusLayer = getObjectLayer(mapJson, "focus_points");
   const clueLayer = getObjectLayer(mapJson, "clue_points");
   const windowsLayer = getObjectLayer(mapJson, "weather_windows");
@@ -227,6 +325,10 @@ const buildRenderMap = (mapJson: TiledMapJson): ManorRenderMap => {
     const roomId = assertRoomId(
       asString(properties, "roomId", roomObject.name),
     );
+    const cameraObject = cameraLayer.objects.find((candidate) => {
+      const cameraProps = asPropertyBag(candidate);
+      return asString(cameraProps, "roomId", "") === roomId;
+    });
     const cutawayObject = cutawayLayer.objects.find((candidate) => {
       const cutawayProps = asPropertyBag(candidate);
       return asString(cutawayProps, "roomId", "") === roomId;
@@ -274,12 +376,14 @@ const buildRenderMap = (mapJson: TiledMapJson): ManorRenderMap => {
             x: roomObject.x + roomObject.width / 2,
             y: roomObject.y + roomObject.height / 2,
           },
-      cameraAnchor: focusObject
-        ? pointFromObject(focusObject)
-        : {
-            x: roomObject.x + roomObject.width / 2,
-            y: roomObject.y + roomObject.height / 2,
-          },
+      cameraAnchor: cameraObject
+        ? pointFromObject(cameraObject)
+        : focusObject
+          ? pointFromObject(focusObject)
+          : {
+              x: roomObject.x + roomObject.width / 2,
+              y: roomObject.y + roomObject.height / 2,
+            },
       anchors: {
         titleY:
           -roomObject.height / 2 + asNumber(properties, "titleOffsetY", 20),
@@ -396,6 +500,8 @@ const buildRenderMap = (mapJson: TiledMapJson): ManorRenderMap => {
     width: mapJson.width * mapJson.tilewidth,
     height: mapJson.height * mapJson.tileheight,
     backdropRects,
+    corridors,
+    doorNodes,
     roomOrder: MANOR_V1_MAP.rooms.map((room) => room.id),
     rooms,
   };
@@ -429,6 +535,9 @@ export const getRoomLayout = (roomId: RoomId) => MANOR_ROOM_LAYOUTS[roomId];
 
 export const getRoomRenderData = (roomId: RoomId) =>
   MANOR_RENDER_MAP.rooms[roomId];
+
+export const getDoorNodesForRoom = (roomId: RoomId) =>
+  MANOR_RENDER_MAP.doorNodes.filter((doorNode) => doorNode.roomId === roomId);
 
 export const getRoomSeatPosition = (
   roomId: RoomId,
