@@ -6,6 +6,11 @@ import type {
 } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
+import {
+  buildEmbodiedMovementPlan,
+  type NavigationPoint,
+  type NavigationWaypoint,
+} from "../../navigation/manorNavigation";
 import { AvatarRig } from "./AvatarRig";
 import {
   type AvatarFacing,
@@ -18,6 +23,12 @@ import {
   visiblePostureLabel,
 } from "./presentation";
 
+const POSITION_EPSILON = 6;
+const TARGET_EPSILON = 10;
+
+const distanceBetween = (from: NavigationPoint, to: NavigationPoint) =>
+  Math.hypot(to.x - from.x, to.y - from.y);
+
 class PlayerAvatar {
   readonly id: PublicPlayerState["id"];
   readonly container: Phaser.GameObjects.Container;
@@ -28,8 +39,15 @@ class PlayerAvatar {
   readonly #statusPip: Phaser.GameObjects.Arc;
   readonly #statusPlate: Phaser.GameObjects.Rectangle;
   readonly #statusText: Phaser.GameObjects.Text;
-  #lastPosition: { x: number; y: number } | null = null;
+  #authoritativeRoomId: RoomId | null = null;
+  #position: NavigationPoint | null = null;
+  #targetPosition: NavigationPoint | null = null;
+  #waypoints: NavigationWaypoint[] = [];
+  #waypointIndex = 0;
+  #pauseMs = 0;
+  #velocity: NavigationPoint = { x: 0, y: 0 };
   #facing: AvatarFacing = "south";
+  #lastPlanSignature = "";
 
   constructor(scene: Phaser.Scene, player: PublicPlayerState) {
     const appearance = resolveAvatarAppearance(player);
@@ -78,21 +96,33 @@ class PlayerAvatar {
 
   apply(
     player: PublicPlayerState,
-    seat: { x: number; y: number },
+    roomId: RoomId,
+    targetPosition: NavigationPoint,
     phaseId: PhaseId,
     cue: AvatarInteractionCue,
-    targetSeat: { x: number; y: number } | null,
+    targetSeat: NavigationPoint | null,
   ) {
     const appearance = resolveAvatarAppearance(player);
+    this.#syncNavigation(roomId, targetPosition, phaseId, cue);
+
     const visiblePosture = resolveVisiblePosture(player, cue);
-    const previous = this.#lastPosition;
-    const delta = previous
-      ? { x: seat.x - previous.x, y: seat.y - previous.y }
-      : { x: 0, y: 0 };
+    const currentPosition = this.#position ?? targetPosition;
+    const navigationVector =
+      Math.abs(this.#velocity.x) > 0.1 || Math.abs(this.#velocity.y) > 0.1
+        ? this.#velocity
+        : this.#targetPosition
+          ? {
+              x: this.#targetPosition.x - currentPosition.x,
+              y: this.#targetPosition.y - currentPosition.y,
+            }
+          : { x: 0, y: 0 };
     const targetVector =
       cue.targetPlayerId && targetSeat
-        ? { x: targetSeat.x - seat.x, y: targetSeat.y - seat.y }
-        : delta;
+        ? {
+            x: targetSeat.x - currentPosition.x,
+            y: targetSeat.y - currentPosition.y,
+          }
+        : navigationVector;
 
     this.#facing = directionFromVector(
       targetVector.x,
@@ -100,10 +130,7 @@ class PlayerAvatar {
       this.#facing,
     );
 
-    const distance = previous
-      ? Phaser.Math.Distance.Between(previous.x, previous.y, seat.x, seat.y)
-      : 0;
-    const moving = distance > 6 && phaseId === "roam";
+    const moving = this.#isMoving();
     this.#rig.setMovementState(moving);
     this.#rig.applyState({
       pose: resolveAvatarPose(player),
@@ -173,32 +200,168 @@ class PlayerAvatar {
       player.status === "alive" ? "#eef4fb" : "#ffd5cb",
     );
     this.container.setAlpha(player.status === "alive" ? 1 : 0.52);
-    this.container.setVisible(player.roomId !== null);
-
-    if (previous) {
-      this.container.scene.tweens.add({
-        targets: this.container,
-        x: seat.x,
-        y: seat.y,
-        duration: moving
-          ? Phaser.Math.Clamp(180 + distance * 1.8, 220, 420)
-          : 180,
-        ease: Phaser.Math.Easing.Cubic.Out,
-      });
-    } else {
-      this.container.setPosition(seat.x, seat.y);
-    }
-
-    this.container.setDepth(50 + seat.y / 10);
-    this.#lastPosition = seat;
+    this.container.setVisible(true);
+    this.#applyPosition(currentPosition);
   }
 
   update(delta: number) {
+    this.#advanceNavigation(delta);
+    this.#applyPosition(this.#position);
     this.#rig.update(delta);
+  }
+
+  hide() {
+    this.container.setVisible(false);
+    this.#velocity = { x: 0, y: 0 };
   }
 
   destroy() {
     this.container.destroy(true);
+  }
+
+  #syncNavigation(
+    roomId: RoomId,
+    targetPosition: NavigationPoint,
+    phaseId: PhaseId,
+    cue: AvatarInteractionCue,
+  ) {
+    if (!this.#position) {
+      this.#position = targetPosition;
+      this.#targetPosition = targetPosition;
+      this.#authoritativeRoomId = roomId;
+      this.#waypoints = [];
+      this.#waypointIndex = 0;
+      this.#pauseMs = 0;
+      return;
+    }
+
+    const previousRoomId = this.#authoritativeRoomId ?? roomId;
+    const roomChanged = previousRoomId !== roomId;
+    const targetChanged =
+      !this.#targetPosition ||
+      distanceBetween(this.#targetPosition, targetPosition) > TARGET_EPSILON;
+    const planSignature = [
+      previousRoomId,
+      roomId,
+      Math.round(targetPosition.x),
+      Math.round(targetPosition.y),
+      phaseId,
+      cue.actionIcon ?? "none",
+    ].join(":");
+
+    this.#authoritativeRoomId = roomId;
+
+    if (
+      !roomChanged &&
+      !targetChanged &&
+      this.#lastPlanSignature === planSignature
+    ) {
+      return;
+    }
+
+    const plan = buildEmbodiedMovementPlan({
+      fromRoomId: previousRoomId,
+      toRoomId: roomId,
+      currentPosition: this.#position,
+      targetPosition,
+      phaseId,
+      cue,
+    });
+
+    this.#targetPosition = plan.hotspotPosition;
+    this.#waypoints = plan.waypoints;
+    this.#waypointIndex = 0;
+    this.#pauseMs = 0;
+    this.#lastPlanSignature = planSignature;
+  }
+
+  #advanceNavigation(delta: number) {
+    if (!this.#position) {
+      return;
+    }
+
+    let remainingMs = delta;
+    this.#velocity = { x: 0, y: 0 };
+
+    while (remainingMs > 0) {
+      if (this.#pauseMs > 0) {
+        const consumed = Math.min(this.#pauseMs, remainingMs);
+        this.#pauseMs -= consumed;
+        remainingMs -= consumed;
+
+        if (this.#pauseMs > 0) {
+          break;
+        }
+      }
+
+      const waypoint = this.#waypoints[this.#waypointIndex];
+
+      if (!waypoint) {
+        break;
+      }
+
+      const distance = distanceBetween(this.#position, waypoint);
+
+      if (distance <= POSITION_EPSILON) {
+        this.#position = { x: waypoint.x, y: waypoint.y };
+        this.#waypointIndex += 1;
+        this.#pauseMs = waypoint.pauseMs;
+        continue;
+      }
+
+      const maxDistance = waypoint.speedPxPerSecond * (remainingMs / 1000);
+
+      if (maxDistance >= distance) {
+        const consumedMs = (distance / waypoint.speedPxPerSecond) * 1000;
+        this.#velocity = {
+          x:
+            ((waypoint.x - this.#position.x) / distance) *
+            waypoint.speedPxPerSecond,
+          y:
+            ((waypoint.y - this.#position.y) / distance) *
+            waypoint.speedPxPerSecond,
+        };
+        this.#position = { x: waypoint.x, y: waypoint.y };
+        this.#waypointIndex += 1;
+        this.#pauseMs = waypoint.pauseMs;
+        remainingMs = Math.max(0, remainingMs - consumedMs);
+        continue;
+      }
+
+      const ratio = maxDistance / distance;
+      this.#velocity = {
+        x:
+          ((waypoint.x - this.#position.x) / distance) *
+          waypoint.speedPxPerSecond,
+        y:
+          ((waypoint.y - this.#position.y) / distance) *
+          waypoint.speedPxPerSecond,
+      };
+      this.#position = {
+        x: this.#position.x + (waypoint.x - this.#position.x) * ratio,
+        y: this.#position.y + (waypoint.y - this.#position.y) * ratio,
+      };
+      remainingMs = 0;
+    }
+  }
+
+  #isMoving() {
+    const waypoint = this.#waypoints[this.#waypointIndex];
+
+    if (!this.#position || !waypoint || this.#pauseMs > 0) {
+      return false;
+    }
+
+    return distanceBetween(this.#position, waypoint) > POSITION_EPSILON;
+  }
+
+  #applyPosition(position: NavigationPoint | null) {
+    if (!position) {
+      return;
+    }
+
+    this.container.setPosition(position.x, position.y);
+    this.container.setDepth(50 + position.y / 10);
   }
 }
 
@@ -218,13 +381,10 @@ export class PlayerAvatarLayer {
       roomId: RoomId,
       seatIndex: number,
       seatCount: number,
-    ) => { x: number; y: number },
+    ) => NavigationPoint,
   ) {
     const byRoom = new Map<RoomId, PublicPlayerState[]>();
-    const positions = new Map<
-      PublicPlayerState["id"],
-      { x: number; y: number }
-    >();
+    const positions = new Map<PublicPlayerState["id"], NavigationPoint>();
 
     for (const player of players) {
       if (!player.roomId) {
@@ -262,12 +422,12 @@ export class PlayerAvatarLayer {
       }
 
       if (!player.roomId) {
-        avatar.container.setVisible(false);
+        avatar.hide();
         continue;
       }
 
-      const seat = positions.get(player.id);
-      if (!seat) {
+      const position = positions.get(player.id);
+      if (!position) {
         continue;
       }
 
@@ -282,7 +442,8 @@ export class PlayerAvatarLayer {
 
       avatar.apply(
         player,
-        seat,
+        player.roomId,
+        position,
         phaseId,
         cue,
         cue.targetPlayerId ? (positions.get(cue.targetPlayerId) ?? null) : null,
