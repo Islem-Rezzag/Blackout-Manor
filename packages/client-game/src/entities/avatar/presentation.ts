@@ -41,25 +41,73 @@ export type AvatarActionIconId =
   | "accusation"
   | "protection";
 
-export type AvatarSilhouette = "slim" | "poised" | "broad" | "compact";
-export type AvatarMaskStyle = "half" | "wing" | "owl" | "spire";
-export type AvatarOutfitStyle = "tailcoat" | "cloak" | "gown" | "vest";
+export type AvatarSilhouette =
+  | "lithe"
+  | "regal"
+  | "broad"
+  | "compact"
+  | "draped"
+  | "structured";
+export type AvatarBodyType = "short" | "medium" | "tall";
+export type AvatarMaskStyle =
+  | "domino"
+  | "half"
+  | "wing"
+  | "owl"
+  | "spire"
+  | "petal"
+  | "crescent";
+export type AvatarOutfitStyle =
+  | "tailcoat"
+  | "cloakcoat"
+  | "ballgown"
+  | "column-gown"
+  | "waistcoat"
+  | "shawl-drape";
 export type AvatarAccessoryStyle =
   | "plume"
   | "brooch"
   | "monocle"
   | "chain"
-  | "rose";
+  | "rose"
+  | "fan"
+  | "cane"
+  | "keyring";
+export type AvatarHairStyle =
+  | "cropped"
+  | "swept"
+  | "bun"
+  | "braid"
+  | "waved"
+  | "coiffed";
 export type AvatarBubbleStyle = "formal" | "soft" | "thorn" | "glass";
+export type AvatarPortraitFrameStyle =
+  | "arch"
+  | "velvet"
+  | "brass"
+  | "laurel"
+  | "thorn"
+  | "gallery";
+export type AvatarStanceBias =
+  | "grounded"
+  | "guarded"
+  | "gliding"
+  | "commanding"
+  | "measured"
+  | "buoyant";
 
 export type AvatarAppearance = {
   key: string;
   personaId: string;
   silhouette: AvatarSilhouette;
+  bodyType: AvatarBodyType;
   maskStyle: AvatarMaskStyle;
   outfitStyle: AvatarOutfitStyle;
   accessoryStyle: AvatarAccessoryStyle;
+  hairStyle: AvatarHairStyle;
   bubbleStyle: AvatarBubbleStyle;
+  portraitFrameStyle: AvatarPortraitFrameStyle;
+  stanceBias: AvatarStanceBias;
   bodyColor: number;
   shadowColor: number;
   outfitColor: number;
@@ -77,6 +125,24 @@ export type AvatarAppearance = {
   empathy: number;
   analyticalFocus: number;
 };
+
+type PersonaIdentityKit = Pick<
+  AvatarAppearance,
+  | "silhouette"
+  | "bodyType"
+  | "maskStyle"
+  | "outfitStyle"
+  | "accessoryStyle"
+  | "hairStyle"
+  | "bubbleStyle"
+  | "portraitFrameStyle"
+  | "stanceBias"
+  | "bodyColor"
+  | "outfitColor"
+  | "trimColor"
+  | "accessoryColor"
+  | "maskColor"
+>;
 
 export type AvatarInteractionCue = {
   eventId: string | null;
@@ -128,6 +194,280 @@ const BUBBLE_STYLE_BASE = {
     fontFamily: "Trebuchet MS, Verdana, sans-serif",
   },
 } as const;
+
+const PERSONA_IDENTITY_KITS = {
+  "clockwork-advocate": {
+    silhouette: "structured",
+    bodyType: "medium",
+    maskStyle: "domino",
+    outfitStyle: "waistcoat",
+    accessoryStyle: "monocle",
+    hairStyle: "cropped",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "brass",
+    stanceBias: "measured",
+    bodyColor: 0xd7b49a,
+    outfitColor: 0x2f3646,
+    trimColor: 0xd0ad68,
+    accessoryColor: 0xe5c879,
+    maskColor: 0xf3e5cf,
+  },
+  "velvet-host": {
+    silhouette: "regal",
+    bodyType: "tall",
+    maskStyle: "wing",
+    outfitStyle: "ballgown",
+    accessoryStyle: "rose",
+    hairStyle: "bun",
+    bubbleStyle: "soft",
+    portraitFrameStyle: "velvet",
+    stanceBias: "gliding",
+    bodyColor: 0xe2bea7,
+    outfitColor: 0x6c1f2e,
+    trimColor: 0xe2b980,
+    accessoryColor: 0xf0d594,
+    maskColor: 0xf7e8d6,
+  },
+  "iron-witness": {
+    silhouette: "broad",
+    bodyType: "tall",
+    maskStyle: "owl",
+    outfitStyle: "cloakcoat",
+    accessoryStyle: "chain",
+    hairStyle: "cropped",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "gallery",
+    stanceBias: "grounded",
+    bodyColor: 0x8f6b53,
+    outfitColor: 0x37424f,
+    trimColor: 0xb7c8d6,
+    accessoryColor: 0x9ab0ba,
+    maskColor: 0xdfe8ee,
+  },
+  "spark-journalist": {
+    silhouette: "lithe",
+    bodyType: "medium",
+    maskStyle: "petal",
+    outfitStyle: "shawl-drape",
+    accessoryStyle: "plume",
+    hairStyle: "waved",
+    bubbleStyle: "glass",
+    portraitFrameStyle: "arch",
+    stanceBias: "buoyant",
+    bodyColor: 0xc99775,
+    outfitColor: 0x49506b,
+    trimColor: 0xe3a461,
+    accessoryColor: 0xf1bd7a,
+    maskColor: 0xf0d9c9,
+  },
+  "hearth-keeper": {
+    silhouette: "draped",
+    bodyType: "medium",
+    maskStyle: "crescent",
+    outfitStyle: "shawl-drape",
+    accessoryStyle: "brooch",
+    hairStyle: "bun",
+    bubbleStyle: "soft",
+    portraitFrameStyle: "laurel",
+    stanceBias: "grounded",
+    bodyColor: 0xb98a68,
+    outfitColor: 0x46503c,
+    trimColor: 0xc6b07c,
+    accessoryColor: 0xe7c98e,
+    maskColor: 0xf2e4d4,
+  },
+  "marble-skeptic": {
+    silhouette: "compact",
+    bodyType: "medium",
+    maskStyle: "spire",
+    outfitStyle: "waistcoat",
+    accessoryStyle: "monocle",
+    hairStyle: "swept",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "brass",
+    stanceBias: "guarded",
+    bodyColor: 0xd7ad90,
+    outfitColor: 0x3f3d46,
+    trimColor: 0xbfc7d5,
+    accessoryColor: 0xdfe6f3,
+    maskColor: 0xe8e7df,
+  },
+  "lantern-peacemaker": {
+    silhouette: "regal",
+    bodyType: "medium",
+    maskStyle: "wing",
+    outfitStyle: "cloakcoat",
+    accessoryStyle: "fan",
+    hairStyle: "braid",
+    bubbleStyle: "soft",
+    portraitFrameStyle: "laurel",
+    stanceBias: "gliding",
+    bodyColor: 0xc89a7e,
+    outfitColor: 0x27525d,
+    trimColor: 0xbbd2ac,
+    accessoryColor: 0xe4d596,
+    maskColor: 0xedeee0,
+  },
+  "glass-fox": {
+    silhouette: "structured",
+    bodyType: "tall",
+    maskStyle: "half",
+    outfitStyle: "tailcoat",
+    accessoryStyle: "cane",
+    hairStyle: "swept",
+    bubbleStyle: "thorn",
+    portraitFrameStyle: "thorn",
+    stanceBias: "guarded",
+    bodyColor: 0xd2a080,
+    outfitColor: 0x45224d,
+    trimColor: 0xd78ea7,
+    accessoryColor: 0xbfc3f1,
+    maskColor: 0xf0d8de,
+  },
+  "storm-orator": {
+    silhouette: "broad",
+    bodyType: "tall",
+    maskStyle: "spire",
+    outfitStyle: "tailcoat",
+    accessoryStyle: "plume",
+    hairStyle: "coiffed",
+    bubbleStyle: "thorn",
+    portraitFrameStyle: "thorn",
+    stanceBias: "commanding",
+    bodyColor: 0xb97c5a,
+    outfitColor: 0x6f1e1f,
+    trimColor: 0xf0a15c,
+    accessoryColor: 0xf1c76d,
+    maskColor: 0xf0d7c8,
+  },
+  "quiet-ledger": {
+    silhouette: "compact",
+    bodyType: "short",
+    maskStyle: "domino",
+    outfitStyle: "waistcoat",
+    accessoryStyle: "keyring",
+    hairStyle: "cropped",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "gallery",
+    stanceBias: "measured",
+    bodyColor: 0x9a6d53,
+    outfitColor: 0x384653,
+    trimColor: 0xa8bfd6,
+    accessoryColor: 0xe0d39c,
+    maskColor: 0xece2d2,
+  },
+  "parlor-comedian": {
+    silhouette: "lithe",
+    bodyType: "medium",
+    maskStyle: "petal",
+    outfitStyle: "tailcoat",
+    accessoryStyle: "fan",
+    hairStyle: "waved",
+    bubbleStyle: "glass",
+    portraitFrameStyle: "velvet",
+    stanceBias: "buoyant",
+    bodyColor: 0xe0b99f,
+    outfitColor: 0x3d3557,
+    trimColor: 0xf0be8d,
+    accessoryColor: 0xefb6ba,
+    maskColor: 0xf7e5d6,
+  },
+  "oak-sentinel": {
+    silhouette: "broad",
+    bodyType: "tall",
+    maskStyle: "owl",
+    outfitStyle: "cloakcoat",
+    accessoryStyle: "cane",
+    hairStyle: "cropped",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "gallery",
+    stanceBias: "grounded",
+    bodyColor: 0xa57957,
+    outfitColor: 0x334237,
+    trimColor: 0xc5a66f,
+    accessoryColor: 0xc9c59d,
+    maskColor: 0xe7dfcf,
+  },
+  "mirror-diplomat": {
+    silhouette: "regal",
+    bodyType: "tall",
+    maskStyle: "half",
+    outfitStyle: "column-gown",
+    accessoryStyle: "chain",
+    hairStyle: "coiffed",
+    bubbleStyle: "glass",
+    portraitFrameStyle: "arch",
+    stanceBias: "gliding",
+    bodyColor: 0xd7a888,
+    outfitColor: 0x295068,
+    trimColor: 0xd6b4e9,
+    accessoryColor: 0xc6e0ef,
+    maskColor: 0xf1e1d6,
+  },
+  "cinder-gambler": {
+    silhouette: "structured",
+    bodyType: "medium",
+    maskStyle: "crescent",
+    outfitStyle: "tailcoat",
+    accessoryStyle: "keyring",
+    hairStyle: "swept",
+    bubbleStyle: "thorn",
+    portraitFrameStyle: "brass",
+    stanceBias: "commanding",
+    bodyColor: 0xbb845f,
+    outfitColor: 0x4a342a,
+    trimColor: 0xe58a49,
+    accessoryColor: 0xf2c18d,
+    maskColor: 0xedddd2,
+  },
+  "velour-romantic": {
+    silhouette: "draped",
+    bodyType: "medium",
+    maskStyle: "wing",
+    outfitStyle: "ballgown",
+    accessoryStyle: "rose",
+    hairStyle: "bun",
+    bubbleStyle: "soft",
+    portraitFrameStyle: "velvet",
+    stanceBias: "gliding",
+    bodyColor: 0xe4bcaa,
+    outfitColor: 0x5c2a46,
+    trimColor: 0xe0adc1,
+    accessoryColor: 0xf0d7a7,
+    maskColor: 0xf5e8dc,
+  },
+  "needle-cross-examiner": {
+    silhouette: "structured",
+    bodyType: "medium",
+    maskStyle: "domino",
+    outfitStyle: "waistcoat",
+    accessoryStyle: "chain",
+    hairStyle: "cropped",
+    bubbleStyle: "formal",
+    portraitFrameStyle: "brass",
+    stanceBias: "guarded",
+    bodyColor: 0xc28b69,
+    outfitColor: 0x25394a,
+    trimColor: 0xcfd7dd,
+    accessoryColor: 0xbfd0dd,
+    maskColor: 0xe7dfd0,
+  },
+} as const satisfies Record<
+  (typeof SEASON_01_PERSONA_CARDS)[number]["id"],
+  PersonaIdentityKit
+>;
+
+const STANCE_MOTION = {
+  grounded: { cadence: 0.88, idle: 0.84 },
+  guarded: { cadence: 0.82, idle: 0.72 },
+  gliding: { cadence: 0.96, idle: 0.92 },
+  commanding: { cadence: 1.08, idle: 0.94 },
+  measured: { cadence: 0.78, idle: 0.7 },
+  buoyant: { cadence: 1.12, idle: 1.04 },
+} as const satisfies Record<
+  AvatarStanceBias,
+  { cadence: number; idle: number }
+>;
 
 const COMFORT_WORDS = [
   "breathe",
@@ -193,6 +533,76 @@ const findPersonaCard = (
     hashString(`${player.id}:${player.displayName}`),
   );
 };
+
+const createFallbackIdentityKit = (
+  persona: (typeof SEASON_01_PERSONA_CARDS)[number],
+  seed: number,
+): PersonaIdentityKit => ({
+  silhouette: pickVariant(
+    ["lithe", "regal", "broad", "compact", "draped", "structured"] as const,
+    seed,
+  ),
+  bodyType: pickVariant(["short", "medium", "tall"] as const, seed >>> 1),
+  maskStyle: pickVariant(
+    ["domino", "half", "wing", "owl", "spire", "petal", "crescent"] as const,
+    seed >>> 2,
+  ),
+  outfitStyle: pickVariant(
+    [
+      "tailcoat",
+      "cloakcoat",
+      "ballgown",
+      "column-gown",
+      "waistcoat",
+      "shawl-drape",
+    ] as const,
+    seed >>> 3,
+  ),
+  accessoryStyle: pickVariant(
+    [
+      "plume",
+      "brooch",
+      "monocle",
+      "chain",
+      "rose",
+      "fan",
+      "cane",
+      "keyring",
+    ] as const,
+    seed >>> 4,
+  ),
+  hairStyle: pickVariant(
+    ["cropped", "swept", "bun", "braid", "waved", "coiffed"] as const,
+    seed >>> 5,
+  ),
+  bubbleStyle: pickVariant(
+    ["formal", "soft", "thorn", "glass"] as const,
+    seed ^ hashString(persona.balanceBucket),
+  ),
+  portraitFrameStyle: pickVariant(
+    ["arch", "velvet", "brass", "laurel", "thorn", "gallery"] as const,
+    seed >>> 6,
+  ),
+  stanceBias: pickVariant(
+    [
+      "grounded",
+      "guarded",
+      "gliding",
+      "commanding",
+      "measured",
+      "buoyant",
+    ] as const,
+    seed >>> 7,
+  ),
+  bodyColor: pickVariant(BODY_PALETTE, seed >>> 8),
+  outfitColor: pickVariant(OUTFIT_PALETTE, seed >>> 9),
+  trimColor: pickVariant(TRIM_PALETTE, seed >>> 10),
+  accessoryColor: pickVariant(ACCESSORY_PALETTE, seed >>> 11),
+  maskColor: pickVariant(
+    [0xf2e6cf, 0xdde8f4, 0xf0d1cc, 0xeadfae] as const,
+    seed >>> 12,
+  ),
+});
 
 export const resolveAvatarPose = (
   player: Pick<PublicPlayerState, "bodyLanguage" | "emotion">,
@@ -318,69 +728,40 @@ export const resolveAvatarAppearance = (
 ): AvatarAppearance => {
   const persona = findPersonaCard(player);
   const seed = hashString(`${player.id}:${persona.id}:${player.displayName}`);
-  const silhouetteByBucket = {
-    steady: "poised",
-    volatile: "broad",
-    social: "slim",
-    strategist: "compact",
-  } satisfies Record<
-    (typeof SEASON_01_PERSONA_CARDS)[number]["balanceBucket"],
-    AvatarSilhouette
-  >;
-  const outfitByBucket = {
-    steady: "cloak",
-    volatile: "tailcoat",
-    social: "gown",
-    strategist: "vest",
-  } satisfies Record<
-    (typeof SEASON_01_PERSONA_CARDS)[number]["balanceBucket"],
-    AvatarOutfitStyle
-  >;
-  const bubbleByBucket = {
-    steady: "soft",
-    volatile: "thorn",
-    social: "glass",
-    strategist: "formal",
-  } satisfies Record<
-    (typeof SEASON_01_PERSONA_CARDS)[number]["balanceBucket"],
-    AvatarBubbleStyle
-  >;
-  const maskSeed =
-    (seed ^
-      Math.round(persona.socialStyle.analyticalFocus * 100) ^
-      Math.round(persona.socialStyle.deception * 1000)) >>>
-    0;
-  const bubbleStyle = bubbleByBucket[persona.balanceBucket];
+  const identityKit =
+    PERSONA_IDENTITY_KITS[persona.id] ??
+    createFallbackIdentityKit(persona, seed >>> 1);
+  const bubbleStyle = identityKit.bubbleStyle;
   const bubbleBase = BUBBLE_STYLE_BASE[bubbleStyle];
+  const stanceMotion = STANCE_MOTION[identityKit.stanceBias];
 
   return {
     key: `${player.id}:${persona.id}`,
     personaId: persona.id,
-    silhouette: silhouetteByBucket[persona.balanceBucket],
-    maskStyle: pickVariant(["half", "wing", "owl", "spire"] as const, maskSeed),
-    outfitStyle: outfitByBucket[persona.balanceBucket],
-    accessoryStyle: pickVariant(
-      ["plume", "brooch", "monocle", "chain", "rose"] as const,
-      seed >>> 3,
-    ),
+    silhouette: identityKit.silhouette,
+    bodyType: identityKit.bodyType,
+    maskStyle: identityKit.maskStyle,
+    outfitStyle: identityKit.outfitStyle,
+    accessoryStyle: identityKit.accessoryStyle,
+    hairStyle: identityKit.hairStyle,
     bubbleStyle,
-    bodyColor: pickVariant(BODY_PALETTE, seed >>> 5),
+    portraitFrameStyle: identityKit.portraitFrameStyle,
+    stanceBias: identityKit.stanceBias,
+    bodyColor: identityKit.bodyColor,
     shadowColor: 0x05070a,
-    outfitColor: pickVariant(OUTFIT_PALETTE, seed >>> 7),
-    trimColor: pickVariant(TRIM_PALETTE, seed >>> 9),
-    accessoryColor: pickVariant(ACCESSORY_PALETTE, seed >>> 11),
-    maskColor: pickVariant(
-      [0xf2e6cf, 0xdde8f4, 0xf0d1cc, 0xeadfae] as const,
-      seed >>> 13,
-    ),
+    outfitColor: identityKit.outfitColor,
+    trimColor: identityKit.trimColor,
+    accessoryColor: identityKit.accessoryColor,
+    maskColor: identityKit.maskColor,
     nameColor:
       persona.socialStyle.assertiveness >= 0.72 ? "#fff0df" : "#eef3fb",
     bubbleFill: bubbleBase.fill,
     bubbleStroke: bubbleBase.stroke,
     bubbleTextColor: bubbleBase.text,
     bubbleFontFamily: bubbleBase.fontFamily,
-    movementCadence: 0.85 + persona.socialStyle.talkativeness * 0.9,
-    idleAmplitude: 0.8 + persona.socialStyle.riskTolerance * 1.6,
+    movementCadence:
+      stanceMotion.cadence + persona.socialStyle.talkativeness * 0.58,
+    idleAmplitude: stanceMotion.idle + persona.socialStyle.riskTolerance * 0.86,
     assertiveness: persona.socialStyle.assertiveness,
     empathy: persona.socialStyle.empathy,
     analyticalFocus: persona.socialStyle.analyticalFocus,

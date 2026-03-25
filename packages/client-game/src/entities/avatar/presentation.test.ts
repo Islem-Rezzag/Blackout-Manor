@@ -1,3 +1,4 @@
+import { SEASON_01_PERSONA_CARDS } from "@blackout-manor/content";
 import type { MatchEvent, PublicPlayerState } from "@blackout-manor/shared";
 import { describe, expect, it } from "vitest";
 
@@ -46,6 +47,32 @@ describe("avatar presentation", () => {
 
     expect(left).toEqual(right);
     expect(left.personaId).toBe("velvet-host");
+  });
+
+  it("gives every persona a distinct identity kit instead of only rotating colors", () => {
+    const signatures = new Set(
+      SEASON_01_PERSONA_CARDS.map((card, index) => {
+        const appearance = resolveAvatarAppearance(
+          createPlayer(`player-${index + 1}`, card.label),
+        );
+
+        return [
+          appearance.personaId,
+          appearance.silhouette,
+          appearance.bodyType,
+          appearance.outfitStyle,
+          appearance.maskStyle,
+          appearance.hairStyle,
+          appearance.accessoryStyle,
+          appearance.portraitFrameStyle,
+          appearance.stanceBias,
+          appearance.outfitColor,
+          appearance.trimColor,
+        ].join(":");
+      }),
+    );
+
+    expect(signatures.size).toBe(SEASON_01_PERSONA_CARDS.length);
   });
 
   it("upgrades calm posture to confident when the public emotion reads dominant and positive", () => {

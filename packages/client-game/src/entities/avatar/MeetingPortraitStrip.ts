@@ -3,7 +3,7 @@ import type {
   PhaseId,
   PublicPlayerState,
 } from "@blackout-manor/shared";
-import type * as Phaser from "phaser";
+import * as Phaser from "phaser";
 
 import { AvatarRig } from "./AvatarRig";
 import {
@@ -28,6 +28,7 @@ class PortraitCard {
   readonly container: Phaser.GameObjects.Container;
   readonly #background: Phaser.GameObjects.Rectangle;
   readonly #frame: Phaser.GameObjects.Rectangle;
+  readonly #ornament: Phaser.GameObjects.Graphics;
   readonly #accentBar: Phaser.GameObjects.Rectangle;
   readonly #eyebrow: Phaser.GameObjects.Text;
   readonly #status: Phaser.GameObjects.Text;
@@ -46,6 +47,7 @@ class PortraitCard {
       .rectangle(0, 0, 118, 138)
       .setOrigin(0.5)
       .setStrokeStyle(2, appearance.trimColor, 0.26);
+    this.#ornament = scene.add.graphics();
     this.#accentBar = scene.add
       .rectangle(0, -55, 92, 8, appearance.trimColor, 0.34)
       .setOrigin(0.5);
@@ -89,6 +91,7 @@ class PortraitCard {
     this.container = scene.add.container(0, 0, [
       this.#background,
       this.#frame,
+      this.#ornament,
       this.#accentBar,
       this.#eyebrow,
       this.#rig.container,
@@ -143,6 +146,19 @@ class PortraitCard {
       targeted ? 0xff997b : appearance.trimColor,
       spotlight ? 0.5 : 0.3,
     );
+    this.#accentBar.setSize(
+      (
+        {
+          arch: 82,
+          velvet: 96,
+          brass: 78,
+          laurel: 86,
+          thorn: 90,
+          gallery: 88,
+        } as const
+      )[appearance.portraitFrameStyle],
+      8,
+    );
     this.#eyebrow.setText(
       travelStatusLabel ??
         (spotlight
@@ -172,6 +188,7 @@ class PortraitCard {
       actionLabel ? 0xe7a282 : appearance.trimColor,
       actionLabel ? 0.34 : 0.24,
     );
+    this.#drawFrameMotif(appearance, spotlight, targeted);
     this.container.setAlpha(player.connected ? 1 : 0.58);
     this.container.setScale(spotlight ? 1.05 : targeted ? 1.02 : 1);
   }
@@ -182,6 +199,90 @@ class PortraitCard {
 
   destroy() {
     this.container.destroy(true);
+  }
+
+  #drawFrameMotif(
+    appearance: ReturnType<typeof resolveAvatarAppearance>,
+    spotlight: boolean,
+    targeted: boolean,
+  ) {
+    const stroke = targeted ? 0xff997b : appearance.trimColor;
+    const fill = targeted ? 0x31171d : appearance.accessoryColor;
+    const alpha = spotlight ? 0.72 : 0.44;
+
+    this.#ornament.clear();
+    this.#ornament.lineStyle(1.4, stroke, alpha);
+    this.#ornament.fillStyle(fill, 0.18 + (spotlight ? 0.08 : 0));
+
+    switch (appearance.portraitFrameStyle) {
+      case "arch":
+        this.#ornament.strokeRoundedRect(-43, -31, 86, 62, 14);
+        this.#ornament.beginPath();
+        this.#ornament.moveTo(-26, -56);
+        this.#ornament.lineTo(0, -66);
+        this.#ornament.lineTo(26, -56);
+        this.#ornament.strokePath();
+        break;
+      case "velvet":
+        this.#ornament.fillTriangle(-42, -61, -26, -50, -42, -38);
+        this.#ornament.fillTriangle(42, -61, 26, -50, 42, -38);
+        this.#ornament.fillCircle(-34, -47, 2.2);
+        this.#ornament.fillCircle(34, -47, 2.2);
+        this.#ornament.strokeRoundedRect(-45, -34, 90, 66, 10);
+        break;
+      case "brass":
+        this.#drawCornerBracket(-47, -60, 1, 1);
+        this.#drawCornerBracket(47, -60, -1, 1);
+        this.#drawCornerBracket(-47, 45, 1, -1);
+        this.#drawCornerBracket(47, 45, -1, -1);
+        this.#ornament.fillRoundedRect(-14, 50, 28, 8, 3);
+        this.#ornament.strokeRoundedRect(-14, 50, 28, 8, 3);
+        break;
+      case "laurel":
+        for (const offset of [-18, -6, 6, 18] as const) {
+          this.#ornament.fillCircle(-44, offset, 2.1);
+          this.#ornament.fillCircle(44, offset, 2.1);
+        }
+        this.#ornament.strokeRoundedRect(-42, -32, 84, 64, 9);
+        break;
+      case "thorn":
+        this.#ornament.strokePoints(
+          [
+            { x: -44, y: -30 },
+            { x: -50, y: -14 },
+            { x: -44, y: 0 },
+            { x: -50, y: 15 },
+            { x: -44, y: 31 },
+          ].map((point) => new Phaser.Geom.Point(point.x, point.y)),
+          false,
+        );
+        this.#ornament.strokePoints(
+          [
+            { x: 44, y: -30 },
+            { x: 50, y: -14 },
+            { x: 44, y: 0 },
+            { x: 50, y: 15 },
+            { x: 44, y: 31 },
+          ].map((point) => new Phaser.Geom.Point(point.x, point.y)),
+          false,
+        );
+        this.#ornament.strokeRoundedRect(-42, -32, 84, 64, 8);
+        break;
+      default:
+        this.#ornament.strokeRoundedRect(-42, -32, 84, 64, 8);
+        this.#ornament.strokeRoundedRect(-32, 50, 64, 10, 4);
+        this.#ornament.fillCircle(-26, 55, 2);
+        this.#ornament.fillCircle(26, 55, 2);
+        break;
+    }
+  }
+
+  #drawCornerBracket(x: number, y: number, dirX: 1 | -1, dirY: 1 | -1) {
+    this.#ornament.beginPath();
+    this.#ornament.moveTo(x, y);
+    this.#ornament.lineTo(x + dirX * 12, y);
+    this.#ornament.lineTo(x + dirX * 12, y + dirY * 12);
+    this.#ornament.strokePath();
   }
 }
 
