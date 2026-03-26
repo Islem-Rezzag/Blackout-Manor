@@ -8,9 +8,17 @@ import type {
 import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
+import {
+  deriveAmbienceState,
+  deriveMovementFeedbackStates,
+  deriveNavigationSoundCues,
+  deriveSnapshotSoundCues,
+  type PublicMovementFeedbackState,
+} from "../audio/publicEventFeedback";
 import { SoundBus } from "../audio/SoundBus";
 import {
   type AvatarMovementOrigin,
+  type AvatarNavigationState,
   PlayerAvatarLayer,
 } from "../entities/avatar/PlayerAvatarLayer";
 import { AtmosphereVeil } from "../fx/AtmosphereVeil";
@@ -198,6 +206,11 @@ export class ManorWorldStage {
   #hoveredRoomId: RoomId | null = null;
   #baseZoom = 1;
   #lastRenderedTick: number | null = null;
+  #lastSnapshot: MatchSnapshot | null = null;
+  #phaseId: PhaseId | null = null;
+  readonly #lastNavigationStates = new Map<string, AvatarNavigationState>();
+  #movementFeedbackStates: PublicMovementFeedbackState[] = [];
+  #stormPressure = 0;
 
   constructor(options: ManorWorldStageOptions) {
     this.#scene = options.scene;
@@ -249,6 +262,38 @@ export class ManorWorldStage {
 
   update(delta: number) {
     this.#playerLayer.update(delta);
+    const navigationStates = this.#playerLayer.getNavigationStates();
+    const phaseId = this.#phaseId ?? this.#lastSnapshot?.phaseId;
+
+    if (phaseId) {
+      const cues = deriveNavigationSoundCues({
+        previousNavigationStates: this.#lastNavigationStates,
+        navigationStates,
+        phaseId,
+      });
+
+      for (const cue of cues) {
+        this.#soundBus.play(
+          cue.cueId,
+          cue.intensity === undefined ? {} : { intensity: cue.intensity },
+        );
+      }
+    }
+
+    this.#movementFeedbackStates =
+      deriveMovementFeedbackStates(navigationStates);
+    this.#soundBus.syncMovement(this.#movementFeedbackStates, delta);
+
+    for (const [playerId, state] of navigationStates.entries()) {
+      this.#lastNavigationStates.set(playerId, state);
+    }
+
+    for (const playerId of [...this.#lastNavigationStates.keys()]) {
+      if (!navigationStates.has(playerId)) {
+        this.#lastNavigationStates.delete(playerId);
+      }
+    }
+
     this.#stormLayer.update(delta);
     this.#atmosphereVeil.setLightningLevel(
       this.#stormLayer.lightningStrength ?? 0,
@@ -288,6 +333,7 @@ export class ManorWorldStage {
       options.snapshot.rooms.filter(
         (roomState) => roomState.lightLevel === "blackout",
       ).length / Math.max(1, options.snapshot.rooms.length);
+    this.#stormPressure = stormPressure;
     this.#stormLayer.setStormIntensity(0.72 + stormPressure * 0.28);
 
     for (const roomState of options.snapshot.rooms) {
@@ -325,14 +371,40 @@ export class ManorWorldStage {
       options.movementOrigins,
       taskReadability,
     );
+    const snapshotCues = deriveSnapshotSoundCues({
+      previousSnapshot:
+        this.#lastSnapshot && this.#lastSnapshot.tick <= options.snapshot.tick
+          ? this.#lastSnapshot
+          : null,
+      snapshot: options.snapshot,
+      taskReadability,
+    });
+
+    for (const cue of snapshotCues) {
+      this.#soundBus.play(
+        cue.cueId,
+        cue.intensity === undefined ? {} : { intensity: cue.intensity },
+      );
+    }
+
+    this.#soundBus.syncAmbience(
+      deriveAmbienceState({
+        snapshot: options.snapshot,
+        focusedRoomId: focusedRoomId,
+        stormLevel: 0.72 + stormPressure * 0.28,
+      }),
+    );
     this.#atmosphereVeil.setBlackoutLevel(
       blackoutStrengthFromSnapshot(options.snapshot),
     );
     this.#refreshRoomFocus();
     this.#lastRenderedTick = options.snapshot.tick;
+    this.#lastSnapshot = options.snapshot;
+    this.#phaseId = phaseId;
   }
 
   destroy() {
+    this.#soundBus.destroy();
     this.#playerLayer.destroy();
     this.#taskReadabilityLayer.destroy();
     this.#stormLayer.destroy();
@@ -343,6 +415,7 @@ export class ManorWorldStage {
     }
 
     this.#roomVisuals.clear();
+    this.#lastNavigationStates.clear();
   }
 
   #drawBackdrop() {
@@ -1173,6 +1246,15 @@ export class ManorWorldStage {
 
     this.#baseZoom = this.#calculateZoom();
     this.#atmosphereVeil.resize(width, height);
+    if (this.#lastSnapshot) {
+      this.#soundBus.syncAmbience(
+        deriveAmbienceState({
+          snapshot: this.#lastSnapshot,
+          focusedRoomId: this.#focusedRoomId,
+          stormLevel: 0.72 + this.#stormPressure * 0.28,
+        }),
+      );
+    }
 
     if (this.#focusedRoomId) {
       const focusedRoom = getRoomRenderData(this.#focusedRoomId);
