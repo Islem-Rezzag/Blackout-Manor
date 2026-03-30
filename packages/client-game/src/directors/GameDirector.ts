@@ -5,6 +5,7 @@ import type * as Phaser from "phaser";
 import type { ClientGameRuntime } from "../bootstrap/runtime";
 import type { ClientGameState } from "../types";
 import { CameraDirector } from "./CameraDirector";
+import { InspectionDirector } from "./InspectionDirector";
 import { MeetingDirector } from "./MeetingDirector";
 import { PhaseDirector } from "./PhaseDirector";
 import { ReplayDirector } from "./ReplayDirector";
@@ -154,6 +155,7 @@ export class GameDirector {
   readonly #runtime: ClientGameRuntime;
   readonly #phaseDirector = new PhaseDirector();
   readonly #cameraDirector = new CameraDirector();
+  readonly #inspectionDirector = new InspectionDirector();
   readonly #meetingDirector = new MeetingDirector();
   readonly #replayDirector: ReplayDirector;
   readonly #surveillanceDirector = new SurveillanceDirector();
@@ -224,6 +226,33 @@ export class GameDirector {
     this.#refreshDerivedState();
   }
 
+  inspectRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
+    this.#inspectionDirector.inspectRoom(roomId);
+    this.#refreshDerivedState();
+  }
+
+  clearInspection() {
+    this.#inspectionDirector.clear();
+    this.#refreshDerivedState();
+  }
+
+  exitObservationFocus() {
+    if (this.#state.surveillance.mode === "surveillance") {
+      this.#surveillanceDirector.setMode("roaming");
+    }
+    this.#inspectionDirector.clear();
+    this.#refreshDerivedState();
+  }
+
+  selectObservationRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
+    if (this.#state.surveillance.mode === "surveillance") {
+      this.focusSurveillanceRoom(roomId);
+      return;
+    }
+
+    this.inspectRoom(roomId);
+  }
+
   focusSurveillanceRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
     this.#surveillanceDirector.focusRoom(roomId);
     this.#refreshDerivedState();
@@ -282,19 +311,28 @@ export class GameDirector {
       observationMode: surveillance.mode,
       surveillanceRoomId: surveillance.selectedRoomId,
     });
+    const inspection = this.#inspectionDirector.derive({
+      scene: activeScene,
+      snapshot: stageSnapshot,
+      observationMode: surveillance.mode,
+      surveillanceRoomId: surveillance.selectedRoomId,
+      activeRoomId: camera.roomId,
+      fallbackImmediate: camera.immediate,
+    });
 
     return {
       runtimeState,
       activeScene,
       snapshot: stageSnapshot,
       camera,
+      inspection,
       banner: buildBanner(runtimeState, activeScene, snapshot),
       meeting,
       endgame,
       replay,
       surveillance: {
         ...surveillance,
-        cameraLabel: camera.detail,
+        cameraLabel: inspection.label,
       },
     };
   }

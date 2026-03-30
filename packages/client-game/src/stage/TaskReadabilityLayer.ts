@@ -265,6 +265,7 @@ export class TaskReadabilityLayer {
     phaseId: PhaseId;
     focusRoomId: RoomId | null;
     hoveredRoomId: RoomId | null;
+    inspectionRoomId: RoomId | null;
     showTaskChips: boolean;
   }) {
     if (!phaseSupportsTaskReadability(options.phaseId)) {
@@ -304,15 +305,19 @@ export class TaskReadabilityLayer {
     options: {
       focusRoomId: RoomId | null;
       hoveredRoomId: RoomId | null;
+      inspectionRoomId: RoomId | null;
       showTaskChips: boolean;
     },
   ) {
+    const inspected = options.inspectionRoomId === node.roomId;
     const focused =
+      inspected ||
       options.focusRoomId === node.roomId ||
       options.hoveredRoomId === node.roomId;
     const emphasized =
       node.tone !== "available" || node.active || node.recent || focused;
-    const showLabel = focused || node.tone !== "available" || node.recent;
+    const showLabel =
+      inspected || focused || node.tone !== "available" || node.recent;
     const showProgress =
       showLabel &&
       (node.tone === "busy" ||
@@ -320,7 +325,7 @@ export class TaskReadabilityLayer {
         node.tone === "completed" ||
         node.tone === "attention");
     const style = toneStyle(node.tone, node.cueColor);
-    const scale = focused ? 1.03 : 1;
+    const scale = inspected ? 1.08 : focused ? 1.03 : 1;
     const progress =
       node.tone === "completed"
         ? 1
@@ -331,7 +336,13 @@ export class TaskReadabilityLayer {
     visual.propGlow.setVisible(true);
     visual.propGlow.setTint(node.cueColor);
     visual.propGlow.setAlpha(
-      focused ? style.propAlpha + 0.06 : emphasized ? style.propAlpha : 0.03,
+      inspected
+        ? style.propAlpha + 0.1
+        : focused
+          ? style.propAlpha + 0.06
+          : emphasized
+            ? style.propAlpha
+            : 0.03,
     );
     visual.propGlow.setScale(scale);
 
@@ -342,7 +353,11 @@ export class TaskReadabilityLayer {
     visual.hotspotPulse.setVisible(emphasized);
     visual.hotspotPulse.setTint(node.cueColor);
     visual.hotspotPulse.setAlpha(
-      focused ? style.pulseAlpha + 0.06 : style.pulseAlpha,
+      inspected
+        ? style.pulseAlpha + 0.12
+        : focused
+          ? style.pulseAlpha + 0.06
+          : style.pulseAlpha,
     );
     visual.hotspotPulse.setScale(scale);
 
@@ -351,29 +366,39 @@ export class TaskReadabilityLayer {
     visual.hotspotRing.setStrokeStyle(
       2,
       style.plateStroke,
-      focused ? 0.78 : emphasized ? style.hotspotAlpha : 0.14,
+      inspected ? 0.9 : focused ? 0.78 : emphasized ? style.hotspotAlpha : 0.14,
     );
     visual.hotspotRing.setScale(scale, scale);
 
     visual.hotspotPlate.setVisible(true);
     visual.hotspotPlate.setFillStyle(
       node.cueColor,
-      focused ? 0.34 : emphasized ? 0.22 : 0.08,
+      inspected ? 0.42 : focused ? 0.34 : emphasized ? 0.22 : 0.08,
     );
     visual.hotspotPlate.setScale(scale, scale);
 
     visual.approachMarker.setVisible(focused || emphasized);
-    visual.approachMarker.setFillStyle(node.cueColor, focused ? 0.22 : 0.1);
+    visual.approachMarker.setFillStyle(
+      node.cueColor,
+      inspected ? 0.28 : focused ? 0.22 : 0.1,
+    );
     visual.approachMarker.setStrokeStyle(
       1,
       node.cueColor,
-      focused ? 0.42 : 0.18,
+      inspected ? 0.5 : focused ? 0.42 : 0.18,
     );
     visual.approachMarker.setScale(scale, scale);
 
     visual.cuePlate.setVisible(showLabel);
-    visual.cuePlate.setFillStyle(style.plateFill, focused ? 0.92 : 0.84);
-    visual.cuePlate.setStrokeStyle(1, style.plateStroke, focused ? 0.56 : 0.34);
+    visual.cuePlate.setFillStyle(
+      style.plateFill,
+      inspected ? 0.95 : focused ? 0.92 : 0.84,
+    );
+    visual.cuePlate.setStrokeStyle(
+      1,
+      style.plateStroke,
+      inspected ? 0.68 : focused ? 0.56 : 0.34,
+    );
     visual.cuePlate.setScale(scale, scale);
 
     visual.cueTitle.setVisible(showLabel);
@@ -383,7 +408,9 @@ export class TaskReadabilityLayer {
 
     visual.cueDetail.setVisible(showLabel);
     visual.cueDetail.setText(
-      focused ? `${node.propLabel} | ${node.statusText}` : node.statusText,
+      inspected || focused
+        ? `${node.propLabel} | ${node.statusText}`
+        : node.statusText,
     );
     visual.cueDetail.setColor(style.detailColor);
     visual.cueDetail.setAlpha(focused ? 1 : 0.84);

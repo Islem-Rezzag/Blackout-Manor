@@ -152,10 +152,15 @@ export class MeetingScene extends Phaser.Scene {
     this.#stage?.render({
       snapshot: state.meeting.stagedSnapshot,
       focusRoomId,
-      immediateFocus:
-        elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
-          ? false
-          : state.camera.immediate,
+      inspection: {
+        ...state.inspection,
+        mode: "inspect",
+        roomId: focusRoomId,
+        immediate:
+          elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
+            ? false
+            : state.inspection.immediate,
+      },
       seatResolver: () => ({ x: 0, y: 0 }),
       positionOverrides: sequence.seatPositions,
       movementOrigins: sequence.movementOrigins,

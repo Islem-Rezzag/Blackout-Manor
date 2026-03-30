@@ -1,6 +1,9 @@
 import type * as Phaser from "phaser";
 
-import type { SurveillancePresentation } from "../directors/types";
+import type {
+  InspectionPresentation,
+  SurveillancePresentation,
+} from "../directors/types";
 
 type ObservationHudOptions = {
   scene: Phaser.Scene;
@@ -14,6 +17,7 @@ type StatusChip = {
 };
 
 type ObservationHudContent = {
+  inspection: InspectionPresentation;
   surveillance: SurveillancePresentation;
   phaseLabel: string;
   timerText?: string | null;
@@ -38,10 +42,20 @@ const toneColors = {
   },
 } as const;
 
-const hintLine = (mode: SurveillancePresentation["mode"]) =>
-  mode === "surveillance"
-    ? "V roam | Q/E or Tab cycle | 1-4 lock feed"
-    : "V surveillance | auto-follow public activity";
+const hintLine = (
+  mode: SurveillancePresentation["mode"],
+  inspection: InspectionPresentation,
+) => {
+  if (mode === "surveillance") {
+    return "Esc whole manor | V roam | Q/E or Tab cycle | 1-4 lock feed";
+  }
+
+  if (inspection.mode === "inspect") {
+    return "Esc whole manor | click another room | V surveillance";
+  }
+
+  return "Click room inspect | Esc whole manor | V surveillance";
+};
 
 const lightLabel = (
   lightLevel: SurveillancePresentation["statusIndicators"][number]["lightLevel"],
@@ -182,31 +196,40 @@ export class ObservationHud {
   }
 
   setContent(content: ObservationHudContent) {
-    const { contextText, phaseLabel, surveillance, timerText } = content;
+    const { contextText, inspection, phaseLabel, surveillance, timerText } =
+      content;
+    const inspecting = inspection.mode === "inspect";
 
     this.#stateEyebrow.setText(
-      `${phaseLabel} | ${surveillance.mode === "surveillance" ? "SURVEILLANCE" : "OBSERVATION"}`,
+      `${phaseLabel} | ${surveillance.mode === "surveillance" ? "SURVEILLANCE" : inspection.mode === "inspect" ? "ROOM FOCUS" : "OVERVIEW"}`,
     );
-    this.#stateTitle.setText(surveillance.cameraLabel);
+    this.#stateTitle.setText(inspection.label);
     this.#stateDetail.setText(
       timerText
-        ? `${timerText} | ${surveillance.indicatorLabel}`
-        : surveillance.indicatorLabel,
+        ? `${timerText} | ${surveillance.indicatorLabel} | ${inspection.detail}`
+        : `${surveillance.indicatorLabel} | ${inspection.detail}`,
     );
     this.#stateHint.setText(
       contextText
-        ? `${contextText} | ${hintLine(surveillance.mode)}`
-        : hintLine(surveillance.mode),
+        ? `${contextText} | ${hintLine(surveillance.mode, inspection)}`
+        : hintLine(surveillance.mode, inspection),
     );
 
     const subtitle = surveillance.subtitle;
     if (subtitle) {
       const tone = toneColors[subtitle.tone];
       this.#subtitleContainer.setVisible(true);
+      this.#subtitlePlate.setDisplaySize(
+        inspecting ? 920 : 860,
+        inspecting ? 70 : 60,
+      );
       this.#subtitlePlate.setFillStyle(tone.fill, 0.84);
       this.#subtitlePlate.setStrokeStyle(1, tone.stroke, 0.28);
       this.#subtitleSpeaker.setColor(tone.text);
       this.#subtitleText.setColor(tone.text);
+      this.#subtitleSpeaker.setFontSize(inspecting ? "12px" : "11px");
+      this.#subtitleText.setFontSize(inspecting ? "15px" : "13px");
+      this.#subtitleText.setWordWrapWidth(inspecting ? 840 : 782);
       this.#subtitleSpeaker.setText(
         subtitle.speakerId
           ? `${subtitle.speakerId.toUpperCase()}`
@@ -217,15 +240,24 @@ export class ObservationHud {
       this.#subtitleText.setText(subtitle.text);
     } else {
       this.#subtitleContainer.setVisible(true);
+      this.#subtitlePlate.setDisplaySize(
+        inspecting ? 920 : 860,
+        inspecting ? 70 : 60,
+      );
       this.#subtitlePlate.setFillStyle(0x071018, 0.76);
       this.#subtitlePlate.setStrokeStyle(1, 0x73a8c9, 0.18);
       this.#subtitleSpeaker.setColor("#8ec9e4");
       this.#subtitleText.setColor("#d7dee9");
+      this.#subtitleSpeaker.setFontSize(inspecting ? "12px" : "11px");
+      this.#subtitleText.setFontSize(inspecting ? "15px" : "13px");
+      this.#subtitleText.setWordWrapWidth(inspecting ? 840 : 782);
       this.#subtitleSpeaker.setText("OBSERVATION");
       this.#subtitleText.setText(
         surveillance.mode === "surveillance"
           ? "The console keeps several rooms live while the main camera stays locked to the selected feed."
-          : "The camera follows public manor events while room telemetry stays visible at the edge of frame.",
+          : inspection.mode === "inspect"
+            ? "Room focus enlarges public speech, cast silhouettes, and task readability without exposing any hidden-role data."
+            : "The whole manor stays visible while public room activity remains framed across the house.",
       );
     }
 

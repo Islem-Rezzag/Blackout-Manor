@@ -16,6 +16,7 @@ import {
   type PublicMovementFeedbackState,
 } from "../audio/publicEventFeedback";
 import { SoundBus } from "../audio/SoundBus";
+import type { InspectionPresentation } from "../directors/types";
 import {
   type AvatarMovementOrigin,
   type AvatarNavigationState,
@@ -128,17 +129,17 @@ export type SeatResolver = (
 export type ManorWorldStageRenderOptions = {
   snapshot: MatchSnapshot;
   focusRoomId: RoomId | null;
+  inspection: InspectionPresentation;
   phaseId?: PhaseId;
   seatResolver: SeatResolver;
   positionOverrides?: ReadonlyMap<string, { x: number; y: number }>;
   movementOrigins?: ReadonlyMap<string, AvatarMovementOrigin>;
   showTaskChips?: boolean;
-  immediateFocus?: boolean;
 };
 
 type ManorWorldStageOptions = {
   scene: Phaser.Scene;
-  onMoveToRoom?: (roomId: RoomId) => void;
+  onInspectRoom?: (roomId: RoomId) => void;
   onStartTask?: (taskId: TaskId) => void;
 };
 
@@ -200,12 +201,13 @@ export class ManorWorldStage {
   readonly #stormLayer: StormLayer;
   readonly #atmosphereVeil: AtmosphereVeil;
   readonly #layers: StageLayers;
-  readonly #onMoveToRoom: ((roomId: RoomId) => void) | null;
+  readonly #onInspectRoom: ((roomId: RoomId) => void) | null;
   readonly #onStartTask: ((taskId: TaskId) => void) | null;
-  #focusedRoomId: RoomId | null = null;
+  #activeRoomId: RoomId | null = null;
+  #inspectedRoomId: RoomId | null = null;
+  #cameraTargetRoomId: RoomId | null = null;
   #hoveredRoomId: RoomId | null = null;
   #baseZoom = 1;
-  #lastRenderedTick: number | null = null;
   #lastSnapshot: MatchSnapshot | null = null;
   #phaseId: PhaseId | null = null;
   readonly #lastNavigationStates = new Map<string, AvatarNavigationState>();
@@ -214,7 +216,7 @@ export class ManorWorldStage {
 
   constructor(options: ManorWorldStageOptions) {
     this.#scene = options.scene;
-    this.#onMoveToRoom = options.onMoveToRoom ?? null;
+    this.#onInspectRoom = options.onInspectRoom ?? null;
     this.#onStartTask = options.onStartTask ?? null;
     this.#layers = {
       backdrop: this.#scene.add.container(0, 0).setDepth(STAGE_DEPTH.backdrop),
@@ -313,7 +315,7 @@ export class ManorWorldStage {
     const phaseId = options.phaseId ?? options.snapshot.phaseId;
     const signals = createRoomSignalMap(options.snapshot);
     const taskReadability = buildTaskReadabilityPresentation(options.snapshot);
-    const focusedRoomId =
+    const activeRoomId =
       options.focusRoomId ??
       [...options.snapshot.recentEvents]
         .reverse()
@@ -321,12 +323,17 @@ export class ManorWorldStage {
         .find((roomId): roomId is RoomId => roomId !== null) ??
       options.snapshot.rooms[0]?.roomId ??
       null;
+    const inspectionRoomId =
+      options.inspection.mode === "inspect"
+        ? (options.inspection.roomId ?? activeRoomId)
+        : null;
+    this.#activeRoomId = activeRoomId;
+    this.#inspectedRoomId = inspectionRoomId;
 
-    if (focusedRoomId) {
-      this.#focusRoom(
-        focusedRoomId,
-        options.immediateFocus ?? this.#lastRenderedTick === null,
-      );
+    if (inspectionRoomId) {
+      this.#focusRoom(inspectionRoomId, options.inspection.immediate);
+    } else {
+      this.#focusWholeManor(options.inspection.immediate);
     }
 
     const stormPressure =
@@ -358,8 +365,9 @@ export class ManorWorldStage {
     this.#taskReadabilityLayer.render({
       presentation: taskReadability,
       phaseId,
-      focusRoomId: this.#focusedRoomId,
+      focusRoomId: this.#activeRoomId,
       hoveredRoomId: this.#hoveredRoomId,
+      inspectionRoomId: this.#inspectedRoomId,
       showTaskChips: options.showTaskChips ?? false,
     });
     this.#playerLayer.render(
@@ -370,6 +378,7 @@ export class ManorWorldStage {
       options.positionOverrides,
       options.movementOrigins,
       taskReadability,
+      this.#inspectedRoomId,
     );
     const snapshotCues = deriveSnapshotSoundCues({
       previousSnapshot:
@@ -390,7 +399,7 @@ export class ManorWorldStage {
     this.#soundBus.syncAmbience(
       deriveAmbienceState({
         snapshot: options.snapshot,
-        focusedRoomId: focusedRoomId,
+        focusedRoomId: inspectionRoomId ?? activeRoomId,
         stormLevel: 0.72 + stormPressure * 0.28,
       }),
     );
@@ -398,7 +407,6 @@ export class ManorWorldStage {
       blackoutStrengthFromSnapshot(options.snapshot),
     );
     this.#refreshRoomFocus();
-    this.#lastRenderedTick = options.snapshot.tick;
     this.#lastSnapshot = options.snapshot;
     this.#phaseId = phaseId;
   }
@@ -728,7 +736,7 @@ export class ManorWorldStage {
             chip.setOrigin(0, 0.5);
             chip.setInteractive({ useHandCursor: true });
             chip.on("pointerdown", () => {
-              this.#focusRoom(room.roomId, false);
+              this.#onInspectRoom?.(room.roomId);
               this.#onStartTask?.(taskId);
             });
             return chip;
@@ -824,8 +832,7 @@ export class ManorWorldStage {
       });
       hitTarget.on("pointerdown", () => {
         this.#soundBus.play("hover");
-        this.#focusRoom(room.roomId, false);
-        this.#onMoveToRoom?.(room.roomId);
+        this.#onInspectRoom?.(room.roomId);
       });
 
       containers.floor.add([
@@ -968,7 +975,7 @@ export class ManorWorldStage {
     snapshot: MatchSnapshot,
     taskReadability: TaskReadabilityPresentation,
   ) {
-    const focused = this.#focusedRoomId === room.roomId;
+    const focused = this.#activeRoomId === room.roomId;
     const palette = createRoomRenderPalette({
       room,
       roomState,
@@ -1130,7 +1137,9 @@ export class ManorWorldStage {
         .get(roomId)
         ?.some((task) => task.tone !== "available") ?? false;
     const showRoomTaskChips =
-      showTaskChips && (this.#focusedRoomId === roomId || hasImportantTaskCue);
+      showTaskChips &&
+      ((this.#inspectedRoomId ?? this.#activeRoomId) === roomId ||
+        hasImportantTaskCue);
 
     for (const [index, chip] of visual.taskChips.entries()) {
       const task = roomTasks[index];
@@ -1160,12 +1169,12 @@ export class ManorWorldStage {
   }
 
   #focusRoom(roomId: RoomId, immediate: boolean) {
-    if (this.#focusedRoomId === roomId && !immediate) {
+    if (this.#cameraTargetRoomId === roomId && !immediate) {
       return;
     }
 
     const room = getRoomRenderData(roomId);
-    this.#focusedRoomId = roomId;
+    this.#cameraTargetRoomId = roomId;
     const duration = immediate ? 0 : 520;
 
     this.#scene.cameras.main.pan(
@@ -1184,52 +1193,98 @@ export class ManorWorldStage {
     this.#refreshRoomFocus();
   }
 
+  #focusWholeManor(immediate: boolean) {
+    if (this.#cameraTargetRoomId === null && !immediate) {
+      return;
+    }
+
+    this.#cameraTargetRoomId = null;
+    const duration = immediate ? 0 : 520;
+
+    this.#scene.cameras.main.pan(
+      MANOR_WORLD_BOUNDS.width / 2,
+      MANOR_WORLD_BOUNDS.height / 2,
+      duration,
+      Phaser.Math.Easing.Cubic.Out,
+      true,
+    );
+    this.#scene.cameras.main.zoomTo(
+      this.#baseZoom,
+      duration,
+      Phaser.Math.Easing.Cubic.Out,
+      true,
+    );
+    this.#refreshRoomFocus();
+  }
+
   #refreshRoomFocus() {
     for (const [roomId, visual] of this.#roomVisuals.entries()) {
-      const focused = this.#focusedRoomId === roomId;
+      const focused = this.#activeRoomId === roomId;
+      const inspected = this.#inspectedRoomId === roomId;
       const hovered = this.#hoveredRoomId === roomId;
       const room = getRoomRenderData(roomId);
-      const scale = focused ? 1.018 : hovered ? 1.01 : 1;
+      const scale = inspected ? 1.045 : focused ? 1.018 : hovered ? 1.01 : 1;
+      const dimmed = this.#inspectedRoomId !== null && !inspected;
+      const alpha = dimmed ? (focused ? 0.7 : 0.42) : 1;
 
       for (const container of visual.allContainers) {
         container.setScale(scale);
+        container.setAlpha(alpha);
       }
 
       visual.focusBeam
         .setTint(room.surfaces.focusColor)
-        .setAlpha(focused ? 0.22 : hovered ? 0.08 : 0);
+        .setAlpha(inspected ? 0.34 : focused ? 0.22 : hovered ? 0.08 : 0);
       visual.focusFrame.setStrokeStyle(
         2,
         room.surfaces.focusColor,
-        focused ? 0.86 : hovered ? 0.4 : 0,
+        inspected ? 0.94 : focused ? 0.86 : hovered ? 0.4 : 0,
       );
       visual.hitTarget.setFillStyle(
         0xffffff,
-        hovered && !focused ? 0.03 : 0.001,
+        hovered && !inspected ? 0.03 : 0.001,
+      );
+      visual.cutawayWall.setAlpha(inspected ? 0.98 : focused ? 0.9 : 0.82);
+      visual.cutawayTrim.setFillStyle(
+        room.accentColor,
+        inspected ? 0.54 : focused ? 0.42 : 0.24,
+      );
+      visual.titlePlate.setFillStyle(
+        room.surfaces.titlePlateColor,
+        inspected ? 0.34 : focused ? 0.28 : 0.2,
       );
     }
 
     for (const visual of this.#doorNodeVisuals) {
       const emphasized =
-        visual.node.roomId === this.#focusedRoomId ||
+        visual.node.roomId === this.#activeRoomId ||
         visual.node.roomId === this.#hoveredRoomId ||
         visual.node.targetRoomIds.includes(
-          this.#focusedRoomId ?? visual.node.roomId,
+          this.#activeRoomId ?? visual.node.roomId,
         ) ||
         visual.node.targetRoomIds.includes(
           this.#hoveredRoomId ?? visual.node.roomId,
         );
+      const inspected =
+        visual.node.roomId === this.#inspectedRoomId ||
+        visual.node.targetRoomIds.includes(
+          this.#inspectedRoomId ?? visual.node.roomId,
+        );
 
       visual.threshold.setAlpha(
-        emphasized ? visual.node.alpha : visual.node.alpha * 0.74,
+        inspected
+          ? visual.node.alpha
+          : emphasized
+            ? visual.node.alpha
+            : visual.node.alpha * 0.74,
       );
       visual.frame.setStrokeStyle(
         2,
         visual.node.stroke ?? 0xe4c391,
-        emphasized ? 0.6 : 0.22,
+        inspected ? 0.72 : emphasized ? 0.6 : 0.22,
       );
-      visual.glow.setAlpha(emphasized ? 0.12 : 0.035);
-      visual.marker.setAlpha(emphasized ? 0.9 : 0.5);
+      visual.glow.setAlpha(inspected ? 0.18 : emphasized ? 0.12 : 0.035);
+      visual.marker.setAlpha(inspected ? 1 : emphasized ? 0.9 : 0.5);
     }
   }
 
@@ -1250,14 +1305,14 @@ export class ManorWorldStage {
       this.#soundBus.syncAmbience(
         deriveAmbienceState({
           snapshot: this.#lastSnapshot,
-          focusedRoomId: this.#focusedRoomId,
+          focusedRoomId: this.#inspectedRoomId ?? this.#activeRoomId,
           stormLevel: 0.72 + this.#stormPressure * 0.28,
         }),
       );
     }
 
-    if (this.#focusedRoomId) {
-      const focusedRoom = getRoomRenderData(this.#focusedRoomId);
+    if (this.#cameraTargetRoomId) {
+      const focusedRoom = getRoomRenderData(this.#cameraTargetRoomId);
       this.#scene.cameras.main.centerOn(
         focusedRoom.cameraAnchor.x,
         focusedRoom.cameraAnchor.y,

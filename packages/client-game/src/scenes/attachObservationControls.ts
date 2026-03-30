@@ -46,7 +46,7 @@ export const attachObservationControls = (
       director.toggleObservationMode();
     }),
     bind("keydown-ESC", () => {
-      director.setObservationMode("roaming");
+      director.exitObservationFocus();
     }),
     bind("keydown-Q", () => {
       director.cycleSurveillanceRoom(-1);

@@ -142,6 +142,7 @@ class PlayerAvatar {
     cue: AvatarInteractionCue,
     targetSeat: NavigationPoint | null,
     movementOrigin: AvatarMovementOrigin | null,
+    inspectionRoomId: RoomId | null,
   ) {
     const appearance = resolveAvatarAppearance(player);
     this.#syncNavigation(roomId, targetPosition, phaseId, cue, movementOrigin);
@@ -246,7 +247,12 @@ class PlayerAvatar {
     this.#statusText.setColor(
       player.status === "alive" ? "#eef4fb" : "#ffd5cb",
     );
-    this.container.setAlpha(player.status === "alive" ? 1 : 0.52);
+    const inspected = inspectionRoomId === roomId;
+    const dimmed = inspectionRoomId !== null && !inspected;
+    this.container.setScale(inspected ? 1.06 : 1);
+    this.container.setAlpha(
+      (player.status === "alive" ? 1 : 0.52) * (dimmed ? 0.36 : 1),
+    );
     this.container.setVisible(true);
     this.#applyPosition(currentPosition);
   }
@@ -449,6 +455,7 @@ export class PlayerAvatarLayer {
     positionOverrides?: ReadonlyMap<PlayerId, NavigationPoint>,
     movementOrigins?: ReadonlyMap<PlayerId, AvatarMovementOrigin>,
     taskReadability?: TaskReadabilityPresentation | null,
+    inspectionRoomId?: RoomId | null,
   ) {
     const activeTaskReadability =
       phaseId === "roam" || phaseId === "report" ? taskReadability : null;
@@ -524,6 +531,7 @@ export class PlayerAvatarLayer {
           ? (positions.get(mergedCue.targetPlayerId) ?? null)
           : null,
         movementOrigins?.get(player.id) ?? null,
+        inspectionRoomId ?? null,
       );
     }
 

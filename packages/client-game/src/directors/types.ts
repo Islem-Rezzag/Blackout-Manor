@@ -14,6 +14,7 @@ import type { ClientGameState } from "../types";
 
 export type RuntimeSceneId = "manor-world" | "meeting" | "endgame" | "replay";
 export type ObservationMode = "roaming" | "surveillance";
+export type InspectionMode = "overview" | "inspect";
 export type CameraReasonId =
   | "meeting"
   | "endgame"
@@ -106,11 +107,20 @@ export type SurveillancePresentation = {
   cameraLabel: string;
 };
 
+export type InspectionPresentation = {
+  mode: InspectionMode;
+  roomId: RoomId | null;
+  immediate: boolean;
+  label: string;
+  detail: string;
+};
+
 export type GamePresentationState = {
   runtimeState: ClientGameState;
   activeScene: RuntimeSceneId;
   snapshot: MatchSnapshot | null;
   camera: CameraPlan;
+  inspection: InspectionPresentation;
   banner: {
     eyebrow: string;
     title: string;

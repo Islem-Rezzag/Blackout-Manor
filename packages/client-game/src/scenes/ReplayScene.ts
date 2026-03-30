@@ -59,7 +59,12 @@ export class ReplayScene extends Phaser.Scene {
   }
 
   create() {
-    this.#stage = new ManorWorldStage({ scene: this });
+    this.#stage = new ManorWorldStage({
+      scene: this,
+      onInspectRoom: (roomId) => {
+        this.#director.selectObservationRoom(roomId);
+      },
+    });
     this.#hud = new ObservationHud({ scene: this });
     this.#console = new SurveillanceConsole({
       scene: this,
@@ -146,6 +151,7 @@ export class ReplayScene extends Phaser.Scene {
       meetingPresentation?.stagedSnapshot ?? state.replay.snapshot;
 
     this.#hud?.setContent({
+      inspection: state.inspection,
       surveillance: state.surveillance,
       phaseLabel: phaseId.toUpperCase(),
       timerText: replayTimerLine(
@@ -159,12 +165,17 @@ export class ReplayScene extends Phaser.Scene {
     this.#stage?.render({
       snapshot,
       focusRoomId,
-      immediateFocus:
+      inspection:
         meetingPresentation &&
         elapsedMs < MEETING_ALARM_FOCUS_MS &&
         meetingPresentation.alarmRoomId
-          ? false
-          : state.camera.immediate,
+          ? {
+              ...state.inspection,
+              mode: "inspect",
+              roomId: meetingPresentation.alarmRoomId,
+              immediate: false,
+            }
+          : state.inspection,
       seatResolver: resolveSeatResolver(phaseId),
       ...(meetingPresentation && this.#meetingSequence
         ? {

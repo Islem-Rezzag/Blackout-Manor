@@ -29,8 +29,8 @@ export class ManorWorldScene extends Phaser.Scene {
   create() {
     this.#stage = new ManorWorldStage({
       scene: this,
-      onMoveToRoom: (roomId) => {
-        void this.#runtime.proposeMove(roomId);
+      onInspectRoom: (roomId) => {
+        this.#director.selectObservationRoom(roomId);
       },
       onStartTask: (taskId) => {
         void this.#runtime.proposeStartTask(taskId);
@@ -56,19 +56,22 @@ export class ManorWorldScene extends Phaser.Scene {
       }
 
       this.#hud?.setContent({
+        inspection: state.inspection,
         surveillance: state.surveillance,
         phaseLabel: state.snapshot.phaseId.toUpperCase(),
         timerText: timerLine(state.snapshot.tick),
         contextText:
           state.surveillance.mode === "surveillance"
             ? "Console mode stays locked to public room feeds."
-            : "Roaming mode follows public manor movement and speech.",
+            : state.inspection.mode === "inspect"
+              ? "Press Esc to return to the whole-manor overview."
+              : "Click any room to inspect it while public activity remains highlighted.",
       });
       this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({
         snapshot: state.snapshot,
         focusRoomId: state.camera.roomId,
-        immediateFocus: state.camera.immediate,
+        inspection: state.inspection,
         seatResolver: worldSeatResolver,
         showTaskChips:
           state.snapshot.phaseId === "roam" &&

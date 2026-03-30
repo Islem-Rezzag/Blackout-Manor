@@ -69,7 +69,13 @@ export class EndgameScene extends Phaser.Scene {
       this.#stage?.render({
         snapshot: state.endgame.stagedSnapshot,
         focusRoomId: state.camera.roomId,
-        immediateFocus: state.camera.immediate,
+        inspection: {
+          mode: "inspect",
+          roomId: state.camera.roomId,
+          immediate: state.camera.immediate,
+          label: "Finale focus",
+          detail: "Resolution staging holds on the public outcome.",
+        },
         seatResolver: createFinaleSeatResolver("grand-hall"),
         showTaskChips: false,
       });
