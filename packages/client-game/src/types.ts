@@ -68,6 +68,7 @@ export type BlackoutGameMountOptions = {
   connection: ClientGameConnectionOptions;
   width?: number;
   height?: number;
+  assetBaseUrl?: string;
   onStateChange?: ClientGameStateListener;
 };
 

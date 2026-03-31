@@ -5,6 +5,8 @@ import type { MatchSnapshot } from "@blackout-manor/shared";
 import { describe, expect, it, vi } from "vitest";
 
 import { CLIENT_GAME_ASSET_MANIFEST } from "./bootstrap/assetManifest";
+import { CLIENT_GAME_ASSET_SOURCES } from "./bootstrap/assetSources";
+import { CLIENT_GAME_DERIVED_TEXTURE_PLAN } from "./bootstrap/derivedClientAssets";
 import { MeetingDirector } from "./directors/MeetingDirector";
 import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
@@ -64,11 +66,20 @@ describe("client-game package", () => {
 
   it("exposes a replaceable client asset manifest for the manor renderer", () => {
     const assetKeys = CLIENT_GAME_ASSET_MANIFEST.map((asset) => asset.key);
+    const derivedAssetKeys = CLIENT_GAME_DERIVED_TEXTURE_PLAN.map(
+      (asset) => asset.key,
+    );
 
     expect(assetKeys).toContain("room-shell");
-    expect(assetKeys).toContain("room-wall");
+    expect(assetKeys).toContain("oga-modern-houses-sheet");
     expect(assetKeys).toContain("focus-beam");
     expect(assetKeys).toContain("storm-cloud");
+    expect(derivedAssetKeys).toContain("floor-parquet");
+    expect(derivedAssetKeys).toContain("wall-stone");
+    expect(derivedAssetKeys).toContain("prop-kitchen-range");
+    expect(CLIENT_GAME_ASSET_SOURCES["oga-modern-houses-cc0"].license).toBe(
+      "CC0-1.0",
+    );
   });
 
   it("emits hello, private role, and snapshot in mock mode", async () => {

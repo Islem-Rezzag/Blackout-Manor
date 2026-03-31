@@ -19,6 +19,7 @@ type GameRuntimeHostProps = {
 };
 
 const DEMO_ROOM_IDS = new Set(["demo", "local", "mock-manor-room"]);
+const CLIENT_GAME_ASSET_BASE_URL = "/game-assets/client-game";
 
 const normalizeRoomId = (roomId: string) => {
   const trimmed = roomId.trim();
@@ -179,6 +180,7 @@ export function GameRuntimeHost({
       }
 
       controllerRef.current = await mountBlackoutGame({
+        assetBaseUrl: CLIENT_GAME_ASSET_BASE_URL,
         container: hostRef.current,
         connection,
         onStateChange: (nextState) => {

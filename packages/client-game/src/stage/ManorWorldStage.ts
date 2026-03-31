@@ -36,6 +36,11 @@ import {
   type ManorDoorNode,
   type ManorRenderRoom,
 } from "../tiled/manorLayout";
+import {
+  getCorridorFloorTextureKey,
+  getDoorThresholdConfig,
+  getImportedRoomArt,
+} from "./importedArt";
 import { createRoomRenderPalette } from "./renderTheme";
 import {
   blackoutStrengthFromSnapshot,
@@ -43,6 +48,7 @@ import {
   describeSignalLabel,
   eventRoomId,
   lightLevelToFactor,
+  mixColor,
   type RoomSignal,
   readableTaskLabel,
 } from "./signals";
@@ -72,6 +78,7 @@ type RoomVisual = {
   emergencyWash: Phaser.GameObjects.Image;
   decorObjects: Phaser.GameObjects.Shape[];
   decorHighlights: Phaser.GameObjects.Image[];
+  heroProps: Phaser.GameObjects.Image[];
   lightGlows: Phaser.GameObjects.Image[];
   windowOverlays: Phaser.GameObjects.Image[];
   cutawayShadow: Phaser.GameObjects.Image;
@@ -115,6 +122,7 @@ type CorridorVisual = {
 type DoorNodeVisual = {
   node: ManorDoorNode;
   threshold: Phaser.GameObjects.Rectangle;
+  thresholdArt: Phaser.GameObjects.Image;
   frame: Phaser.GameObjects.Rectangle;
   glow: Phaser.GameObjects.Image;
   marker: Phaser.GameObjects.Rectangle;
@@ -479,11 +487,6 @@ export class ManorWorldStage {
         : isMeetingWing
           ? 0x433127
           : 0x2f2823;
-      const floorTint = isTechnical
-        ? 0x2b3d44
-        : isMeetingWing
-          ? 0x4a3529
-          : 0x322a24;
       const accentTint = isTechnical ? 0x7fb7cf : 0xd5b183;
       const shellShadow = this.#scene.add
         .image(centerX, centerY + 10, "room-shadow")
@@ -495,9 +498,13 @@ export class ManorWorldStage {
         .setTint(shellTint)
         .setAlpha(0.95);
       const floor = this.#scene.add
-        .image(centerX, centerY + 4, "room-floor")
+        .image(
+          centerX,
+          centerY + 4,
+          getCorridorFloorTextureKey(segment.className),
+        )
         .setDisplaySize(segment.width, segment.height)
-        .setTint(floorTint)
+        .setTint(0xf6f0e2)
         .setAlpha(0.96);
       const specular = this.#scene.add
         .image(centerX, centerY + 4, "room-specular")
@@ -544,6 +551,7 @@ export class ManorWorldStage {
   #drawRooms() {
     for (const roomId of MANOR_RENDER_MAP.roomOrder) {
       const room = getRoomRenderData(roomId);
+      const importedArt = getImportedRoomArt(room.roomId);
       const containers = {
         floor: this.#scene.add.container(room.x, room.y),
         props: this.#scene.add.container(room.x, room.y),
@@ -576,7 +584,7 @@ export class ManorWorldStage {
         )
         .setAlpha(0.98);
       const floor = this.#scene.add
-        .image(0, room.framing.floorInsetY, "room-floor")
+        .image(0, room.framing.floorInsetY, importedArt.floorKey)
         .setDisplaySize(room.width, room.height)
         .setAlpha(0.97);
       const floorSpecular = this.#scene.add
@@ -585,7 +593,7 @@ export class ManorWorldStage {
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.22);
       const accent = this.#scene.add
-        .image(0, room.framing.floorInsetY + 16, "room-floor")
+        .image(0, room.framing.floorInsetY + 16, importedArt.floorKey)
         .setDisplaySize(room.width * 0.8, room.height * 0.58)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.14);
@@ -631,6 +639,12 @@ export class ManorWorldStage {
           .setBlendMode(Phaser.BlendModes.SCREEN)
           .setAlpha(0.08),
       );
+      const heroProps = importedArt.heroProps.map((prop) =>
+        this.#scene.add
+          .image(prop.x - room.x, prop.y - room.y, prop.key)
+          .setDisplaySize(prop.width, prop.height)
+          .setAlpha(prop.alpha),
+      );
 
       const lightGlows = room.lights.map((light) =>
         this.#scene.add
@@ -659,7 +673,7 @@ export class ManorWorldStage {
         .image(
           0,
           -room.height / 2 + room.cutawayHeight / 2 + room.framing.wallInsetY,
-          "room-wall",
+          importedArt.wallKey,
         )
         .setDisplaySize(
           room.width + room.framing.wallInsetX * 2,
@@ -849,6 +863,7 @@ export class ManorWorldStage {
         emergencyWash,
         ...decorObjects,
         ...decorHighlights,
+        ...heroProps,
       ]);
       containers.lights.add([...lightGlows, ...windowOverlays]);
       containers.walls.add([
@@ -886,6 +901,7 @@ export class ManorWorldStage {
         emergencyWash,
         decorObjects,
         decorHighlights,
+        heroProps,
         lightGlows,
         windowOverlays,
         cutawayShadow,
@@ -910,6 +926,7 @@ export class ManorWorldStage {
 
   #drawDoorNodes() {
     for (const node of MANOR_RENDER_MAP.doorNodes) {
+      const thresholdConfig = getDoorThresholdConfig(node);
       const threshold = this.#scene.add
         .rectangle(
           node.x,
@@ -920,6 +937,15 @@ export class ManorWorldStage {
           node.alpha,
         )
         .setOrigin(0.5);
+      const thresholdArt = this.#scene.add
+        .image(node.x, node.y, thresholdConfig.key)
+        .setDisplaySize(
+          Math.max(32, node.width + 18),
+          Math.max(52, node.height + 34),
+        )
+        .setAngle(thresholdConfig.angle)
+        .setTint(thresholdConfig.tint)
+        .setAlpha(node.alpha * 0.54);
       const frame = this.#scene.add
         .rectangle(
           node.x,
@@ -951,7 +977,7 @@ export class ManorWorldStage {
         )
         .setOrigin(0.5);
 
-      this.#layers.floor.add(threshold);
+      this.#layers.floor.add([threshold, thresholdArt]);
       this.#layers.lights.add(glow);
       this.#layers.walls.add(frame);
       this.#layers.interaction.add(marker);
@@ -959,6 +985,7 @@ export class ManorWorldStage {
       this.#doorNodeVisuals.push({
         node,
         threshold,
+        thresholdArt,
         frame,
         glow,
         marker,
@@ -986,7 +1013,7 @@ export class ManorWorldStage {
 
     visual.shell.setTint(palette.shellFill);
     visual.shell.setAlpha(0.97);
-    visual.floor.setTint(palette.floorTint);
+    visual.floor.setTint(mixColor(0xffffff, palette.floorTint, 0.28));
     visual.floorSpecular.setTint(palette.floorSpecularTint);
     visual.floorSpecular.setAlpha(0.12 + lightFactor * 0.14);
     visual.accent.setTint(palette.accentTint);
@@ -1000,7 +1027,7 @@ export class ManorWorldStage {
     visual.blackoutShade.setAlpha(palette.blackoutOverlayAlpha);
     visual.emergencyWash.setTint(palette.emergencyTint);
     visual.emergencyWash.setAlpha(palette.emergencyAlpha);
-    visual.cutawayWall.setTint(palette.cutawayTint);
+    visual.cutawayWall.setTint(mixColor(0xffffff, palette.cutawayTint, 0.34));
     visual.cutawayShadow.setAlpha(palette.cutawayShadowAlpha);
     visual.cutawayTrim.setFillStyle(room.accentColor, focused ? 0.42 : 0.24);
     visual.titlePlate.setFillStyle(
@@ -1044,6 +1071,10 @@ export class ManorWorldStage {
       highlight.setAlpha(
         0.03 + lightFactor * 0.07 + roomState.occupantIds.length * 0.004,
       );
+    }
+
+    for (const heroProp of visual.heroProps) {
+      heroProp.setAlpha(0.52 + lightFactor * 0.42);
     }
 
     for (const [index, lightGlow] of visual.lightGlows.entries()) {
@@ -1277,6 +1308,13 @@ export class ManorWorldStage {
           : emphasized
             ? visual.node.alpha
             : visual.node.alpha * 0.74,
+      );
+      visual.thresholdArt.setAlpha(
+        inspected
+          ? visual.node.alpha * 0.72
+          : emphasized
+            ? visual.node.alpha * 0.6
+            : visual.node.alpha * 0.34,
       );
       visual.frame.setStrokeStyle(
         2,

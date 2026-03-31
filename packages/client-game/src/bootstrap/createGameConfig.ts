@@ -15,9 +15,11 @@ type CreateGameConfigOptions = {
   director: GameDirector;
   width?: number;
   height?: number;
+  assetBaseUrl?: string;
 };
 
 export const createGameConfig = ({
+  assetBaseUrl,
   container,
   director,
   runtime,
@@ -48,7 +50,7 @@ export const createGameConfig = ({
   },
   scene: [
     new BootScene(),
-    new LoadingScene(director),
+    new LoadingScene(director, assetBaseUrl),
     new ManorWorldScene(runtime, director),
     new MeetingScene(director),
     new EndgameScene(director),

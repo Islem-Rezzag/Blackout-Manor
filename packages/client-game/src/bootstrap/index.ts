@@ -4,6 +4,7 @@ import type { BlackoutGameMountOptions, ClientGameController } from "../types";
 import { ClientGameRuntime } from "./runtime";
 
 export const mountBlackoutGame = async ({
+  assetBaseUrl,
   container,
   connection,
   width,
@@ -24,6 +25,7 @@ export const mountBlackoutGame = async ({
   );
   const game = new Phaser.Game(
     createGameConfig({
+      ...(assetBaseUrl ? { assetBaseUrl } : {}),
       container,
       director,
       runtime,

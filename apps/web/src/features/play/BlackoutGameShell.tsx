@@ -30,6 +30,8 @@ type BlackoutGameShellProps = PlayShellDefaults & {
   sampleReplayEndpoint: string;
 };
 
+const CLIENT_GAME_ASSET_BASE_URL = "/game-assets/client-game";
+
 const useDownloadUrl = (payload: string | null) => {
   const [url, setUrl] = useState<string | null>(null);
 
@@ -111,6 +113,7 @@ export function BlackoutGameShell({
       }
 
       controllerRef.current = await mountBlackoutGame({
+        assetBaseUrl: CLIENT_GAME_ASSET_BASE_URL,
         container: hostRef.current,
         connection,
         onStateChange: (nextState) => {

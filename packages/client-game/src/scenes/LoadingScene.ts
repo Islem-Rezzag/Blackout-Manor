@@ -1,6 +1,7 @@
 import * as Phaser from "phaser";
 
 import { loadClientGameAssetManifest } from "../bootstrap/assetManifest";
+import { registerDerivedClientGameTextures } from "../bootstrap/derivedClientAssets";
 import type { GameDirector } from "../directors/GameDirector";
 import { SCENE_KEYS } from "./keys";
 
@@ -8,10 +9,12 @@ export class LoadingScene extends Phaser.Scene {
   readonly #barWidth = 320;
   readonly #barHeight = 14;
   readonly #director: GameDirector;
+  readonly #assetBaseUrl: string | undefined;
 
-  constructor(director: GameDirector) {
+  constructor(director: GameDirector, assetBaseUrl?: string) {
     super(SCENE_KEYS.loading);
     this.#director = director;
+    this.#assetBaseUrl = assetBaseUrl;
   }
 
   preload() {
@@ -46,10 +49,18 @@ export class LoadingScene extends Phaser.Scene {
       bar.width = Math.max(4, (this.#barWidth - 4) * progress);
     });
 
-    loadClientGameAssetManifest(this.load);
+    loadClientGameAssetManifest(
+      this.load,
+      this.#assetBaseUrl
+        ? {
+            assetBaseUrl: this.#assetBaseUrl,
+          }
+        : undefined,
+    );
   }
 
   create() {
+    registerDerivedClientGameTextures(this.textures);
     this.scene.launch(SCENE_KEYS.manorWorld);
     this.scene.launch(SCENE_KEYS.meeting);
     this.scene.launch(SCENE_KEYS.endgame);
