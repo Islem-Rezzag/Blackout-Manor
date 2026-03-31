@@ -158,6 +158,7 @@ pnpm fairness:check
 - [Alpha Review Guide](./docs/release/alpha-review.md)
 - [Contribution Guide](./CONTRIBUTING.md)
 - [Architecture Index](./docs/architecture/README.md)
+- [Benchmark Safety](./docs/architecture/benchmark-safety.md)
 - [Presentation Direction](./docs/architecture/presentation.md)
 - [System Overview](./docs/architecture/system-overview.md)
 - [Target Scaffold](./docs/architecture/target-scaffold.md)

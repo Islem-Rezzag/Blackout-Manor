@@ -1,7 +1,6 @@
 "use client";
 
 import type {
-  ClientGameConnectionOptions,
   ClientGameController,
   ClientGameState,
 } from "@blackout-manor/client-game";
@@ -10,7 +9,14 @@ import { parseSavedReplayEnvelope } from "@blackout-manor/replay-viewer/schemas"
 import { useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  buildGameRuntimeConnection,
+  type GameRuntimeSurface,
+  resolveReplayEndpointForSurface,
+} from "./runtimeSurface";
+
 type GameRuntimeHostProps = {
+  surface: GameRuntimeSurface;
   roomId: string;
   defaultMode: "mock" | "live";
   defaultServerUrl: string;
@@ -18,46 +24,7 @@ type GameRuntimeHostProps = {
   replayEndpoint?: string | null;
 };
 
-const DEMO_ROOM_IDS = new Set(["demo", "local", "mock-manor-room"]);
 const CLIENT_GAME_ASSET_BASE_URL = "/game-assets/client-game";
-
-const normalizeRoomId = (roomId: string) => {
-  const trimmed = roomId.trim();
-  return trimmed.length > 0 ? trimmed : "demo";
-};
-
-const buildConnection = ({
-  defaultActorId,
-  defaultMode,
-  defaultServerUrl,
-  roomId,
-  search,
-}: GameRuntimeHostProps & { search: string }): ClientGameConnectionOptions => {
-  const searchParams = new URLSearchParams(search);
-  const modeParam = searchParams.get("mode");
-  const actorId = searchParams.get("playerId") ?? defaultActorId ?? undefined;
-  const normalizedRoomId = normalizeRoomId(roomId);
-  const inferredMode = DEMO_ROOM_IDS.has(normalizedRoomId.toLowerCase())
-    ? "mock"
-    : defaultMode;
-  const mode =
-    modeParam === "live" || modeParam === "mock" ? modeParam : inferredMode;
-
-  if (mode === "live") {
-    return {
-      mode: "live",
-      roomId: normalizedRoomId,
-      serverUrl: searchParams.get("serverUrl") ?? defaultServerUrl,
-      ...(actorId ? { actorId } : {}),
-    };
-  }
-
-  return {
-    mode: "mock",
-    roomId: normalizedRoomId,
-    ...(actorId ? { actorId } : {}),
-  };
-};
 
 const describeStatus = (state: ClientGameState | null) => {
   if (!state) {
@@ -84,6 +51,7 @@ export function GameRuntimeHost({
   defaultServerUrl,
   replayEndpoint = null,
   roomId,
+  surface,
 }: GameRuntimeHostProps) {
   const searchParams = useSearchParams();
   const search = searchParams.toString();
@@ -94,9 +62,13 @@ export function GameRuntimeHost({
   const [replayStatus, setReplayStatus] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const effectiveReplayEndpoint = resolveReplayEndpointForSurface(
+    surface,
+    replayEndpoint,
+  );
 
   useEffect(() => {
-    if (!replayEndpoint) {
+    if (!effectiveReplayEndpoint) {
       setReplay(null);
       setReplayStatus("idle");
       return;
@@ -107,7 +79,7 @@ export function GameRuntimeHost({
 
     const loadReplay = async () => {
       try {
-        const response = await fetch(replayEndpoint, {
+        const response = await fetch(effectiveReplayEndpoint, {
           cache: "no-store",
         });
 
@@ -139,34 +111,33 @@ export function GameRuntimeHost({
     return () => {
       active = false;
     };
-  }, [replayEndpoint]);
+  }, [effectiveReplayEndpoint]);
 
   const connection = useMemo(() => {
-    if (replay) {
-      const actorId =
-        new URLSearchParams(search).get("playerId") ??
-        defaultActorId ??
-        undefined;
-
-      return {
-        mode: "replay",
-        replay,
-        roomId: normalizeRoomId(roomId),
-        ...(actorId ? { actorId } : {}),
-      } satisfies ClientGameConnectionOptions;
-    }
-
-    return buildConnection({
+    return buildGameRuntimeConnection({
       defaultActorId,
       defaultMode,
       defaultServerUrl,
+      replay,
       roomId,
       search,
+      surface,
     });
-  }, [defaultActorId, defaultMode, defaultServerUrl, replay, roomId, search]);
+  }, [
+    defaultActorId,
+    defaultMode,
+    defaultServerUrl,
+    replay,
+    roomId,
+    search,
+    surface,
+  ]);
 
   useEffect(() => {
-    if (!hostRef.current || (replayEndpoint && replayStatus !== "ready")) {
+    if (
+      !hostRef.current ||
+      (effectiveReplayEndpoint && replayStatus !== "ready")
+    ) {
       return;
     }
 
@@ -202,7 +173,7 @@ export function GameRuntimeHost({
         hostRef.current.replaceChildren();
       }
     };
-  }, [connection, replayEndpoint, replayStatus]);
+  }, [connection, effectiveReplayEndpoint, replayStatus]);
 
   const issue =
     replayStatus === "error"
@@ -210,7 +181,7 @@ export function GameRuntimeHost({
       : (state?.lastValidationError?.message ??
         state?.lastErrorMessage ??
         null);
-  const resolvedRoomId = state?.roomId ?? normalizeRoomId(roomId);
+  const resolvedRoomId = state?.roomId ?? (roomId.trim() || "demo");
 
   return (
     <section className="game-runtime-shell" data-testid="game-runtime-host">

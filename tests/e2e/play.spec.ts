@@ -26,6 +26,26 @@ test("renders the live manor canvas", async ({ page }) => {
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
+  await expect(page.locator(".play-view-nav")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { level: 1, name: /season 01 balance/i }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { level: 2, name: /replay-backed eq metrics/i }),
+  ).toHaveCount(0);
+});
+
+test("keeps /game on the live runtime even if dev replay query params are present", async ({
+  page,
+}) => {
+  await page.goto("/game/demo?view=replay&source=open");
+
+  await expect(page.getByTestId("game-runtime-host")).toBeVisible();
+  await expect(page.locator(".play-view-nav")).toHaveCount(0);
+  await expect(page.getByText(/replay archive/i)).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { level: 2, name: /replay-backed eq metrics/i }),
+  ).toHaveCount(0);
 });
 
 test("keeps the legacy play route as a compatibility redirect", async ({
@@ -51,6 +71,7 @@ test("loads replay through the runtime from the dev shell", async ({
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
+  await expect(page.getByText(/replay archive/i)).toBeVisible();
 });
 
 test("keeps fairness behind the dev route", async ({ page }) => {

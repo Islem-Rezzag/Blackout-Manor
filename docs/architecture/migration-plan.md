@@ -116,7 +116,17 @@ Lock donor strategy, visual language, house program, asset boundaries, and execu
 - donor boundaries and license implications are documented
 - the manor floorplan vision is locked before implementation work starts
 
-### Upcoming: 6B Floorplan Rebuild
+### Completed: 6A.5 Concept-Art Decomposition
+
+#### Goal
+Translate the locked concept image into implementation-ready floorplan, prop, and character/UI guidance before runtime rebuilding starts.
+
+#### Acceptance Criteria
+- concept-derived floorplan and room program are documented
+- prop/task matrix is locked room by room
+- character and UI style guidance is implementation-ready
+
+### Completed: 6B Floorplan Rebuild
 
 #### Goal
 Rebuild the manor into a cleaner connected floorplan with better thresholds, circulation, and room anchors.
@@ -126,7 +136,7 @@ Rebuild the manor into a cleaner connected floorplan with better thresholds, cir
 - room adjacency matches the locked house program
 - cutaway readability survives the rebuild
 
-### Upcoming: 6C Movement And Navigation Rewrite
+### Completed: 6C Movement And Navigation Rewrite
 
 #### Goal
 Make traversal embodied through doors, corridors, and hotspots instead of room-hop feeling.
@@ -136,7 +146,7 @@ Make traversal embodied through doors, corridors, and hotspots instead of room-h
 - room entry and exit are readable
 - client presentation remains non-authoritative
 
-### Upcoming: 6D Meeting Blocking And Seating
+### Completed: 6D Meeting Blocking And Seating
 
 #### Goal
 Stage meetings as physical gathering, seating, and in-world table drama.
@@ -146,7 +156,7 @@ Stage meetings as physical gathering, seating, and in-world table drama.
 - seating for ten is stable and readable
 - exile presentation remains in-world
 
-### Upcoming: 6E Task Readability
+### Completed: 6E Task Readability
 
 #### Goal
 Improve spectator understanding of what task or sabotage response is happening in each room.
@@ -155,7 +165,7 @@ Improve spectator understanding of what task or sabotage response is happening i
 - task interactions are readable at hotspot level
 - sabotage responses are visually obvious without dashboarding the live route
 
-### Upcoming: 6F Character Identity Pass
+### Completed: 6F Character Identity Pass
 
 #### Goal
 Upgrade cast distinctiveness through silhouettes, outfit kits, masks, posture, and portraits.
@@ -164,7 +174,7 @@ Upgrade cast distinctiveness through silhouettes, outfit kits, masks, posture, a
 - all ten agents are distinguishable at a glance
 - portrait and in-world identity stay aligned
 
-### Upcoming: 6G Audio And Event Feedback
+### Completed: 6G Audio And Event Feedback
 
 #### Goal
 Introduce stronger room-aware audio, storm texture, and public event feedback.
@@ -173,7 +183,7 @@ Introduce stronger room-aware audio, storm texture, and public event feedback.
 - major events have readable sound feedback
 - audio remains supportive rather than noisy
 
-### Upcoming: 6H Room Zoom / Inspection Mode
+### Completed: 6H Room Zoom / Inspection Mode
 
 #### Goal
 Add a more deliberate room focus mode on top of overview and surveillance.
@@ -182,7 +192,7 @@ Add a more deliberate room focus mode on top of overview and surveillance.
 - room zoom feels cinematic and reversible
 - surveillance and room focus stay visually coherent
 
-### Upcoming: 6I Asset And License Integration
+### Completed: 6I Asset And License Integration
 
 #### Goal
 Integrate approved donor assets and placeholders through manifest and credits discipline.
@@ -191,7 +201,7 @@ Integrate approved donor assets and placeholders through manifest and credits di
 - imported assets are documented and separable
 - asset swaps do not require logic rewrites
 
-### Upcoming: 6J Benchmark Safety Pass
+### Completed: 6J Benchmark Safety Pass
 
 #### Goal
 Verify the embodied spectator overhaul does not leak analytics into live mode or damage replay safety.

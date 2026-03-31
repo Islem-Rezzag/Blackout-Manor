@@ -3,6 +3,7 @@
 Blackout Manor is split into deterministic simulation, agent reasoning, authoritative networking, and browser-first presentation layers.
 
 ## Architecture Docs
+- [Benchmark Safety](./benchmark-safety.md)
 - [Vision](./vision.md)
 - [Presentation Direction](./presentation.md)
 - [System Overview](./system-overview.md)

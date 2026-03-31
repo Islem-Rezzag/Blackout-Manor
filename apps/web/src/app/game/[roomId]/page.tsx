@@ -32,6 +32,7 @@ export default async function GameRoomPage({ params }: GameRoomPageProps) {
         }
       >
         <GameRuntimeHost
+          surface="live"
           roomId={roomId}
           defaultMode={env.NEXT_PUBLIC_CLIENT_GAME_MODE}
           defaultServerUrl={env.NEXT_PUBLIC_MATCH_SERVER_URL}

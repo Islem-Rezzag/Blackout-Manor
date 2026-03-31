@@ -42,6 +42,7 @@ export default async function DevPlayPage({ searchParams }: DevPlayPageProps) {
           }
         >
           <GameRuntimeHost
+            surface="dev-replay"
             roomId={resolvedRoomId}
             defaultMode={env.NEXT_PUBLIC_CLIENT_GAME_MODE}
             defaultServerUrl={env.NEXT_PUBLIC_MATCH_SERVER_URL}
