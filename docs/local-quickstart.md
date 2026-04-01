@@ -12,6 +12,18 @@ This guide is written for a first-time reviewer, not only a contributor. If you 
 
 The main experience is a real runtime rendered by `packages/client-game`, not a dashboard page.
 
+## Current Branch Status
+- Completed through Milestone `6J`:
+  - game-first routing
+  - world-first runtime
+  - surveillance mode
+  - embodied spectator overhaul
+  - replay-backed EQ tooling in dev fairness
+  - benchmark-safety route hardening
+- Still alpha-quality:
+  - some art/audio/UI assets remain placeholder or baseline-import rather than bespoke final assets
+  - this branch is ready for review and merge prep, not final release
+
 ## Prerequisites
 - Node.js 22+
 - `pnpm` 10.32.1 via Corepack
@@ -40,21 +52,22 @@ The web app runs on [http://127.0.0.1:3000](http://127.0.0.1:3000). The Colyseus
    - `Q` / `E` or `Tab`: cycle surveillance feeds
    - `1` to `4`: lock a surveillance feed
    - `Esc`: return to roaming observation
-5. Generate a replay:
+5. Click a room to inspect it more closely, then press `Esc` to return to the whole-manor view.
+6. Generate a replay:
 
 ```bash
 pnpm sim --seed 42 --mode fast
 pnpm replay:open artifacts/replays/fast-42.replay.json
 ```
 
-6. Open [http://127.0.0.1:3000/dev/play?view=replay&source=open](http://127.0.0.1:3000/dev/play?view=replay&source=open).
-7. Generate fairness and EQ data:
+7. Open [http://127.0.0.1:3000/dev/play?view=replay&source=open](http://127.0.0.1:3000/dev/play?view=replay&source=open).
+8. Generate fairness and EQ data:
 
 ```bash
 pnpm fairness:report
 ```
 
-8. Open [http://127.0.0.1:3000/dev/fairness](http://127.0.0.1:3000/dev/fairness).
+9. Open [http://127.0.0.1:3000/dev/fairness](http://127.0.0.1:3000/dev/fairness).
 
 ## What You Will See
 
@@ -87,12 +100,20 @@ pnpm fairness:report
 
 ### Still Alpha
 - Some visuals remain placeholder or procedural
+- Some approved baseline-imported assets are temporary until bespoke replacements land
 - This is a spectator-first alpha, not a final release build
 - Documentation and polish are still being tightened for outside review
 
 ## Optional Validation
 ```bash
+git diff --check
 pnpm ci:quality
 pnpm test:e2e
 pnpm fairness:check
 ```
+
+## Benchmark-Safety Reminder
+- `/game` is the live runtime and stays analytics-free
+- `/dev/play?view=replay` is the replay route
+- `/dev/fairness` is the fairness and EQ route
+- private reasoning and hidden-role analytics stay out of the live route

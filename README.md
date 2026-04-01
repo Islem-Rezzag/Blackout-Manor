@@ -2,7 +2,7 @@
 
 Blackout Manor is currently a spectator-first AI social-deduction alpha. Ten AI agents move through a storm-locked manor, perform evidence-generating tasks, lie, accuse, panic, vote, and leave behind deterministic replay data for review. The main experience on this branch is a real full-screen Phaser runtime, not a dashboard.
 
-This branch matters: the game-first work lives on `feat/world-first-runtime`, not on `main`.
+Current review target: `feat/world-first-runtime`. This branch is the merge candidate for `main`.
 
 ## What Blackout Manor Is Right Now
 - A game-first launcher at `/`
@@ -32,15 +32,20 @@ Open `/dev/play?view=replay` to inspect a staged replay through the same runtime
 - Game-first routing and launcher flow
 - World-first runtime scenes and directors
 - Surveillance mode and observation controls
-- Manor render pipeline upgrade
-- Character readability and live HUD polish
+- Connected manor floorplan, embodied corridor travel, and physical meeting staging
+- Task readability and visible room interactions
+- Character identity kits, portraits, and posture readability
+- Audio and event-feedback layer
+- Room inspection / zoom mode
+- Approved baseline asset and license integration
+- Benchmark-safety route hardening
 - Public launcher flow
 - Replay-backed EQ analytics in dev fairness tooling
 
 ### What Is Still Alpha
-- Some art remains placeholder or procedural rather than final bespoke production art
+- Some art, UI, and audio still use placeholder, procedural, or baseline-imported assets rather than final bespoke production assets
 - This is not the final public release build
-- Documentation is being tightened for external review, but still evolving
+- Merge/release packaging is being tightened for external review, but still evolving
 
 ## Recommended First-Time Reviewer Path
 1. Install dependencies.
@@ -73,7 +78,8 @@ pnpm dev
    - `Q` / `E` or `Tab`: cycle surveillance feeds
    - `1` to `4`: lock a surveillance feed
    - `Esc`: return to roaming observation
-7. Generate and open a replay:
+7. Click a room to enter room inspection mode, then press `Esc` to return to the whole-manor view.
+8. Generate and open a replay:
 
 ```bash
 pnpm sim --seed 42 --mode fast
@@ -82,7 +88,7 @@ pnpm replay:open artifacts/replays/fast-42.replay.json
 
 Then open [http://127.0.0.1:3000/dev/play?view=replay&source=open](http://127.0.0.1:3000/dev/play?view=replay&source=open).
 
-8. Generate the fairness and EQ report:
+9. Generate the fairness and EQ report:
 
 ```bash
 pnpm fairness:report
@@ -105,15 +111,45 @@ Then open [http://127.0.0.1:3000/dev/fairness](http://127.0.0.1:3000/dev/fairnes
 - Game-first routing
 - World-first runtime
 - Surveillance mode
-- Render pipeline upgrade
-- Character and HUD polish
+- Embodied spectator overhaul through Milestone `6J`
+  - render pipeline upgrade
+  - connected floorplan
+  - corridor navigation
+  - physical meeting travel and seating
+  - task readability
+  - character identity pass
+  - audio and event feedback
+  - room inspection mode
+  - baseline asset and license integration
+  - benchmark-safety hardening
 - Public launcher
 - Replay-backed EQ analytics in dev fairness tooling
 
 ### Still Placeholder Or Alpha-Quality
 - Placeholder or procedural assets still exist in parts of the presentation stack
-- Tooling and docs are strong enough for alpha review, but not yet final-release polished
+- Approved baseline imports are in place, but not all final bespoke manor art/audio is done
+- Tooling and docs are strong enough for alpha review and merge review, but not yet final-release polished
 - The branch is ready for spectator-first alpha review, not for a finished public launch
+
+## Release Hardening Notes
+- Smoke-check commands:
+
+```bash
+pnpm dev
+pnpm test:e2e tests/e2e/play.spec.ts
+pnpm fairness:report
+pnpm ci:quality
+```
+
+- Placeholder asset disclaimer:
+  - the runtime now includes a legally clean baseline asset layer, but some rooms, effects, UI, and audio still rely on placeholder or procedural presentation
+- Benchmark-safety guarantees:
+  - `/game` remains analytics-free
+  - replay remains behind `/dev/play?view=replay`
+  - fairness and EQ remain behind `/dev/fairness`
+  - hidden-role analytics and private reasoning stay out of live mode
+- Merge target:
+  - this branch is being packaged for merge review into `main`, not presented as a final public release branch
 
 ## Fairness And EQ Reports
 - `pnpm fairness:report` exports both balance metrics and replay-backed EQ metrics for `/dev/fairness`.
@@ -144,7 +180,7 @@ pnpm fairness:report
 - The presentation quality is stronger than earlier milestones, but some visuals are still prototype-grade and meant to be swapped for bespoke art later.
 - The current experience is spectator-first. It is optimized for review, observation, replay, and analysis rather than a final player-facing shipping loop.
 - Dev and fairness tooling are intentionally separate from live routes; reviewers should use `/game` or `/game/demo` first.
-- `main` does not reflect the full current alpha. Review the `feat/world-first-runtime` branch.
+- Room inspection, replay, and fairness all work, but they are still alpha review surfaces rather than final consumer-facing polish.
 
 ## Quality Gates
 ```bash
@@ -156,6 +192,7 @@ pnpm fairness:check
 ## Documentation
 - [Local Quickstart](./docs/local-quickstart.md)
 - [Alpha Review Guide](./docs/release/alpha-review.md)
+- [Merge Readiness Checklist](./docs/release/merge-readiness.md)
 - [Contribution Guide](./CONTRIBUTING.md)
 - [Architecture Index](./docs/architecture/README.md)
 - [Benchmark Safety](./docs/architecture/benchmark-safety.md)

@@ -11,6 +11,11 @@ This plan tracks presentation ownership, product-surface work, and benchmark-sur
 
 ## Current Milestone Map
 
+### Current Branch Status
+- Completed and pushed through Milestone `7`
+- Milestone `7` records the docs/release-hardening closeout for reviewer onboarding, smoke checks, and merge readiness
+- Engine authority, HEART behavior, replay guarantees, and live-route benchmark safety remain locked
+
 ### Completed: Milestone 1 - Route and Product-Surface Inversion
 
 #### Outcome
@@ -210,13 +215,14 @@ Verify the embodied spectator overhaul does not leak analytics into live mode or
 - live mode remains analytics-free
 - replay compatibility and authority boundaries remain intact
 
-### Upcoming: Milestone 7 - Alpha Hardening And Review Packaging
+### Completed: Milestone 7 - Alpha Hardening And Review Packaging
 
 #### Goal
 Tighten release docs, smoke checks, reviewer onboarding, and benchmark confidence around the current spectator-first alpha.
 
 #### Acceptance Criteria
 - first-time reviewers can understand what the branch is, what they will see, and which routes matter.
+- review and merge-readiness docs explain current status, smoke checks, and known limitations.
 - hardening does not leak hidden-role analytics into live mode.
 
 ## Risks
