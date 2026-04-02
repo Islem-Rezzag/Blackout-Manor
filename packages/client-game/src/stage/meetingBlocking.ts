@@ -11,9 +11,9 @@ import {
 } from "../navigation/manorNavigation";
 import { createMeetingSeatMap, worldSeatResolver } from "./seatResolvers";
 
-export const MEETING_ALARM_FOCUS_MS = 700;
-export const MEETING_PANEL_DELAY_MS = 220;
-export const MEETING_PORTRAIT_DELAY_MS = 420;
+export const MEETING_ALARM_FOCUS_MS = 920;
+export const MEETING_PANEL_DELAY_MS = 280;
+export const MEETING_PORTRAIT_DELAY_MS = 640;
 
 const buildSnapshotSeatPositions = (
   players: readonly PublicPlayerState[],

@@ -41,30 +41,30 @@ export class MeetingScene extends Phaser.Scene {
     this.#stage = new ManorWorldStage({ scene: this });
     this.#banner = new RuntimeBanner({ scene: this, width: 580 });
     this.#meetingGlow = this.add
-      .image(this.scale.width / 2, this.scale.height - 176, "focus-beam")
+      .image(this.scale.width / 2, this.scale.height - 192, "focus-beam")
       .setScrollFactor(0)
       .setDepth(321)
-      .setDisplaySize(760, 220)
+      .setDisplaySize(860, 260)
       .setTint(0xe1be86)
       .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.16);
+      .setAlpha(0.18);
     this.#portraitStrip = new MeetingPortraitStrip(this);
 
     const plate = this.add
-      .rectangle(0, 0, 724, 106, 0x081018, 0.8)
-      .setStrokeStyle(1, 0x73a8c9, 0.16);
-    const header = this.add.text(-326, -24, "", {
+      .rectangle(0, 0, 796, 118, 0x081018, 0.84)
+      .setStrokeStyle(1, 0xa1c4d9, 0.18);
+    const header = this.add.text(-356, -26, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "21px",
+      fontSize: "24px",
       fontStyle: "bold",
-      wordWrap: { width: 648 },
+      wordWrap: { width: 708 },
     });
-    const detail = this.add.text(-326, 12, "", {
-      color: "#d7dee9",
+    const detail = this.add.text(-356, 16, "", {
+      color: "#dfe6ee",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "13px",
-      wordWrap: { width: 648 },
+      fontSize: "14px",
+      wordWrap: { width: 708 },
     });
 
     this.#meetingHeader = header;
@@ -187,11 +187,11 @@ export class MeetingScene extends Phaser.Scene {
     this.#portraitStrip?.resize(this.scale.width, this.scale.height);
     this.#meetingGlow?.setPosition(
       this.scale.width / 2,
-      this.scale.height - 176,
+      this.scale.height - 192,
     );
     this.#meetingPlate?.setPosition(
       this.scale.width / 2,
-      this.scale.height - 86,
+      this.scale.height - 96,
     );
   }
 

@@ -37,6 +37,27 @@ describe("client-game package", () => {
     expect(seat.y).toBeLessThan(room.y + room.height / 2);
   });
 
+  it("spreads larger cast groups across readable rows in major rooms", () => {
+    const seats = Array.from({ length: 6 }, (_, index) =>
+      getRoomSeatPosition("grand-hall", index, 6),
+    );
+    const distinctRows = new Set(seats.map((seat) => seat.y));
+    const xPositions = seats
+      .map((seat) => seat.x)
+      .sort((left, right) => left - right);
+    const yPositions = seats
+      .map((seat) => seat.y)
+      .sort((top, bottom) => top - bottom);
+    const minX = xPositions[0] ?? 0;
+    const maxX = xPositions[xPositions.length - 1] ?? 0;
+    const minY = yPositions[0] ?? 0;
+    const maxY = yPositions[yPositions.length - 1] ?? 0;
+
+    expect(distinctRows.size).toBe(2);
+    expect(maxX - minX).toBeGreaterThan(180);
+    expect(maxY - minY).toBeGreaterThan(50);
+  });
+
   it("parses the external tiled manor map into render data", () => {
     expect(MANOR_RENDER_MAP.roomOrder).toHaveLength(10);
     expect(MANOR_RENDER_MAP.corridors.length).toBeGreaterThan(0);

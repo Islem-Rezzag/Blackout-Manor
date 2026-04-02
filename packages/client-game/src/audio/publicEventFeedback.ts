@@ -120,15 +120,15 @@ export const footstepIntervalMsForSurface = (
 ) => {
   switch (surfaceProfile) {
     case "stone":
-      return 420;
+      return 470;
     case "service":
-      return 390;
+      return 430;
     case "mechanical":
-      return 360;
+      return 400;
     case "glass":
-      return 460;
+      return 520;
     default:
-      return 380;
+      return 440;
   }
 };
 

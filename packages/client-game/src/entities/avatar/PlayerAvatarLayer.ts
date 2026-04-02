@@ -73,6 +73,7 @@ class PlayerAvatar {
   readonly id: PublicPlayerState["id"];
   readonly container: Phaser.GameObjects.Container;
   readonly #rig: AvatarRig;
+  readonly #labelPlate: Phaser.GameObjects.Rectangle;
   readonly #label: Phaser.GameObjects.Text;
   readonly #presenceRing: Phaser.GameObjects.Ellipse;
   readonly #presenceGlow: Phaser.GameObjects.Ellipse;
@@ -94,31 +95,34 @@ class PlayerAvatar {
     this.id = player.id;
     this.#rig = new AvatarRig(scene, appearance, "world");
     this.#presenceGlow = scene.add
-      .ellipse(0, 8, 46, 18, appearance.trimColor, 0.14)
+      .ellipse(0, 9, 54, 22, appearance.trimColor, 0.16)
       .setBlendMode(Phaser.BlendModes.SCREEN);
     this.#presenceRing = scene.add
-      .ellipse(0, 8, 38, 11, appearance.trimColor, 0.12)
+      .ellipse(0, 8, 46, 14, appearance.trimColor, 0.14)
       .setStrokeStyle(2, appearance.trimColor, 0.42);
-    this.#label = scene.add.text(0, 40, player.displayName, {
+    this.#labelPlate = scene.add
+      .rectangle(0, 43, 96, 20, 0x081118, 0.78)
+      .setStrokeStyle(1, appearance.trimColor, 0.32);
+    this.#label = scene.add.text(0, 43, player.displayName, {
       align: "center",
       color: appearance.nameColor,
       fontFamily: "Georgia, Times, serif",
-      fontSize: "12px",
+      fontSize: "13px",
       fontStyle: "600",
       stroke: "#05070a",
-      strokeThickness: 4,
+      strokeThickness: 3,
       wordWrap: { width: 104, useAdvancedWrap: true },
     });
     this.#label.setOrigin(0.5);
-    this.#statusPip = scene.add.circle(19, -34, 4.5, 0x8de4ff, 1);
+    this.#statusPip = scene.add.circle(20, -36, 5, 0x8de4ff, 1);
     this.#statusPlate = scene.add
-      .rectangle(0, 61, 74, 18, 0x081118, 0.76)
+      .rectangle(0, 64, 82, 20, 0x081118, 0.78)
       .setStrokeStyle(1, appearance.trimColor, 0.36);
-    this.#statusText = scene.add.text(0, 61, "CALM", {
+    this.#statusText = scene.add.text(0, 64, "CALM", {
       align: "center",
       color: "#eef4fb",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "9px",
+      fontSize: "10px",
       fontStyle: "bold",
       letterSpacing: 1.1,
     });
@@ -128,6 +132,7 @@ class PlayerAvatar {
       this.#presenceRing,
       this.#rig.container,
       this.#statusPip,
+      this.#labelPlate,
       this.#label,
       this.#statusPlate,
       this.#statusText,
@@ -201,34 +206,45 @@ class PlayerAvatar {
     this.#label.setText(player.displayName);
     this.#label.setColor(appearance.nameColor);
     this.#label.setAlpha(player.status === "alive" ? 1 : 0.55);
+    this.#labelPlate.setFillStyle(
+      player.status === "alive" ? 0x081118 : 0x180d0f,
+      player.status === "alive" ? 0.84 : 0.72,
+    );
+    this.#labelPlate.setStrokeStyle(
+      1.2,
+      visiblePosture === "defiant" || visiblePosture === "suspicious"
+        ? 0xff9d85
+        : appearance.trimColor,
+      player.connected ? 0.48 : 0.24,
+    );
     this.#presenceGlow.setFillStyle(
       appearance.trimColor,
       player.status === "alive"
         ? moving
-          ? 0.18
+          ? 0.22
           : visiblePosture === "shaken"
             ? 0.08
-            : 0.13
+            : 0.15
         : 0.04,
     );
     this.#presenceGlow.setScale(
-      moving ? 1.08 : visiblePosture === "confident" ? 1.04 : 1,
+      moving ? 1.12 : visiblePosture === "confident" ? 1.06 : 1,
       1,
     );
     this.#presenceRing.setStrokeStyle(
-      visiblePosture === "defiant" ? 2.4 : 2,
+      visiblePosture === "defiant" ? 2.6 : 2.2,
       appearance.trimColor,
       player.status === "alive"
         ? visiblePosture === "shaken"
           ? 0.2
-          : 0.5
+          : 0.56
         : 0.16,
     );
     this.#presenceRing.setFillStyle(
       appearance.trimColor,
       visiblePosture === "alert" || visiblePosture === "suspicious"
-        ? 0.18
-        : 0.1,
+        ? 0.22
+        : 0.12,
     );
     this.#statusPlate.setFillStyle(
       player.status === "alive" ? 0x081118 : 0x180d0f,
@@ -249,9 +265,9 @@ class PlayerAvatar {
     );
     const inspected = inspectionRoomId === roomId;
     const dimmed = inspectionRoomId !== null && !inspected;
-    this.container.setScale(inspected ? 1.06 : 1);
+    this.container.setScale(inspected ? 1.08 : moving ? 1.02 : 1);
     this.container.setAlpha(
-      (player.status === "alive" ? 1 : 0.52) * (dimmed ? 0.36 : 1),
+      (player.status === "alive" ? 1 : 0.52) * (dimmed ? 0.3 : 1),
     );
     this.container.setVisible(true);
     this.#applyPosition(currentPosition);

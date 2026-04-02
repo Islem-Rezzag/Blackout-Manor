@@ -41,10 +41,10 @@ export type EmbodiedMovementPlan = {
   waypoints: NavigationWaypoint[];
 };
 
-const ROOM_SPEED_PX_PER_SECOND = 64;
-const HALLWAY_SPEED_PX_PER_SECOND = 82;
-const THRESHOLD_PAUSE_MS = 150;
-const TASK_SETTLE_DELAY_MS = 340;
+const ROOM_SPEED_PX_PER_SECOND = 58;
+const HALLWAY_SPEED_PX_PER_SECOND = 74;
+const THRESHOLD_PAUSE_MS = 190;
+const TASK_SETTLE_DELAY_MS = 430;
 const DOOR_INTERIOR_OFFSET = 22;
 const CONTAINMENT_MARGIN = 24;
 const CORRIDOR_TOUCH_MARGIN = 16;

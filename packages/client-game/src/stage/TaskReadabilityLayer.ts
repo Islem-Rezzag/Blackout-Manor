@@ -102,15 +102,15 @@ export class TaskReadabilityLayer {
       const propGlow = this.#scene.add
         .image(geometry.propPoint.x, geometry.propPoint.y, "room-glow")
         .setDepth(TASK_LAYER_DEPTH.props)
-        .setDisplaySize(92, 54)
+        .setDisplaySize(108, 64)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0);
       const propMarker = this.#scene.add
         .rectangle(
           geometry.propPoint.x,
           geometry.propPoint.y,
-          14,
-          14,
+          18,
+          18,
           0xffffff,
           0,
         )
@@ -119,15 +119,15 @@ export class TaskReadabilityLayer {
       const hotspotPulse = this.#scene.add
         .image(geometry.hotspotPoint.x, geometry.hotspotPoint.y, "signal-pulse")
         .setDepth(TASK_LAYER_DEPTH.interaction)
-        .setDisplaySize(66, 66)
+        .setDisplaySize(80, 80)
         .setBlendMode(Phaser.BlendModes.ADD)
         .setAlpha(0);
       const hotspotRing = this.#scene.add
         .ellipse(
           geometry.hotspotPoint.x,
           geometry.hotspotPoint.y,
-          56,
-          24,
+          68,
+          28,
           0xffffff,
           0.02,
         )
@@ -137,8 +137,8 @@ export class TaskReadabilityLayer {
         .ellipse(
           geometry.hotspotPoint.x,
           geometry.hotspotPoint.y + 2,
-          28,
-          10,
+          34,
+          12,
           0xffffff,
           0.18,
         )
@@ -147,8 +147,8 @@ export class TaskReadabilityLayer {
         .ellipse(
           geometry.approachPoint.x,
           geometry.approachPoint.y,
-          18,
-          8,
+          22,
+          10,
           0xffffff,
           0.04,
         )
@@ -157,9 +157,9 @@ export class TaskReadabilityLayer {
       const cuePlate = this.#scene.add
         .rectangle(
           geometry.hotspotPoint.x,
-          geometry.hotspotPoint.y - 28,
-          110,
-          24,
+          geometry.hotspotPoint.y - 32,
+          136,
+          30,
           0x0c141b,
           0.84,
         )
@@ -167,12 +167,12 @@ export class TaskReadabilityLayer {
         .setStrokeStyle(1, geometry.cueColor, 0.32);
       const cueTitle = this.#scene.add.text(
         geometry.hotspotPoint.x,
-        geometry.hotspotPoint.y - 34,
+        geometry.hotspotPoint.y - 40,
         geometry.shortLabel,
         {
           color: "#f5f0e4",
           fontFamily: "Segoe UI, sans-serif",
-          fontSize: "10px",
+          fontSize: "12px",
           fontStyle: "bold",
           letterSpacing: 0.8,
         },
@@ -181,12 +181,12 @@ export class TaskReadabilityLayer {
       cueTitle.setOrigin(0.5);
       const cueDetail = this.#scene.add.text(
         geometry.hotspotPoint.x,
-        geometry.hotspotPoint.y - 12,
+        geometry.hotspotPoint.y - 16,
         "",
         {
           color: "#d5e0ea",
           fontFamily: "Segoe UI, sans-serif",
-          fontSize: "10px",
+          fontSize: "11px",
         },
       );
       cueDetail.setDepth(TASK_LAYER_DEPTH.interaction);
@@ -194,8 +194,8 @@ export class TaskReadabilityLayer {
       const progressTrack = this.#scene.add
         .rectangle(
           geometry.hotspotPoint.x,
-          geometry.hotspotPoint.y + 18,
-          76,
+          geometry.hotspotPoint.y + 22,
+          92,
           6,
           0x071018,
           0.74,
@@ -204,8 +204,8 @@ export class TaskReadabilityLayer {
         .setStrokeStyle(1, geometry.cueColor, 0.18);
       const progressFill = this.#scene.add
         .rectangle(
-          geometry.hotspotPoint.x - 37,
-          geometry.hotspotPoint.y + 18,
+          geometry.hotspotPoint.x - 45,
+          geometry.hotspotPoint.y + 22,
           8,
           4,
           geometry.cueColor,
@@ -325,7 +325,7 @@ export class TaskReadabilityLayer {
         node.tone === "completed" ||
         node.tone === "attention");
     const style = toneStyle(node.tone, node.cueColor);
-    const scale = inspected ? 1.08 : focused ? 1.03 : 1;
+    const scale = inspected ? 1.14 : focused ? 1.06 : 1;
     const progress =
       node.tone === "completed"
         ? 1
@@ -403,7 +403,7 @@ export class TaskReadabilityLayer {
 
     visual.cueTitle.setVisible(showLabel);
     visual.cueTitle.setText(node.shortLabel);
-    visual.cueTitle.setAlpha(focused ? 1 : 0.92);
+    visual.cueTitle.setAlpha(focused ? 1 : 0.94);
     visual.cueTitle.setScale(scale);
 
     visual.cueDetail.setVisible(showLabel);
@@ -413,7 +413,7 @@ export class TaskReadabilityLayer {
         : node.statusText,
     );
     visual.cueDetail.setColor(style.detailColor);
-    visual.cueDetail.setAlpha(focused ? 1 : 0.84);
+    visual.cueDetail.setAlpha(focused ? 1 : 0.88);
     visual.cueDetail.setScale(scale);
 
     visual.progressTrack.setVisible(showProgress);
@@ -431,6 +431,6 @@ export class TaskReadabilityLayer {
       0.94,
     );
     visual.progressFill.setScale(1, 1);
-    visual.progressFill.setDisplaySize(Math.max(8, 74 * progress), 4);
+    visual.progressFill.setDisplaySize(Math.max(8, 88 * progress), 4);
   }
 }

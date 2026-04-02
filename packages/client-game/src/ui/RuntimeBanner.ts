@@ -13,28 +13,28 @@ export class RuntimeBanner {
   readonly #detail: Phaser.GameObjects.Text;
 
   constructor(options: RuntimeBannerOptions) {
-    const width = options.width ?? 560;
+    const width = options.width ?? 640;
     this.#backplate = options.scene.add
-      .rectangle(0, 0, width, 118, 0x050b12, 0.74)
-      .setStrokeStyle(1, 0x73a8c9, 0.18);
-    this.#eyebrow = options.scene.add.text(-width / 2 + 24, -34, "", {
-      color: "#8ec9e4",
+      .rectangle(0, 0, width, 126, 0x050b12, 0.78)
+      .setStrokeStyle(1, 0xa1c4d9, 0.2);
+    this.#eyebrow = options.scene.add.text(-width / 2 + 28, -38, "", {
+      color: "#a5cadf",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "11px",
-      letterSpacing: 2,
+      fontSize: "12px",
+      letterSpacing: 2.2,
     });
-    this.#title = options.scene.add.text(-width / 2 + 24, -10, "", {
+    this.#title = options.scene.add.text(-width / 2 + 28, -8, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "24px",
+      fontSize: "28px",
       fontStyle: "bold",
-      wordWrap: { width: width - 56 },
+      wordWrap: { width: width - 64 },
     });
-    this.#detail = options.scene.add.text(-width / 2 + 24, 28, "", {
-      color: "#d7dee9",
+    this.#detail = options.scene.add.text(-width / 2 + 28, 32, "", {
+      color: "#dfe6ee",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "13px",
-      wordWrap: { width: width - 56 },
+      fontSize: "14px",
+      wordWrap: { width: width - 64 },
     });
 
     this.#container = options.scene.add.container(0, 0, [
@@ -59,7 +59,7 @@ export class RuntimeBanner {
   }
 
   resize(width: number) {
-    this.#container.setPosition(width / 2, 88);
+    this.#container.setPosition(width / 2, 96);
   }
 
   destroy() {

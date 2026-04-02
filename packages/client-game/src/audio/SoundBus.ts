@@ -36,106 +36,106 @@ const audioGlobal = globalThis as AudioGlobal;
 
 const CUE_DEFINITIONS: Record<PublicSoundCueId, CueDefinition> = {
   hover: {
-    primary: { frequency: 900, gain: 0.025, durationMs: 70, type: "sine" },
+    primary: { frequency: 900, gain: 0.018, durationMs: 64, type: "sine" },
   },
   snapshot: {
-    primary: { frequency: 520, gain: 0.024, durationMs: 120, type: "triangle" },
+    primary: { frequency: 520, gain: 0.018, durationMs: 110, type: "triangle" },
   },
   alert: {
-    primary: { frequency: 220, gain: 0.04, durationMs: 180, type: "sawtooth" },
+    primary: { frequency: 220, gain: 0.028, durationMs: 170, type: "triangle" },
     secondary: {
       frequency: 310,
-      gain: 0.022,
-      durationMs: 150,
-      type: "triangle",
+      gain: 0.014,
+      durationMs: 140,
+      type: "sine",
       detune: 4,
     },
   },
   "footstep-parquet": {
-    primary: { frequency: 132, gain: 0.02, durationMs: 70, type: "triangle" },
+    primary: { frequency: 132, gain: 0.014, durationMs: 76, type: "triangle" },
   },
   "footstep-stone": {
-    primary: { frequency: 108, gain: 0.022, durationMs: 86, type: "triangle" },
+    primary: { frequency: 108, gain: 0.015, durationMs: 92, type: "triangle" },
   },
   "footstep-service": {
-    primary: { frequency: 124, gain: 0.018, durationMs: 78, type: "square" },
+    primary: { frequency: 124, gain: 0.013, durationMs: 82, type: "square" },
   },
   "footstep-mechanical": {
-    primary: { frequency: 92, gain: 0.024, durationMs: 82, type: "square" },
+    primary: { frequency: 92, gain: 0.015, durationMs: 88, type: "square" },
   },
   "footstep-glass": {
-    primary: { frequency: 184, gain: 0.016, durationMs: 68, type: "sine" },
+    primary: { frequency: 184, gain: 0.012, durationMs: 72, type: "sine" },
     secondary: {
       frequency: 328,
-      gain: 0.008,
-      durationMs: 58,
+      gain: 0.005,
+      durationMs: 52,
       type: "triangle",
       detune: 7,
     },
   },
   "door-open": {
-    primary: { frequency: 208, gain: 0.026, durationMs: 130, type: "triangle" },
+    primary: { frequency: 208, gain: 0.018, durationMs: 144, type: "triangle" },
     secondary: {
       frequency: 164,
-      gain: 0.02,
-      durationMs: 150,
+      gain: 0.012,
+      durationMs: 158,
       type: "sine",
       detune: -3,
     },
   },
   "door-close": {
-    primary: { frequency: 152, gain: 0.028, durationMs: 120, type: "triangle" },
+    primary: { frequency: 152, gain: 0.019, durationMs: 132, type: "triangle" },
   },
   "meeting-bell": {
-    primary: { frequency: 784, gain: 0.044, durationMs: 260, type: "sine" },
+    primary: { frequency: 784, gain: 0.034, durationMs: 280, type: "sine" },
     secondary: {
       frequency: 523,
-      gain: 0.03,
-      durationMs: 320,
+      gain: 0.02,
+      durationMs: 340,
       type: "triangle",
       detune: 2,
     },
   },
   "meeting-seat": {
-    primary: { frequency: 172, gain: 0.02, durationMs: 110, type: "sawtooth" },
+    primary: { frequency: 172, gain: 0.014, durationMs: 108, type: "triangle" },
   },
   "sabotage-pulse": {
-    primary: { frequency: 104, gain: 0.05, durationMs: 220, type: "sawtooth" },
+    primary: { frequency: 104, gain: 0.034, durationMs: 230, type: "triangle" },
     secondary: {
       frequency: 62,
-      gain: 0.03,
-      durationMs: 260,
-      type: "triangle",
+      gain: 0.018,
+      durationMs: 280,
+      type: "sine",
       detune: -6,
     },
   },
   "clue-stinger": {
-    primary: { frequency: 644, gain: 0.034, durationMs: 180, type: "triangle" },
+    primary: { frequency: 644, gain: 0.024, durationMs: 190, type: "triangle" },
     secondary: {
       frequency: 966,
-      gain: 0.018,
-      durationMs: 140,
+      gain: 0.012,
+      durationMs: 150,
       type: "sine",
       detune: 5,
     },
   },
   "task-complete": {
-    primary: { frequency: 560, gain: 0.03, durationMs: 180, type: "triangle" },
+    primary: { frequency: 560, gain: 0.022, durationMs: 190, type: "triangle" },
     secondary: {
       frequency: 840,
-      gain: 0.018,
-      durationMs: 140,
+      gain: 0.01,
+      durationMs: 150,
       type: "sine",
       detune: 3,
     },
   },
   "task-blocked": {
-    primary: { frequency: 176, gain: 0.034, durationMs: 170, type: "square" },
+    primary: { frequency: 176, gain: 0.025, durationMs: 180, type: "triangle" },
     secondary: {
       frequency: 148,
-      gain: 0.018,
-      durationMs: 180,
-      type: "sawtooth",
+      gain: 0.011,
+      durationMs: 190,
+      type: "sine",
       detune: -5,
     },
   },
@@ -263,7 +263,7 @@ export class SoundBus {
     void context.resume().catch(() => {});
 
     const stormGain =
-      0.014 + state.stormLevel * 0.032 + state.blackoutLevel * 0.018;
+      0.01 + state.stormLevel * 0.024 + state.blackoutLevel * 0.014;
     const roomBaseFrequency = (() => {
       switch (state.roomSurface) {
         case "stone":
@@ -281,13 +281,13 @@ export class SoundBus {
 
     ambienceGain.gain.cancelScheduledValues(context.currentTime);
     ambienceGain.gain.linearRampToValueAtTime(
-      clamp(stormGain, 0.012, 0.072),
-      context.currentTime + 0.2,
+      clamp(stormGain, 0.009, 0.056),
+      context.currentTime + 0.24,
     );
     roomGain.gain.cancelScheduledValues(context.currentTime);
     roomGain.gain.linearRampToValueAtTime(
-      state.meetingActive ? 0.018 : 0.012 + state.blackoutLevel * 0.01,
-      context.currentTime + 0.24,
+      state.meetingActive ? 0.014 : 0.009 + state.blackoutLevel * 0.008,
+      context.currentTime + 0.28,
     );
 
     stormOscillator.frequency.setValueAtTime(
@@ -338,7 +338,7 @@ export class SoundBus {
 
     const context = new AudioContextCtor();
     const masterGain = context.createGain();
-    masterGain.gain.value = 0.18;
+    masterGain.gain.value = 0.14;
     masterGain.connect(context.destination);
 
     const ambienceGain = context.createGain();

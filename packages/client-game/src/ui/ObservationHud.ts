@@ -26,18 +26,18 @@ type ObservationHudContent = {
 
 const toneColors = {
   speech: {
-    fill: 0x19212a,
-    stroke: 0x8eb8da,
+    fill: 0x131c25,
+    stroke: 0xb7d6ec,
     text: "#f5f0e4",
   },
   alert: {
-    fill: 0x26161a,
-    stroke: 0xe49781,
+    fill: 0x281519,
+    stroke: 0xefad94,
     text: "#fff1eb",
   },
   status: {
-    fill: 0x18231d,
-    stroke: 0x8ec9a6,
+    fill: 0x162219,
+    stroke: 0x9fd6ad,
     text: "#eef8f1",
   },
 } as const;
@@ -98,32 +98,32 @@ export class ObservationHud {
 
   constructor(options: ObservationHudOptions) {
     this.#stateBackplate = options.scene.add
-      .rectangle(0, 0, 500, 102, 0x061018, 0.78)
-      .setStrokeStyle(1, 0x73a8c9, 0.2);
-    this.#stateEyebrow = options.scene.add.text(-226, -30, "", {
-      color: "#8ec9e4",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "10px",
-      letterSpacing: 1.8,
-    });
-    this.#stateTitle = options.scene.add.text(-226, -6, "", {
-      color: "#f5f0e4",
-      fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "22px",
-      fontStyle: "bold",
-      wordWrap: { width: 440 },
-    });
-    this.#stateDetail = options.scene.add.text(-226, 22, "", {
-      color: "#d7dee9",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "12px",
-      wordWrap: { width: 440 },
-    });
-    this.#stateHint = options.scene.add.text(-226, 46, "", {
-      color: "#9eb9ca",
+      .rectangle(0, 0, 580, 124, 0x051019, 0.82)
+      .setStrokeStyle(1, 0xa1c4d9, 0.22);
+    this.#stateEyebrow = options.scene.add.text(-264, -40, "", {
+      color: "#a5cadf",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "11px",
-      wordWrap: { width: 440 },
+      letterSpacing: 2.1,
+    });
+    this.#stateTitle = options.scene.add.text(-264, -10, "", {
+      color: "#f5f0e4",
+      fontFamily: "Palatino Linotype, Georgia, serif",
+      fontSize: "28px",
+      fontStyle: "bold",
+      wordWrap: { width: 520 },
+    });
+    this.#stateDetail = options.scene.add.text(-264, 28, "", {
+      color: "#dfe6ee",
+      fontFamily: "Segoe UI, sans-serif",
+      fontSize: "14px",
+      wordWrap: { width: 520 },
+    });
+    this.#stateHint = options.scene.add.text(-264, 54, "", {
+      color: "#a8bfce",
+      fontFamily: "Segoe UI, sans-serif",
+      fontSize: "12px",
+      wordWrap: { width: 520 },
     });
     this.#statePlate = options.scene.add.container(0, 0, [
       this.#stateBackplate,
@@ -136,19 +136,19 @@ export class ObservationHud {
     this.#statePlate.setDepth(320);
 
     this.#subtitlePlate = options.scene.add
-      .rectangle(0, 0, 860, 60, 0x071018, 0.8)
-      .setStrokeStyle(1, 0x73a8c9, 0.18);
-    this.#subtitleSpeaker = options.scene.add.text(-402, -10, "", {
-      color: "#8ec9e4",
+      .rectangle(0, 0, 960, 68, 0x061018, 0.84)
+      .setStrokeStyle(1, 0xa1c4d9, 0.18);
+    this.#subtitleSpeaker = options.scene.add.text(-446, -14, "", {
+      color: "#a5cadf",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "11px",
-      letterSpacing: 1.6,
+      fontSize: "12px",
+      letterSpacing: 1.8,
     });
-    this.#subtitleText = options.scene.add.text(-402, 10, "", {
+    this.#subtitleText = options.scene.add.text(-446, 12, "", {
       color: "#f5f0e4",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "13px",
-      wordWrap: { width: 782 },
+      fontSize: "15px",
+      wordWrap: { width: 878 },
     });
     this.#subtitleContainer = options.scene.add.container(0, 0, [
       this.#subtitlePlate,
@@ -160,20 +160,20 @@ export class ObservationHud {
 
     this.#statusChips = Array.from({ length: 3 }, () => {
       const plate = options.scene.add
-        .rectangle(0, 0, 204, 50, 0x071018, 0.74)
-        .setStrokeStyle(1, 0x73a8c9, 0.16);
-      const label = options.scene.add.text(-86, -8, "", {
+        .rectangle(0, 0, 232, 60, 0x061018, 0.76)
+        .setStrokeStyle(1, 0xa1c4d9, 0.18);
+      const label = options.scene.add.text(-98, -11, "", {
         color: "#f5f0e4",
         fontFamily: "Palatino Linotype, Georgia, serif",
-        fontSize: "15px",
+        fontSize: "17px",
         fontStyle: "bold",
-        wordWrap: { width: 122 },
+        wordWrap: { width: 144 },
       });
-      const detail = options.scene.add.text(-86, 12, "", {
-        color: "#d7dee9",
+      const detail = options.scene.add.text(-98, 14, "", {
+        color: "#dfe6ee",
         fontFamily: "Segoe UI, sans-serif",
-        fontSize: "11px",
-        wordWrap: { width: 164 },
+        fontSize: "12px",
+        wordWrap: { width: 188 },
       });
 
       const container = options.scene.add.container(0, 0, [
@@ -199,37 +199,39 @@ export class ObservationHud {
     const { contextText, inspection, phaseLabel, surveillance, timerText } =
       content;
     const inspecting = inspection.mode === "inspect";
+    const viewModeLabel =
+      surveillance.mode === "surveillance"
+        ? "SURVEILLANCE"
+        : inspection.mode === "inspect"
+          ? "ROOM FOCUS"
+          : "OVERVIEW";
+    const stateDetailText = timerText
+      ? `${timerText} | ${surveillance.indicatorLabel}`
+      : surveillance.indicatorLabel;
+    const stateHintText = contextText
+      ? `${contextText} | ${hintLine(surveillance.mode, inspection)}`
+      : `${inspection.detail} | ${hintLine(surveillance.mode, inspection)}`;
 
-    this.#stateEyebrow.setText(
-      `${phaseLabel} | ${surveillance.mode === "surveillance" ? "SURVEILLANCE" : inspection.mode === "inspect" ? "ROOM FOCUS" : "OVERVIEW"}`,
-    );
+    this.#stateEyebrow.setText(`${phaseLabel} | ${viewModeLabel}`);
     this.#stateTitle.setText(inspection.label);
-    this.#stateDetail.setText(
-      timerText
-        ? `${timerText} | ${surveillance.indicatorLabel} | ${inspection.detail}`
-        : `${surveillance.indicatorLabel} | ${inspection.detail}`,
-    );
-    this.#stateHint.setText(
-      contextText
-        ? `${contextText} | ${hintLine(surveillance.mode, inspection)}`
-        : hintLine(surveillance.mode, inspection),
-    );
+    this.#stateDetail.setText(stateDetailText);
+    this.#stateHint.setText(stateHintText);
 
     const subtitle = surveillance.subtitle;
     if (subtitle) {
       const tone = toneColors[subtitle.tone];
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        inspecting ? 920 : 860,
-        inspecting ? 70 : 60,
+        inspecting ? 1000 : 960,
+        inspecting ? 82 : 68,
       );
       this.#subtitlePlate.setFillStyle(tone.fill, 0.84);
       this.#subtitlePlate.setStrokeStyle(1, tone.stroke, 0.28);
       this.#subtitleSpeaker.setColor(tone.text);
       this.#subtitleText.setColor(tone.text);
-      this.#subtitleSpeaker.setFontSize(inspecting ? "12px" : "11px");
-      this.#subtitleText.setFontSize(inspecting ? "15px" : "13px");
-      this.#subtitleText.setWordWrapWidth(inspecting ? 840 : 782);
+      this.#subtitleSpeaker.setFontSize(inspecting ? "13px" : "12px");
+      this.#subtitleText.setFontSize(inspecting ? "16px" : "15px");
+      this.#subtitleText.setWordWrapWidth(inspecting ? 920 : 878);
       this.#subtitleSpeaker.setText(
         subtitle.speakerId
           ? `${subtitle.speakerId.toUpperCase()}`
@@ -241,16 +243,16 @@ export class ObservationHud {
     } else {
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        inspecting ? 920 : 860,
-        inspecting ? 70 : 60,
+        inspecting ? 1000 : 960,
+        inspecting ? 82 : 68,
       );
-      this.#subtitlePlate.setFillStyle(0x071018, 0.76);
-      this.#subtitlePlate.setStrokeStyle(1, 0x73a8c9, 0.18);
-      this.#subtitleSpeaker.setColor("#8ec9e4");
-      this.#subtitleText.setColor("#d7dee9");
-      this.#subtitleSpeaker.setFontSize(inspecting ? "12px" : "11px");
-      this.#subtitleText.setFontSize(inspecting ? "15px" : "13px");
-      this.#subtitleText.setWordWrapWidth(inspecting ? 840 : 782);
+      this.#subtitlePlate.setFillStyle(0x061018, 0.8);
+      this.#subtitlePlate.setStrokeStyle(1, 0xa1c4d9, 0.16);
+      this.#subtitleSpeaker.setColor("#a5cadf");
+      this.#subtitleText.setColor("#dfe6ee");
+      this.#subtitleSpeaker.setFontSize(inspecting ? "13px" : "12px");
+      this.#subtitleText.setFontSize(inspecting ? "16px" : "15px");
+      this.#subtitleText.setWordWrapWidth(inspecting ? 920 : 878);
       this.#subtitleSpeaker.setText("OBSERVATION");
       this.#subtitleText.setText(
         surveillance.mode === "surveillance"
@@ -287,11 +289,11 @@ export class ObservationHud {
   }
 
   resize(width: number, height: number) {
-    this.#statePlate.setPosition(274, 90);
-    this.#subtitleContainer.setPosition(width / 2, height - 56);
+    this.#statePlate.setPosition(316, 104);
+    this.#subtitleContainer.setPosition(width / 2, height - 68);
 
     for (const [index, chip] of this.#statusChips.entries()) {
-      chip.container.setPosition(width - 130, 90 + index * 60);
+      chip.container.setPosition(width - 146, 106 + index * 72);
     }
   }
 

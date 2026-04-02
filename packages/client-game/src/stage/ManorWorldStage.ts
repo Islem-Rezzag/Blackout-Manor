@@ -76,8 +76,10 @@ type RoomVisual = {
   ambientGlow: Phaser.GameObjects.Image;
   blackoutShade: Phaser.GameObjects.Rectangle;
   emergencyWash: Phaser.GameObjects.Image;
+  decorShadows: Phaser.GameObjects.Image[];
   decorObjects: Phaser.GameObjects.Shape[];
   decorHighlights: Phaser.GameObjects.Image[];
+  heroPropShadows: Phaser.GameObjects.Image[];
   heroProps: Phaser.GameObjects.Image[];
   lightGlows: Phaser.GameObjects.Image[];
   windowOverlays: Phaser.GameObjects.Image[];
@@ -165,8 +167,8 @@ const taskChipStyle = {
   color: "#091018",
   backgroundColor: "#ead08c",
   fontFamily: "Segoe UI, sans-serif",
-  fontSize: "11px",
-  padding: { left: 9, right: 9, top: 4, bottom: 4 },
+  fontSize: "12px",
+  padding: { left: 10, right: 10, top: 5, bottom: 5 },
 } as const;
 
 const createDecorShape = (
@@ -460,18 +462,28 @@ export class ManorWorldStage {
         "room-shadow",
       )
       .setDisplaySize(
-        MANOR_WORLD_BOUNDS.width * 0.96,
-        MANOR_WORLD_BOUNDS.height * 0.82,
+        MANOR_WORLD_BOUNDS.width * 1.02,
+        MANOR_WORLD_BOUNDS.height * 0.86,
       )
-      .setAlpha(0.34);
+      .setAlpha(0.4);
     const coldRim = this.#scene.add
       .image(MANOR_WORLD_BOUNDS.width / 2, 110, "storm-cloud")
       .setDisplaySize(MANOR_WORLD_BOUNDS.width * 0.92, 180)
       .setTint(0x79abd3)
       .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.16);
+      .setAlpha(0.22);
+    const emberFloorGlow = this.#scene.add
+      .image(
+        MANOR_WORLD_BOUNDS.width / 2,
+        MANOR_WORLD_BOUNDS.height - 144,
+        "storm-cloud",
+      )
+      .setDisplaySize(MANOR_WORLD_BOUNDS.width * 0.72, 196)
+      .setTint(0xe0bc88)
+      .setBlendMode(Phaser.BlendModes.SCREEN)
+      .setAlpha(0.1);
 
-    this.#layers.backdrop.add([manorShadow, coldRim]);
+    this.#layers.backdrop.add([manorShadow, coldRim, emberFloorGlow]);
   }
 
   #drawCirculation() {
@@ -490,11 +502,11 @@ export class ManorWorldStage {
       const accentTint = isTechnical ? 0x7fb7cf : 0xd5b183;
       const shellShadow = this.#scene.add
         .image(centerX, centerY + 10, "room-shadow")
-        .setDisplaySize(segment.width + 36, segment.height + 28)
-        .setAlpha(0.26);
+        .setDisplaySize(segment.width + 28, segment.height + 24)
+        .setAlpha(0.22);
       const shell = this.#scene.add
         .image(centerX, centerY + 4, "room-shell")
-        .setDisplaySize(segment.width + 18, segment.height + 16)
+        .setDisplaySize(segment.width + 12, segment.height + 12)
         .setTint(shellTint)
         .setAlpha(0.95);
       const floor = this.#scene.add
@@ -514,13 +526,13 @@ export class ManorWorldStage {
         )
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setTint(isTechnical ? 0x96daf0 : 0xf0d39a)
-        .setAlpha(0.12);
+        .setAlpha(0.16);
       const glow = this.#scene.add
         .image(centerX, centerY, "room-glow")
         .setDisplaySize(segment.width * 1.18, segment.height * 0.82)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setTint(isTechnical ? 0x79bfd8 : 0xd9ac72)
-        .setAlpha(isTechnical ? 0.12 : 0.08);
+        .setAlpha(isTechnical ? 0.15 : 0.11);
       const trim = this.#scene.add
         .rectangle(
           centerX,
@@ -572,15 +584,15 @@ export class ManorWorldStage {
       const shellShadow = this.#scene.add
         .image(0, 18, "room-shadow")
         .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 3.2,
-          room.height + room.framing.shellPaddingY * 2.2,
+          room.width + room.framing.shellPaddingX * 2.6,
+          room.height + room.framing.shellPaddingY * 1.9,
         )
-        .setAlpha(0.34);
+        .setAlpha(0.38);
       const shell = this.#scene.add
         .image(0, 6, "room-shell")
         .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 2,
-          room.height + room.framing.shellPaddingY * 2,
+          room.width + room.framing.shellPaddingX * 1.7,
+          room.height + room.framing.shellPaddingY * 1.7,
         )
         .setAlpha(0.98);
       const floor = this.#scene.add
@@ -591,41 +603,56 @@ export class ManorWorldStage {
         .image(0, room.framing.floorInsetY, "room-specular")
         .setDisplaySize(room.width * 0.98, room.height * 0.98)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.22);
+        .setAlpha(0.26);
       const accent = this.#scene.add
         .image(0, room.framing.floorInsetY + 16, importedArt.floorKey)
-        .setDisplaySize(room.width * 0.8, room.height * 0.58)
+        .setDisplaySize(room.width * 0.88, room.height * 0.62)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.14);
+        .setAlpha(0.18);
       const dust = this.#scene.add
         .image(0, room.framing.floorInsetY, "room-dust")
         .setDisplaySize(room.width * 0.96, room.height * 0.9)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.16);
+        .setAlpha(0.12);
       const ambientGlow = this.#scene.add
         .image(0, room.framing.floorInsetY, "room-glow")
-        .setDisplaySize(room.width * 1.18, room.height * 1.02)
+        .setDisplaySize(room.width * 1.22, room.height * 1.06)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.4);
+        .setAlpha(0.44);
       const blackoutShade = this.#scene.add
         .rectangle(
           0,
           room.framing.floorInsetY,
           room.width * 0.98,
-          room.height * 0.92,
+          room.height * 0.96,
           0x04070b,
-          0.12,
+          0.16,
         )
         .setStrokeStyle(0, 0, 0);
       const emergencyWash = this.#scene.add
         .image(0, room.framing.floorInsetY, "focus-beam")
-        .setDisplaySize(room.width * 1.08, room.height * 0.92)
+        .setDisplaySize(room.width * 1.14, room.height * 0.98)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.06);
+        .setAlpha(0.08);
+
+      const decorShadows = room.decor.map((decor) =>
+        this.#scene.add
+          .image(
+            decor.x - room.x,
+            decor.y - room.y + room.framing.floorInsetY + decor.height * 0.18,
+            "room-shadow",
+          )
+          .setDisplaySize(
+            Math.max(30, decor.width * 1.18),
+            Math.max(18, decor.height * 0.58),
+          )
+          .setAlpha(0.16),
+      );
 
       const decorObjects = room.decor.map((decor) => {
         const object = createDecorShape(this.#scene, room, decor);
-        object.setBlendMode(Phaser.BlendModes.MULTIPLY);
+        object.setBlendMode(Phaser.BlendModes.NORMAL);
+        object.setStrokeStyle(2, room.accentColor, 0.12);
         return object;
       });
       const decorHighlights = room.decor.map((decor) =>
@@ -637,7 +664,17 @@ export class ManorWorldStage {
           )
           .setDisplaySize(decor.width * 1.08, decor.height * 1.08)
           .setBlendMode(Phaser.BlendModes.SCREEN)
-          .setAlpha(0.08),
+          .setAlpha(0.1),
+      );
+      const heroPropShadows = importedArt.heroProps.map((prop) =>
+        this.#scene.add
+          .image(
+            prop.x - room.x,
+            prop.y - room.y + prop.height * 0.18,
+            "room-shadow",
+          )
+          .setDisplaySize(prop.width * 1.08, Math.max(26, prop.height * 0.42))
+          .setAlpha(0.22),
       );
       const heroProps = importedArt.heroProps.map((prop) =>
         this.#scene.add
@@ -665,10 +702,10 @@ export class ManorWorldStage {
       const cutawayShadow = this.#scene.add
         .image(0, -room.height / 2 + room.cutawayHeight / 2 + 10, "room-shadow")
         .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 2.4,
-          room.cutawayHeight + 26,
+          room.width + room.framing.shellPaddingX * 2.1,
+          room.cutawayHeight + 30,
         )
-        .setAlpha(0.24);
+        .setAlpha(0.3);
       const cutawayWall = this.#scene.add
         .image(
           0,
@@ -679,27 +716,27 @@ export class ManorWorldStage {
           room.width + room.framing.wallInsetX * 2,
           room.cutawayHeight + 12,
         )
-        .setAlpha(0.9);
+        .setAlpha(0.94);
       const cutawayTrim = this.#scene.add
         .rectangle(
           0,
-          -room.height / 2 + 10,
-          room.width - 20,
-          10,
+          -room.height / 2 + 12,
+          room.width - 16,
+          12,
           room.accentColor,
-          0.28,
+          0.32,
         )
         .setOrigin(0.5);
       const titlePlate = this.#scene.add
         .rectangle(
           0,
           room.anchors.titleY + 6,
-          Math.min(room.width - 30, 228),
-          34,
+          Math.min(room.width - 26, 244),
+          38,
           room.surfaces.titlePlateColor,
-          0.22,
+          0.26,
         )
-        .setStrokeStyle(1, room.accentColor, 0.12);
+        .setStrokeStyle(1, room.accentColor, 0.14);
       const title = this.#scene.add.text(
         0,
         room.anchors.titleY,
@@ -707,7 +744,7 @@ export class ManorWorldStage {
         {
           color: "#f5f0e4",
           fontFamily: "Palatino Linotype, Georgia, serif",
-          fontSize: "20px",
+          fontSize: "24px",
           fontStyle: "bold",
         },
       );
@@ -715,7 +752,7 @@ export class ManorWorldStage {
       const theme = this.#scene.add.text(0, room.anchors.themeY, room.theme, {
         color: "#d8e1eb",
         fontFamily: "Georgia, Times, serif",
-        fontSize: "12px",
+        fontSize: "13px",
         fontStyle: "italic",
       });
       theme.setOrigin(0.5);
@@ -723,17 +760,17 @@ export class ManorWorldStage {
         .rectangle(
           0,
           room.anchors.stateY,
-          Math.min(room.width - 20, 240),
-          28,
+          Math.min(room.width - 22, 258),
+          30,
           room.surfaces.statePlateColor,
-          0.18,
+          0.22,
         )
-        .setStrokeStyle(1, room.accentColor, 0.1);
+        .setStrokeStyle(1, room.accentColor, 0.12);
       const state = this.#scene.add.text(0, room.anchors.stateY - 8, "", {
         color: "#dce4ed",
         fontFamily: "Segoe UI, sans-serif",
-        fontSize: "12px",
-        letterSpacing: 1,
+        fontSize: "13px",
+        letterSpacing: 1.1,
       });
       state.setOrigin(0.5);
 
@@ -767,7 +804,7 @@ export class ManorWorldStage {
         .setAlpha(0);
       const sabotagePulse = this.#scene.add
         .image(0, room.anchors.sabotageY + 14, "signal-pulse")
-        .setDisplaySize(room.width * 0.52, 78)
+        .setDisplaySize(room.width * 0.6, 92)
         .setBlendMode(Phaser.BlendModes.ADD)
         .setAlpha(0);
       this.#scene.tweens.add({
@@ -791,7 +828,7 @@ export class ManorWorldStage {
 
       const sabotageBanner = this.#scene.add
         .image(0, room.anchors.sabotageY, "sabotage-stripe")
-        .setDisplaySize(room.width * 0.84, 44)
+        .setDisplaySize(room.width * 0.88, 48)
         .setAlpha(0);
       const sabotageLabel = this.#scene.add.text(
         0,
@@ -800,7 +837,7 @@ export class ManorWorldStage {
         {
           color: "#fff6ed",
           fontFamily: "Segoe UI, sans-serif",
-          fontSize: "13px",
+          fontSize: "14px",
           fontStyle: "bold",
           letterSpacing: 1.2,
         },
@@ -810,8 +847,8 @@ export class ManorWorldStage {
       const focusBeam = this.#scene.add
         .image(0, room.framing.floorInsetY, "focus-beam")
         .setDisplaySize(
-          room.width + room.framing.focusPaddingX * 2,
-          room.height + room.framing.focusPaddingY * 2,
+          room.width + room.framing.focusPaddingX * 2.2,
+          room.height + room.framing.focusPaddingY * 2.2,
         )
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0);
@@ -822,15 +859,15 @@ export class ManorWorldStage {
           room.width + room.framing.focusPaddingX * 2,
           room.height + room.framing.focusPaddingY * 2,
         )
-        .setStrokeStyle(2, room.accentColor, 0)
+        .setStrokeStyle(2.4, room.accentColor, 0)
         .setFillStyle(room.accentColor, 0)
         .setOrigin(0.5);
       const hitTarget = this.#scene.add
         .rectangle(
           0,
           room.framing.floorInsetY,
-          room.width,
-          room.height,
+          room.width * 0.94,
+          room.height * 0.94,
           0xffffff,
           0.001,
         )
@@ -861,8 +898,10 @@ export class ManorWorldStage {
         ambientGlow,
         blackoutShade,
         emergencyWash,
+        ...decorShadows,
         ...decorObjects,
         ...decorHighlights,
+        ...heroPropShadows,
         ...heroProps,
       ]);
       containers.lights.add([...lightGlows, ...windowOverlays]);
@@ -899,8 +938,10 @@ export class ManorWorldStage {
         ambientGlow,
         blackoutShade,
         emergencyWash,
+        decorShadows,
         decorObjects,
         decorHighlights,
+        heroPropShadows,
         heroProps,
         lightGlows,
         windowOverlays,
@@ -1013,16 +1054,17 @@ export class ManorWorldStage {
 
     visual.shell.setTint(palette.shellFill);
     visual.shell.setAlpha(0.97);
+    visual.shellShadow.setAlpha(focused ? 0.28 : 0.34);
     visual.floor.setTint(mixColor(0xffffff, palette.floorTint, 0.28));
     visual.floorSpecular.setTint(palette.floorSpecularTint);
-    visual.floorSpecular.setAlpha(0.12 + lightFactor * 0.14);
+    visual.floorSpecular.setAlpha(0.18 + lightFactor * 0.16);
     visual.accent.setTint(palette.accentTint);
-    visual.accent.setAlpha(0.12 + lightFactor * 0.08);
+    visual.accent.setAlpha(0.16 + lightFactor * 0.1 + (focused ? 0.04 : 0));
     visual.dust.setTint(palette.dustTint);
-    visual.dust.setAlpha(0.07 + roomState.occupantIds.length * 0.012);
+    visual.dust.setAlpha(0.1 + roomState.occupantIds.length * 0.014);
     visual.ambientGlow.setTint(palette.ambienceTint);
     visual.ambientGlow.setAlpha(
-      0.14 + lightFactor * 0.2 + roomState.occupantIds.length * 0.014,
+      0.2 + lightFactor * 0.24 + roomState.occupantIds.length * 0.016,
     );
     visual.blackoutShade.setAlpha(palette.blackoutOverlayAlpha);
     visual.emergencyWash.setTint(palette.emergencyTint);
@@ -1037,15 +1079,33 @@ export class ManorWorldStage {
     visual.titlePlate.setStrokeStyle(
       1,
       palette.shellStroke,
-      focused ? 0.18 : 0.12,
+      focused ? 0.24 : 0.14,
     );
-    visual.statePlate.setFillStyle(palette.statePlateTint, 0.32);
-    visual.statePlate.setStrokeStyle(1, palette.shellStroke, 0.1);
+    visual.statePlate.setFillStyle(
+      palette.statePlateTint,
+      focused ? 0.38 : 0.3,
+    );
+    visual.statePlate.setStrokeStyle(
+      1,
+      palette.shellStroke,
+      focused ? 0.16 : 0.1,
+    );
     visual.title.setColor(lightFactor < 0.2 ? "#f0f4f7" : "#f5f0e4");
-    visual.theme.setAlpha(0.64 + lightFactor * 0.18);
+    visual.theme.setAlpha(0.72 + lightFactor * 0.16 + (focused ? 0.06 : 0));
     visual.state.setText(
-      `${describeSignalLabel(roomState, signal)} · ${roomState.occupantIds.length} present`,
+      `${describeSignalLabel(roomState, signal)} | ${roomState.occupantIds.length} present`,
     );
+    visual.state.setColor(focused ? "#eef4fb" : "#d8e2eb");
+
+    for (const [index, shadow] of visual.decorShadows.entries()) {
+      const decor = room.decor[index];
+
+      if (!decor) {
+        continue;
+      }
+
+      shadow.setAlpha(0.12 + decor.alpha * 0.12 + (focused ? 0.04 : 0));
+    }
 
     for (const [index, object] of visual.decorObjects.entries()) {
       const decor = room.decor[index];
@@ -1055,8 +1115,15 @@ export class ManorWorldStage {
       }
 
       object.setFillStyle(
-        decor.fill,
-        decor.alpha + roomState.occupantIds.length * 0.01,
+        mixColor(decor.fill, palette.accentTint, focused ? 0.16 : 0.08),
+        decor.alpha +
+          roomState.occupantIds.length * 0.014 +
+          (focused ? 0.04 : 0),
+      );
+      object.setStrokeStyle(
+        2,
+        mixColor(room.accentColor, palette.shellStroke, 0.18),
+        focused ? 0.18 : 0.1,
       );
     }
 
@@ -1069,12 +1136,19 @@ export class ManorWorldStage {
 
       highlight.setTint(palette.floorSpecularTint);
       highlight.setAlpha(
-        0.03 + lightFactor * 0.07 + roomState.occupantIds.length * 0.004,
+        0.06 + lightFactor * 0.1 + roomState.occupantIds.length * 0.006,
       );
     }
 
+    for (const heroPropShadow of visual.heroPropShadows) {
+      heroPropShadow.setAlpha(0.16 + lightFactor * 0.08 + (focused ? 0.04 : 0));
+    }
+
     for (const heroProp of visual.heroProps) {
-      heroProp.setAlpha(0.52 + lightFactor * 0.42);
+      heroProp.setAlpha(0.6 + lightFactor * 0.34 + (focused ? 0.06 : 0));
+      heroProp.setTint(
+        mixColor(0xffffff, palette.floorSpecularTint, focused ? 0.08 : 0.04),
+      );
     }
 
     for (const [index, lightGlow] of visual.lightGlows.entries()) {
@@ -1120,7 +1194,7 @@ export class ManorWorldStage {
         signal.sabotage ||
           roomState.lightLevel === "blackout" ||
           roomState.doorState !== "open"
-          ? 0.18
+          ? 0.24
           : 0,
       );
     visual.sabotageBanner.setVisible(
@@ -1139,7 +1213,7 @@ export class ManorWorldStage {
           : roomState.lightLevel === "blackout"
             ? "Blackout"
             : "");
-    visual.sabotageBanner.setAlpha(sabotageText ? 0.94 : 0);
+    visual.sabotageBanner.setAlpha(sabotageText ? 0.98 : 0);
     visual.sabotageLabel.setAlpha(sabotageText ? 1 : 0);
     visual.sabotageLabel.setText(sabotageText);
 
@@ -1206,7 +1280,7 @@ export class ManorWorldStage {
 
     const room = getRoomRenderData(roomId);
     this.#cameraTargetRoomId = roomId;
-    const duration = immediate ? 0 : 520;
+    const duration = immediate ? 0 : 620;
 
     this.#scene.cameras.main.pan(
       room.cameraAnchor.x,
@@ -1216,7 +1290,7 @@ export class ManorWorldStage {
       true,
     );
     this.#scene.cameras.main.zoomTo(
-      this.#baseZoom * room.focusZoom,
+      this.#baseZoom * room.focusZoom * 1.08,
       duration,
       Phaser.Math.Easing.Cubic.Out,
       true,
@@ -1230,7 +1304,7 @@ export class ManorWorldStage {
     }
 
     this.#cameraTargetRoomId = null;
-    const duration = immediate ? 0 : 520;
+    const duration = immediate ? 0 : 620;
 
     this.#scene.cameras.main.pan(
       MANOR_WORLD_BOUNDS.width / 2,
@@ -1254,9 +1328,9 @@ export class ManorWorldStage {
       const inspected = this.#inspectedRoomId === roomId;
       const hovered = this.#hoveredRoomId === roomId;
       const room = getRoomRenderData(roomId);
-      const scale = inspected ? 1.045 : focused ? 1.018 : hovered ? 1.01 : 1;
+      const scale = inspected ? 1.06 : focused ? 1.022 : hovered ? 1.01 : 1;
       const dimmed = this.#inspectedRoomId !== null && !inspected;
-      const alpha = dimmed ? (focused ? 0.7 : 0.42) : 1;
+      const alpha = dimmed ? (focused ? 0.62 : 0.26) : 1;
 
       for (const container of visual.allContainers) {
         container.setScale(scale);
@@ -1265,25 +1339,27 @@ export class ManorWorldStage {
 
       visual.focusBeam
         .setTint(room.surfaces.focusColor)
-        .setAlpha(inspected ? 0.34 : focused ? 0.22 : hovered ? 0.08 : 0);
+        .setAlpha(inspected ? 0.42 : focused ? 0.26 : hovered ? 0.1 : 0);
       visual.focusFrame.setStrokeStyle(
-        2,
+        2.4,
         room.surfaces.focusColor,
-        inspected ? 0.94 : focused ? 0.86 : hovered ? 0.4 : 0,
+        inspected ? 1 : focused ? 0.9 : hovered ? 0.46 : 0,
       );
       visual.hitTarget.setFillStyle(
         0xffffff,
-        hovered && !inspected ? 0.03 : 0.001,
+        hovered && !inspected ? 0.04 : 0.001,
       );
-      visual.cutawayWall.setAlpha(inspected ? 0.98 : focused ? 0.9 : 0.82);
+      visual.cutawayWall.setAlpha(inspected ? 1 : focused ? 0.94 : 0.86);
       visual.cutawayTrim.setFillStyle(
         room.accentColor,
-        inspected ? 0.54 : focused ? 0.42 : 0.24,
+        inspected ? 0.58 : focused ? 0.46 : 0.24,
       );
       visual.titlePlate.setFillStyle(
         room.surfaces.titlePlateColor,
-        inspected ? 0.34 : focused ? 0.28 : 0.2,
+        inspected ? 0.38 : focused ? 0.31 : 0.22,
       );
+      visual.title.setScale(inspected ? 1.06 : focused ? 1.02 : 1);
+      visual.theme.setScale(inspected ? 1.04 : focused ? 1.01 : 1);
     }
 
     for (const visual of this.#doorNodeVisuals) {
@@ -1311,25 +1387,25 @@ export class ManorWorldStage {
       );
       visual.thresholdArt.setAlpha(
         inspected
-          ? visual.node.alpha * 0.72
+          ? visual.node.alpha * 0.78
           : emphasized
-            ? visual.node.alpha * 0.6
-            : visual.node.alpha * 0.34,
+            ? visual.node.alpha * 0.66
+            : visual.node.alpha * 0.26,
       );
       visual.frame.setStrokeStyle(
         2,
         visual.node.stroke ?? 0xe4c391,
         inspected ? 0.72 : emphasized ? 0.6 : 0.22,
       );
-      visual.glow.setAlpha(inspected ? 0.18 : emphasized ? 0.12 : 0.035);
-      visual.marker.setAlpha(inspected ? 1 : emphasized ? 0.9 : 0.5);
+      visual.glow.setAlpha(inspected ? 0.22 : emphasized ? 0.14 : 0.03);
+      visual.marker.setAlpha(inspected ? 1 : emphasized ? 0.92 : 0.42);
     }
   }
 
   #calculateZoom() {
     return Math.min(
-      this.#scene.scale.width / (MANOR_WORLD_BOUNDS.width + 160),
-      this.#scene.scale.height / (MANOR_WORLD_BOUNDS.height + 140),
+      this.#scene.scale.width / (MANOR_WORLD_BOUNDS.width + 260),
+      this.#scene.scale.height / (MANOR_WORLD_BOUNDS.height + 220),
     );
   }
 
@@ -1355,7 +1431,9 @@ export class ManorWorldStage {
         focusedRoom.cameraAnchor.x,
         focusedRoom.cameraAnchor.y,
       );
-      this.#scene.cameras.main.setZoom(this.#baseZoom * focusedRoom.focusZoom);
+      this.#scene.cameras.main.setZoom(
+        this.#baseZoom * focusedRoom.focusZoom * 1.08,
+      );
       return;
     }
 

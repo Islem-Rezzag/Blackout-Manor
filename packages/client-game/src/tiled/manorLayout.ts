@@ -539,26 +539,130 @@ export const getRoomRenderData = (roomId: RoomId) =>
 export const getDoorNodesForRoom = (roomId: RoomId) =>
   MANOR_RENDER_MAP.doorNodes.filter((doorNode) => doorNode.roomId === roomId);
 
+const ROOM_SEAT_LAYOUT_PRESETS: Record<
+  RoomId,
+  {
+    maxColumns: number;
+    horizontalPadding: number;
+    topPaddingExtra: number;
+    bottomPadding: number;
+    staggerX: number;
+  }
+> = {
+  "grand-hall": {
+    maxColumns: 4,
+    horizontalPadding: 58,
+    topPaddingExtra: 54,
+    bottomPadding: 42,
+    staggerX: 16,
+  },
+  kitchen: {
+    maxColumns: 3,
+    horizontalPadding: 44,
+    topPaddingExtra: 48,
+    bottomPadding: 34,
+    staggerX: 12,
+  },
+  library: {
+    maxColumns: 3,
+    horizontalPadding: 40,
+    topPaddingExtra: 44,
+    bottomPadding: 30,
+    staggerX: 12,
+  },
+  study: {
+    maxColumns: 3,
+    horizontalPadding: 42,
+    topPaddingExtra: 42,
+    bottomPadding: 30,
+    staggerX: 10,
+  },
+  ballroom: {
+    maxColumns: 4,
+    horizontalPadding: 52,
+    topPaddingExtra: 48,
+    bottomPadding: 34,
+    staggerX: 16,
+  },
+  greenhouse: {
+    maxColumns: 3,
+    horizontalPadding: 42,
+    topPaddingExtra: 42,
+    bottomPadding: 28,
+    staggerX: 12,
+  },
+  "surveillance-hall": {
+    maxColumns: 3,
+    horizontalPadding: 34,
+    topPaddingExtra: 38,
+    bottomPadding: 28,
+    staggerX: 10,
+  },
+  "generator-room": {
+    maxColumns: 3,
+    horizontalPadding: 34,
+    topPaddingExtra: 38,
+    bottomPadding: 28,
+    staggerX: 10,
+  },
+  cellar: {
+    maxColumns: 3,
+    horizontalPadding: 44,
+    topPaddingExtra: 42,
+    bottomPadding: 28,
+    staggerX: 12,
+  },
+  "servants-corridor": {
+    maxColumns: 2,
+    horizontalPadding: 30,
+    topPaddingExtra: 34,
+    bottomPadding: 22,
+    staggerX: 8,
+  },
+};
+
 export const getRoomSeatPosition = (
   roomId: RoomId,
   seatIndex: number,
   seatCount: number,
 ) => {
   const room = getRoomRenderData(roomId);
-  const columns = Math.max(2, Math.ceil(Math.sqrt(Math.max(seatCount, 1))));
+  const preset = ROOM_SEAT_LAYOUT_PRESETS[roomId];
+  const columns = Math.min(
+    Math.max(1, preset.maxColumns),
+    Math.max(1, seatCount),
+  );
   const rows = Math.max(1, Math.ceil(seatCount / columns));
   const column = seatIndex % columns;
   const row = Math.floor(seatIndex / columns);
-  const horizontalPadding = 44;
-  const verticalPadding = room.cutawayHeight + 32;
-  const usableWidth = Math.max(56, room.width - horizontalPadding * 2);
-  const usableHeight = Math.max(56, room.height - verticalPadding - 26);
+  const horizontalPadding = Math.min(
+    room.width * 0.24,
+    preset.horizontalPadding,
+  );
+  const verticalPadding = room.cutawayHeight + preset.topPaddingExtra;
+  const usableWidth = Math.max(52, room.width - horizontalPadding * 2);
+  const usableHeight = Math.max(
+    48,
+    room.height - verticalPadding - preset.bottomPadding,
+  );
+  const columnProgress = columns === 1 ? 0.5 : column / (columns - 1);
+  const rowProgress = rows === 1 ? 0.56 : row / (rows - 1);
+  const staggerX =
+    rows > 1 && columns > 1 ? (row % 2 === 0 ? -1 : 1) * preset.staggerX : 0;
+  const seatJitterX =
+    columns > 1 ? ((seatIndex % 2 === 0 ? -1 : 1) * preset.staggerX) / 3 : 0;
 
   return {
     x:
       room.bounds.x +
       horizontalPadding +
-      (usableWidth * (column + 0.5)) / columns,
-    y: room.bounds.y + verticalPadding + (usableHeight * (row + 0.5)) / rows,
+      usableWidth * columnProgress +
+      staggerX +
+      seatJitterX,
+    y:
+      room.bounds.y +
+      verticalPadding +
+      usableHeight * rowProgress +
+      (rows === 1 ? usableHeight * 0.08 : 0),
   };
 };

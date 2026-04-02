@@ -25,8 +25,8 @@ type AvatarRigState = {
 };
 
 const MODE = {
-  world: { scale: 1, bubbleWidth: 150, bubbleY: -92, fontSize: 12 },
-  portrait: { scale: 1.18, bubbleWidth: 108, bubbleY: -106, fontSize: 11 },
+  world: { scale: 1.04, bubbleWidth: 168, bubbleY: -96, fontSize: 12 },
+  portrait: { scale: 1.24, bubbleWidth: 120, bubbleY: -112, fontSize: 11 },
 } as const satisfies Record<
   AvatarRigMode,
   { scale: number; bubbleWidth: number; bubbleY: number; fontSize: number }
@@ -86,15 +86,15 @@ const gestureDuration = (gesture: AvatarGesture) => {
 const poseProfile = (pose: BodyLanguageId) => {
   switch (pose) {
     case "agitated":
-      return { lean: 2.4, lift: 1.8, tilt: -0.08, jitter: 0.45, aura: 0.24 };
+      return { lean: 2.2, lift: 1.2, tilt: -0.07, jitter: 0.28, aura: 0.22 };
     case "shaken":
-      return { lean: -2.8, lift: 3.2, tilt: 0.1, jitter: 0.88, aura: 0.32 };
+      return { lean: -2.6, lift: 2.6, tilt: 0.09, jitter: 0.62, aura: 0.28 };
     case "defiant":
-      return { lean: 4.2, lift: -0.5, tilt: -0.12, jitter: 0.12, aura: 0.3 };
+      return { lean: 3.6, lift: -0.4, tilt: -0.1, jitter: 0.08, aura: 0.28 };
     case "confident":
-      return { lean: 1.4, lift: -0.1, tilt: -0.04, jitter: 0.06, aura: 0.2 };
+      return { lean: 1.2, lift: -0.08, tilt: -0.035, jitter: 0.04, aura: 0.18 };
     default:
-      return { lean: 0, lift: 0, tilt: 0, jitter: 0.04, aura: 0.16 };
+      return { lean: 0, lift: 0, tilt: 0, jitter: 0.03, aura: 0.14 };
   }
 };
 
@@ -453,16 +453,18 @@ export class AvatarRig {
     const mirror = facing.x < 0 ? -1 : 1;
     const side = Math.abs(facing.x);
     const cycle =
-      (this.#time + this.#seed) * 0.0017 * this.#appearance.movementCadence;
-    const stride = this.#moving ? Math.sin(cycle * 10) * stance.strideScale : 0;
+      (this.#time + this.#seed) * 0.00145 * this.#appearance.movementCadence;
+    const stride = this.#moving
+      ? Math.sin(cycle * 9.4) * stance.strideScale * 0.92
+      : 0;
     const motionLift = this.#moving
-      ? Math.abs(Math.cos(cycle * 10)) * (1.4 + bodyProfile.scaleY * 0.3)
+      ? Math.abs(Math.cos(cycle * 9.4)) * (0.76 + bodyProfile.scaleY * 0.18)
       : 0;
     const bob =
-      Math.sin(cycle * 2.5) *
+      Math.sin(cycle * 2.15) *
         this.#appearance.idleAmplitude *
-        (0.72 + stance.sway) +
-      stride * 1.15 +
+        (0.44 + stance.sway * 0.54) +
+      stride * 0.42 +
       motionLift;
     const jitter =
       pose.jitter > 0
@@ -501,8 +503,9 @@ export class AvatarRig {
       0x0c0b0f,
       0.36 + this.#appearance.assertiveness * 0.1,
     );
+    const shadowStretch = this.#moving ? 1.08 : 1;
 
-    this.#root.setPosition(jitter, bob * 0.18);
+    this.#root.setPosition(jitter * 0.75, bob * 0.08);
     this.#root.setScale(
       MODE[this.#mode].scale * bodyProfile.scaleX,
       MODE[this.#mode].scale * bodyProfile.scaleY,
@@ -514,16 +517,21 @@ export class AvatarRig {
     this.#shadow.clear();
     this.#shadow.fillStyle(
       this.#appearance.shadowColor,
-      0.25 * (this.#state.alive ? 1 : 0.6),
+      0.3 * (this.#state.alive ? 1 : 0.62),
     );
-    this.#shadow.fillEllipse(0, 4, shoulderWidth + 8 - facing.y * 2, 9);
+    this.#shadow.fillEllipse(
+      0,
+      6,
+      (shoulderWidth + 10 - facing.y * 1.6) * shadowStretch,
+      this.#moving ? 8.6 : 10,
+    );
 
     this.#aura.clear();
     this.#aura.fillStyle(
       aura,
-      pose.aura +
-        this.#state.suspiciousness * 0.08 +
-        (this.#state.visiblePosture === "alert" ? 0.08 : 0),
+      pose.aura * 0.9 +
+        this.#state.suspiciousness * 0.06 +
+        (this.#state.visiblePosture === "alert" ? 0.05 : 0),
     );
     this.#aura.fillEllipse(
       0,
