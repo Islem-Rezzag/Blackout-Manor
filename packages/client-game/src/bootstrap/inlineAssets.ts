@@ -1,3 +1,5 @@
+import { MANOR_INLINE_ENVIRONMENT_ASSETS } from "./inlineEnvironmentArt";
+
 const asDataUri = (svg: string) =>
   `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
@@ -162,4 +164,5 @@ export const INLINE_ASSETS = {
       <rect width="320" height="80" rx="16" fill="url(#sheen)"/>
     </svg>
   `),
+  ...MANOR_INLINE_ENVIRONMENT_ASSETS,
 } as const;

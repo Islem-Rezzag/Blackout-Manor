@@ -73,6 +73,7 @@ type RoomVisual = {
   floorSpecular: Phaser.GameObjects.Image;
   accent: Phaser.GameObjects.Image;
   dust: Phaser.GameObjects.Image;
+  interiorVignette: Phaser.GameObjects.Image;
   ambientGlow: Phaser.GameObjects.Image;
   blackoutShade: Phaser.GameObjects.Rectangle;
   emergencyWash: Phaser.GameObjects.Image;
@@ -84,6 +85,7 @@ type RoomVisual = {
   lightGlows: Phaser.GameObjects.Image[];
   windowOverlays: Phaser.GameObjects.Image[];
   cutawayShadow: Phaser.GameObjects.Image;
+  cutawayBacking: Phaser.GameObjects.Image;
   cutawayWall: Phaser.GameObjects.Image;
   cutawayTrim: Phaser.GameObjects.Rectangle;
   titlePlate: Phaser.GameObjects.Rectangle;
@@ -527,6 +529,11 @@ export class ManorWorldStage {
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setTint(isTechnical ? 0x96daf0 : 0xf0d39a)
         .setAlpha(0.16);
+      const vignette = this.#scene.add
+        .image(centerX, centerY + 4, "room-vignette")
+        .setDisplaySize(segment.width * 1.02, segment.height * 0.98)
+        .setBlendMode(Phaser.BlendModes.MULTIPLY)
+        .setAlpha(isTechnical ? 0.24 : 0.18);
       const glow = this.#scene.add
         .image(centerX, centerY, "room-glow")
         .setDisplaySize(segment.width * 1.18, segment.height * 0.82)
@@ -545,6 +552,7 @@ export class ManorWorldStage {
         .setOrigin(0.5);
 
       this.#layers.floor.add([shellShadow, shell, floor, specular]);
+      this.#layers.props.add(vignette);
       this.#layers.lights.add(glow);
       this.#layers.walls.add(trim);
 
@@ -605,8 +613,8 @@ export class ManorWorldStage {
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.26);
       const accent = this.#scene.add
-        .image(0, room.framing.floorInsetY + 16, importedArt.floorKey)
-        .setDisplaySize(room.width * 0.88, room.height * 0.62)
+        .image(0, room.framing.floorInsetY + 14, "room-glow")
+        .setDisplaySize(room.width * 0.9, room.height * 0.68)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.18);
       const dust = this.#scene.add
@@ -614,6 +622,11 @@ export class ManorWorldStage {
         .setDisplaySize(room.width * 0.96, room.height * 0.9)
         .setBlendMode(Phaser.BlendModes.SCREEN)
         .setAlpha(0.12);
+      const interiorVignette = this.#scene.add
+        .image(0, room.framing.floorInsetY, "room-vignette")
+        .setDisplaySize(room.width * 1.02, room.height * 1.02)
+        .setBlendMode(Phaser.BlendModes.MULTIPLY)
+        .setAlpha(0.22);
       const ambientGlow = this.#scene.add
         .image(0, room.framing.floorInsetY, "room-glow")
         .setDisplaySize(room.width * 1.22, room.height * 1.06)
@@ -706,6 +719,17 @@ export class ManorWorldStage {
           room.cutawayHeight + 30,
         )
         .setAlpha(0.3);
+      const cutawayBacking = this.#scene.add
+        .image(
+          0,
+          -room.height / 2 + room.cutawayHeight / 2 + room.framing.wallInsetY,
+          "room-wall",
+        )
+        .setDisplaySize(
+          room.width + room.framing.wallInsetX * 2 + 6,
+          room.cutawayHeight + 18,
+        )
+        .setAlpha(0.4);
       const cutawayWall = this.#scene.add
         .image(
           0,
@@ -895,6 +919,7 @@ export class ManorWorldStage {
         dust,
       ]);
       containers.props.add([
+        interiorVignette,
         ambientGlow,
         blackoutShade,
         emergencyWash,
@@ -907,6 +932,7 @@ export class ManorWorldStage {
       containers.lights.add([...lightGlows, ...windowOverlays]);
       containers.walls.add([
         cutawayShadow,
+        cutawayBacking,
         cutawayWall,
         cutawayTrim,
         titlePlate,
@@ -935,6 +961,7 @@ export class ManorWorldStage {
         floorSpecular,
         accent,
         dust,
+        interiorVignette,
         ambientGlow,
         blackoutShade,
         emergencyWash,
@@ -946,6 +973,7 @@ export class ManorWorldStage {
         lightGlows,
         windowOverlays,
         cutawayShadow,
+        cutawayBacking,
         cutawayWall,
         cutawayTrim,
         titlePlate,
@@ -1055,13 +1083,16 @@ export class ManorWorldStage {
     visual.shell.setTint(palette.shellFill);
     visual.shell.setAlpha(0.97);
     visual.shellShadow.setAlpha(focused ? 0.28 : 0.34);
-    visual.floor.setTint(mixColor(0xffffff, palette.floorTint, 0.28));
+    visual.floor.setTint(mixColor(0xffffff, palette.floorTint, 0.2));
     visual.floorSpecular.setTint(palette.floorSpecularTint);
     visual.floorSpecular.setAlpha(0.18 + lightFactor * 0.16);
     visual.accent.setTint(palette.accentTint);
     visual.accent.setAlpha(0.16 + lightFactor * 0.1 + (focused ? 0.04 : 0));
     visual.dust.setTint(palette.dustTint);
     visual.dust.setAlpha(0.1 + roomState.occupantIds.length * 0.014);
+    visual.interiorVignette.setAlpha(
+      0.14 + (1 - lightFactor) * 0.18 + roomState.occupantIds.length * 0.008,
+    );
     visual.ambientGlow.setTint(palette.ambienceTint);
     visual.ambientGlow.setAlpha(
       0.2 + lightFactor * 0.24 + roomState.occupantIds.length * 0.016,
@@ -1069,7 +1100,10 @@ export class ManorWorldStage {
     visual.blackoutShade.setAlpha(palette.blackoutOverlayAlpha);
     visual.emergencyWash.setTint(palette.emergencyTint);
     visual.emergencyWash.setAlpha(palette.emergencyAlpha);
-    visual.cutawayWall.setTint(mixColor(0xffffff, palette.cutawayTint, 0.34));
+    visual.cutawayBacking.setTint(
+      mixColor(room.surfaces.shellColor, palette.cutawayTint, 0.38),
+    );
+    visual.cutawayWall.setTint(mixColor(0xffffff, palette.cutawayTint, 0.24));
     visual.cutawayShadow.setAlpha(palette.cutawayShadowAlpha);
     visual.cutawayTrim.setFillStyle(room.accentColor, focused ? 0.42 : 0.24);
     visual.titlePlate.setFillStyle(
@@ -1147,7 +1181,7 @@ export class ManorWorldStage {
     for (const heroProp of visual.heroProps) {
       heroProp.setAlpha(0.6 + lightFactor * 0.34 + (focused ? 0.06 : 0));
       heroProp.setTint(
-        mixColor(0xffffff, palette.floorSpecularTint, focused ? 0.08 : 0.04),
+        mixColor(0xffffff, palette.floorSpecularTint, focused ? 0.04 : 0.02),
       );
     }
 
@@ -1348,6 +1382,12 @@ export class ManorWorldStage {
       visual.hitTarget.setFillStyle(
         0xffffff,
         hovered && !inspected ? 0.04 : 0.001,
+      );
+      visual.interiorVignette.setAlpha(
+        inspected ? 0.34 : focused ? 0.28 : hovered ? 0.22 : 0.18,
+      );
+      visual.cutawayBacking.setAlpha(
+        inspected ? 0.72 : focused ? 0.58 : hovered ? 0.48 : 0.4,
       );
       visual.cutawayWall.setAlpha(inspected ? 1 : focused ? 0.94 : 0.86);
       visual.cutawayTrim.setFillStyle(

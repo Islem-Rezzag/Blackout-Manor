@@ -12,6 +12,10 @@ import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
 import { ReplayMatchConnection } from "./network/replayMatchConnection";
 import {
+  getDoorThresholdConfig,
+  getImportedRoomArt,
+} from "./stage/importedArt";
+import {
   getDoorNodesForRoom,
   getRoomSeatPosition,
   MANOR_RENDER_MAP,
@@ -95,11 +99,43 @@ describe("client-game package", () => {
     expect(assetKeys).toContain("oga-modern-houses-sheet");
     expect(assetKeys).toContain("focus-beam");
     expect(assetKeys).toContain("storm-cloud");
+    expect(assetKeys).toContain("floor-grand-hall");
+    expect(assetKeys).toContain("wall-greenhouse");
+    expect(assetKeys).toContain("door-threshold-social");
+    expect(assetKeys).toContain("prop-ballroom-stage");
     expect(derivedAssetKeys).toContain("floor-parquet");
     expect(derivedAssetKeys).toContain("wall-stone");
     expect(derivedAssetKeys).toContain("prop-kitchen-range");
     expect(CLIENT_GAME_ASSET_SOURCES["oga-modern-houses-cc0"].license).toBe(
       "CC0-1.0",
+    );
+  });
+
+  it("maps bespoke manor surfaces and thresholds to the environment pass", () => {
+    const grandHallArt = getImportedRoomArt("grand-hall");
+    const ballroomArt = getImportedRoomArt("ballroom");
+    const greenhouseDoor = getDoorNodesForRoom("greenhouse")[0];
+    const mechanicalDoor = {
+      roomId: "generator-room",
+      targetRoomIds: ["cellar"],
+      kind: "door",
+      orientation: "north",
+    } as unknown as (typeof MANOR_RENDER_MAP.doorNodes)[number];
+
+    expect(greenhouseDoor).toBeDefined();
+    if (!greenhouseDoor) {
+      throw new Error("Expected a greenhouse door node.");
+    }
+
+    expect(grandHallArt.floorKey).toBe("floor-grand-hall");
+    expect(grandHallArt.wallKey).toBe("wall-grand-hall");
+    expect(grandHallArt.heroProps).toHaveLength(2);
+    expect(ballroomArt.heroProps).toHaveLength(2);
+    expect(getDoorThresholdConfig(greenhouseDoor).key).toBe(
+      "door-threshold-greenhouse",
+    );
+    expect(getDoorThresholdConfig(mechanicalDoor).key).toBe(
+      "door-threshold-mechanical",
     );
   });
 

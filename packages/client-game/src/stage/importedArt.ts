@@ -1,7 +1,7 @@
 import type { RoomId, TaskId } from "@blackout-manor/shared";
 
 import { getTaskInteractionGeometry } from "../tasking/taskReadability";
-import type { ManorDoorNode } from "../tiled/manorLayout";
+import { getRoomRenderData, type ManorDoorNode } from "../tiled/manorLayout";
 
 export type ImportedHeroPropPlacement = {
   key: string;
@@ -20,13 +20,20 @@ export type ImportedRoomArt = {
 
 type ImportedHeroPropBlueprint = {
   key: string;
-  taskId: TaskId;
   width: number;
   height: number;
   alpha?: number;
   offsetX?: number;
   offsetY?: number;
-};
+} & (
+  | { taskId: TaskId }
+  | {
+      roomPosition: {
+        x: number;
+        y: number;
+      };
+    }
+);
 
 const propFromTask = (
   key: string,
@@ -51,6 +58,64 @@ const propFromTask = (
   };
 };
 
+const propFromRoomPosition = (
+  roomId: RoomId,
+  key: string,
+  roomPosition: { x: number; y: number },
+  width: number,
+  height: number,
+  options?: {
+    alpha?: number;
+    offsetX?: number;
+    offsetY?: number;
+  },
+): ImportedHeroPropPlacement => {
+  const room = getRoomRenderData(roomId);
+
+  return {
+    key,
+    x: room.bounds.x + room.width * roomPosition.x + (options?.offsetX ?? 0),
+    y:
+      room.bounds.y +
+      room.height * roomPosition.y +
+      room.framing.floorInsetY * 0.42 +
+      (options?.offsetY ?? 0),
+    width,
+    height,
+    alpha: options?.alpha ?? 0.9,
+  };
+};
+
+const resolveHeroProp = (
+  roomId: RoomId,
+  prop: ImportedHeroPropBlueprint,
+): ImportedHeroPropPlacement => {
+  const options = {
+    ...(prop.alpha !== undefined ? { alpha: prop.alpha } : {}),
+    ...(prop.offsetX !== undefined ? { offsetX: prop.offsetX } : {}),
+    ...(prop.offsetY !== undefined ? { offsetY: prop.offsetY } : {}),
+  };
+
+  if ("taskId" in prop) {
+    return propFromTask(
+      prop.key,
+      prop.taskId,
+      prop.width,
+      prop.height,
+      Object.keys(options).length > 0 ? options : undefined,
+    );
+  }
+
+  return propFromRoomPosition(
+    roomId,
+    prop.key,
+    prop.roomPosition,
+    prop.width,
+    prop.height,
+    Object.keys(options).length > 0 ? options : undefined,
+  );
+};
+
 const ROOM_ART: Record<
   RoomId,
   {
@@ -60,130 +125,238 @@ const ROOM_ART: Record<
   }
 > = {
   "grand-hall": {
-    floorKey: "floor-parquet",
-    wallKey: "wall-panel",
+    floorKey: "floor-grand-hall",
+    wallKey: "wall-grand-hall",
+    heroProps: [
+      {
+        key: "prop-grand-stair",
+        roomPosition: { x: 0.24, y: 0.28 },
+        width: 148,
+        height: 108,
+        alpha: 0.94,
+      },
+      {
+        key: "prop-grand-clock",
+        taskId: "wind-grandfather-clock",
+        width: 76,
+        height: 148,
+        alpha: 0.97,
+        offsetY: -10,
+      },
+    ],
   },
   kitchen: {
-    floorKey: "floor-service",
-    wallKey: "wall-service",
+    floorKey: "floor-kitchen",
+    wallKey: "wall-kitchen",
     heroProps: [
       {
         key: "prop-kitchen-range",
         taskId: "balance-hot-water-pressure",
-        width: 94,
-        height: 62,
+        width: 98,
+        height: 70,
         alpha: 0.96,
         offsetX: -6,
-        offsetY: 4,
+        offsetY: 2,
       },
       {
-        key: "prop-study-desk",
+        key: "prop-kitchen-island",
         taskId: "prepare-silver-tea-service",
-        width: 80,
-        height: 62,
-        alpha: 0.82,
-        offsetX: 8,
-        offsetY: 4,
+        width: 120,
+        height: 72,
+        alpha: 0.94,
+        offsetX: 6,
+        offsetY: 8,
+      },
+      {
+        key: "prop-kitchen-pantry",
+        roomPosition: { x: 0.82, y: 0.31 },
+        width: 84,
+        height: 108,
+        alpha: 0.88,
       },
     ],
   },
   library: {
-    floorKey: "floor-parquet",
-    wallKey: "wall-panel",
+    floorKey: "floor-library",
+    wallKey: "wall-library",
     heroProps: [
+      {
+        key: "prop-library-fireplace",
+        roomPosition: { x: 0.24, y: 0.31 },
+        width: 104,
+        height: 82,
+        alpha: 0.9,
+      },
       {
         key: "prop-bookshelf",
         taskId: "tune-police-band-radio",
-        width: 96,
-        height: 140,
+        width: 104,
+        height: 148,
+        alpha: 0.94,
+        offsetX: 10,
+        offsetY: -8,
+      },
+    ],
+  },
+  study: {
+    floorKey: "floor-study",
+    wallKey: "wall-study",
+    heroProps: [
+      {
+        key: "prop-study-desk",
+        taskId: "file-guest-ledger",
+        width: 104,
+        height: 76,
+        alpha: 0.97,
+        offsetX: 10,
+        offsetY: 2,
+      },
+      {
+        key: "prop-study-safe",
+        roomPosition: { x: 0.84, y: 0.31 },
+        width: 70,
+        height: 92,
+        alpha: 0.9,
+      },
+    ],
+  },
+  ballroom: {
+    floorKey: "floor-ballroom",
+    wallKey: "wall-ballroom",
+    heroProps: [
+      {
+        key: "prop-ballroom-organ",
+        taskId: "synchronize-organ-pipes",
+        width: 134,
+        height: 94,
+        alpha: 0.96,
+        offsetY: -4,
+      },
+      {
+        key: "prop-ballroom-stage",
+        taskId: "sort-masque-inventory",
+        width: 146,
+        height: 98,
         alpha: 0.92,
         offsetX: 10,
         offsetY: -10,
       },
     ],
   },
-  study: {
-    floorKey: "floor-parquet",
-    wallKey: "wall-panel",
-    heroProps: [
-      {
-        key: "prop-study-desk",
-        taskId: "file-guest-ledger",
-        width: 90,
-        height: 70,
-        alpha: 0.96,
-        offsetX: 8,
-        offsetY: 2,
-      },
-    ],
-  },
-  ballroom: {
-    floorKey: "floor-parquet",
-    wallKey: "wall-service",
-  },
   greenhouse: {
     floorKey: "floor-greenhouse",
     wallKey: "wall-greenhouse",
     heroProps: [
       {
+        key: "prop-greenhouse-bench",
+        roomPosition: { x: 0.31, y: 0.31 },
+        width: 112,
+        height: 82,
+        alpha: 0.88,
+      },
+      {
         key: "prop-planter",
         taskId: "rebalance-greenhouse-valves",
-        width: 84,
-        height: 84,
-        alpha: 0.94,
+        width: 90,
+        height: 90,
+        alpha: 0.95,
         offsetX: 6,
         offsetY: 8,
       },
     ],
   },
   "surveillance-hall": {
-    floorKey: "floor-service",
-    wallKey: "wall-service",
+    floorKey: "floor-surveillance-hall",
+    wallKey: "wall-surveillance-hall",
     heroProps: [
+      {
+        key: "prop-surveillance-screenwall",
+        roomPosition: { x: 0.48, y: 0.28 },
+        width: 148,
+        height: 94,
+        alpha: 0.9,
+      },
       {
         key: "prop-console-bank",
         taskId: "rewind-corridor-film",
-        width: 92,
+        width: 96,
         height: 68,
         alpha: 0.95,
-        offsetX: 4,
         offsetY: 4,
+      },
+      {
+        key: "prop-surveillance-archive",
+        roomPosition: { x: 0.81, y: 0.34 },
+        width: 88,
+        height: 84,
+        alpha: 0.88,
       },
     ],
   },
   "generator-room": {
-    floorKey: "floor-stone",
-    wallKey: "wall-stone",
+    floorKey: "floor-generator-room",
+    wallKey: "wall-generator-room",
     heroProps: [
+      {
+        key: "prop-generator-core",
+        roomPosition: { x: 0.29, y: 0.42 },
+        width: 128,
+        height: 98,
+        alpha: 0.92,
+      },
       {
         key: "prop-console-bank",
         taskId: "reset-breaker-lattice",
-        width: 86,
-        height: 68,
+        width: 84,
+        height: 66,
         alpha: 0.96,
         offsetX: 6,
         offsetY: 4,
       },
+      {
+        key: "prop-generator-pipes",
+        roomPosition: { x: 0.74, y: 0.27 },
+        width: 110,
+        height: 84,
+        alpha: 0.84,
+      },
     ],
   },
   cellar: {
-    floorKey: "floor-stone",
-    wallKey: "wall-stone",
+    floorKey: "floor-cellar",
+    wallKey: "wall-cellar",
     heroProps: [
+      {
+        key: "prop-cellar-coal",
+        taskId: "carry-coal-to-the-boiler",
+        width: 70,
+        height: 58,
+        alpha: 0.92,
+        offsetY: 6,
+      },
       {
         key: "prop-boiler",
         taskId: "restore-boiler-pressure",
-        width: 92,
-        height: 106,
-        alpha: 0.96,
+        width: 106,
+        height: 118,
+        alpha: 0.97,
         offsetX: 10,
         offsetY: 8,
       },
     ],
   },
   "servants-corridor": {
-    floorKey: "floor-service",
-    wallKey: "wall-service",
+    floorKey: "floor-service-corridor",
+    wallKey: "wall-service-corridor",
+    heroProps: [
+      {
+        key: "prop-crate-stack",
+        taskId: "move-portrait-crate-into-storage",
+        width: 82,
+        height: 68,
+        alpha: 0.92,
+      },
+    ],
   },
 };
 
@@ -194,43 +367,57 @@ export const getImportedRoomArt = (roomId: RoomId): ImportedRoomArt => {
     floorKey: roomArt.floorKey,
     wallKey: roomArt.wallKey,
     heroProps:
-      roomArt.heroProps?.map((prop) => {
-        const options = {
-          ...(prop.alpha !== undefined ? { alpha: prop.alpha } : {}),
-          ...(prop.offsetX !== undefined ? { offsetX: prop.offsetX } : {}),
-          ...(prop.offsetY !== undefined ? { offsetY: prop.offsetY } : {}),
-        };
-
-        return propFromTask(
-          prop.key,
-          prop.taskId,
-          prop.width,
-          prop.height,
-          Object.keys(options).length > 0 ? options : undefined,
-        );
-      }) ?? [],
+      roomArt.heroProps?.map((prop) => resolveHeroProp(roomId, prop)) ?? [],
   };
 };
 
 export const getCorridorFloorTextureKey = (className: string) => {
   if (className === "service-band" || className === "service-link") {
-    return "floor-service";
+    return "floor-service-corridor";
   }
 
   if (className === "meeting-wing" || className === "gallery") {
-    return "floor-parquet";
+    return "floor-gallery";
   }
 
-  return "floor-parquet";
+  return "floor-gallery";
 };
 
-export const getDoorThresholdConfig = (node: ManorDoorNode) => ({
-  key: "door-threshold",
-  angle: node.orientation === "east" || node.orientation === "west" ? 90 : 0,
-  tint:
+const isMechanicalRoom = (roomId: RoomId) =>
+  roomId === "generator-room" || roomId === "cellar";
+
+const isGlassRoom = (roomId: RoomId) => roomId === "greenhouse";
+
+const isServiceRoom = (roomId: RoomId) =>
+  roomId === "kitchen" ||
+  roomId === "surveillance-hall" ||
+  roomId === "servants-corridor";
+
+export const getDoorThresholdConfig = (node: ManorDoorNode) => {
+  const connectedRoomIds = [node.roomId, ...node.targetRoomIds];
+  const key =
     node.kind === "stair"
-      ? 0xc0c4d1
-      : node.roomId === "cellar" || node.roomId === "generator-room"
-        ? 0xcfc6b0
-        : 0xe1c78e,
-});
+      ? "door-threshold-stair"
+      : connectedRoomIds.some(isGlassRoom)
+        ? "door-threshold-greenhouse"
+        : connectedRoomIds.some(isMechanicalRoom)
+          ? "door-threshold-mechanical"
+          : connectedRoomIds.some(isServiceRoom)
+            ? "door-threshold-service"
+            : "door-threshold-social";
+
+  const tint =
+    key === "door-threshold-greenhouse"
+      ? 0xe9fff7
+      : key === "door-threshold-mechanical"
+        ? 0xe5eef8
+        : key === "door-threshold-service"
+          ? 0xf2ede4
+          : 0xfff7ea;
+
+  return {
+    key,
+    angle: node.orientation === "east" || node.orientation === "west" ? 90 : 0,
+    tint,
+  };
+};

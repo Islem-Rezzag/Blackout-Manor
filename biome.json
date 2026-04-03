@@ -17,6 +17,7 @@
       "!**/playwright-report",
       "!**/test-results",
       "!**/artifacts",
+      "!**/next-env.d.ts",
       "!apps/web/public/data/fairness-report.latest.json",
       "!**/packages/db/generated"
     ]
