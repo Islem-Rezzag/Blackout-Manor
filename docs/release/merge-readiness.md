@@ -34,3 +34,8 @@ pnpm fairness:report
 - some assets are still placeholder, procedural, or temporary baseline imports
 - this is a spectator-first alpha, not a final public release
 - merge readiness does not imply final art/audio completion
+
+## Production Art Caveat
+- the branch may be technically merge-ready as an alpha
+- it is not yet final-art complete
+- a dedicated production-art pass is recommended before public showcase expectations are raised
