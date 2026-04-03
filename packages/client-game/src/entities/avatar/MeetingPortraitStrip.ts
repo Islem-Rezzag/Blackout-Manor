@@ -27,6 +27,8 @@ class PortraitCard {
   readonly id: PublicPlayerState["id"];
   readonly container: Phaser.GameObjects.Container;
   readonly #background: Phaser.GameObjects.Rectangle;
+  readonly #halo: Phaser.GameObjects.Ellipse;
+  readonly #innerMatte: Phaser.GameObjects.Rectangle;
   readonly #frame: Phaser.GameObjects.Rectangle;
   readonly #ornament: Phaser.GameObjects.Graphics;
   readonly #accentBar: Phaser.GameObjects.Rectangle;
@@ -41,55 +43,65 @@ class PortraitCard {
     const appearance = resolveAvatarAppearance(player);
     this.id = player.id;
     this.#background = scene.add
-      .rectangle(0, 0, 130, 150, 0x081018, 0.9)
+      .rectangle(0, 0, 136, 164, 0x081018, 0.92)
       .setOrigin(0.5);
+    this.#halo = scene.add
+      .ellipse(0, -10, 94, 112, appearance.portraitGlowColor, 0.12)
+      .setBlendMode(Phaser.BlendModes.SCREEN);
+    this.#innerMatte = scene.add
+      .rectangle(0, -2, 104, 116, 0x0c1620, 0.9)
+      .setOrigin(0.5)
+      .setStrokeStyle(1, appearance.maskAccentColor, 0.18);
     this.#frame = scene.add
-      .rectangle(0, 0, 130, 150)
+      .rectangle(0, 0, 136, 164)
       .setOrigin(0.5)
       .setStrokeStyle(2, appearance.trimColor, 0.3);
     this.#ornament = scene.add.graphics();
     this.#accentBar = scene.add
-      .rectangle(0, -60, 104, 8, appearance.trimColor, 0.36)
+      .rectangle(0, -66, 112, 8, appearance.trimColor, 0.38)
       .setOrigin(0.5);
-    this.#eyebrow = scene.add.text(0, -52, "PRESENT", {
+    this.#eyebrow = scene.add.text(0, -58, "PRESENT", {
       color: "#a5cadf",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "10px",
-      letterSpacing: 1.9,
+      fontStyle: "bold",
+      letterSpacing: 2.1,
     });
     this.#eyebrow.setOrigin(0.5);
     this.#rig = new AvatarRig(scene, appearance, "portrait");
-    this.#rig.container.setPosition(0, 8);
-    this.#name = scene.add.text(0, 50, player.displayName, {
+    this.#rig.container.setPosition(0, 10);
+    this.#name = scene.add.text(0, 57, player.displayName, {
       align: "center",
       color: appearance.nameColor,
       fontFamily: "Georgia, Times, serif",
-      fontSize: "12px",
+      fontSize: "13px",
       fontStyle: "600",
-      wordWrap: { width: 96, useAdvancedWrap: true },
+      wordWrap: { width: 104, useAdvancedWrap: true },
     });
     this.#name.setOrigin(0.5);
-    this.#status = scene.add.text(0, -54, "", {
+    this.#status = scene.add.text(0, -60, "", {
       color: "#dfe6ee",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "11px",
       fontStyle: "bold",
-      letterSpacing: 1.2,
+      letterSpacing: 1.5,
     });
     this.#status.setOrigin(0.5);
     this.#pressurePlate = scene.add
-      .rectangle(0, 68, 100, 20, 0x101a23, 0.8)
+      .rectangle(0, 78, 106, 22, 0x101a23, 0.82)
       .setStrokeStyle(1, appearance.trimColor, 0.24);
-    this.#pressureText = scene.add.text(0, 68, "", {
+    this.#pressureText = scene.add.text(0, 78, "", {
       color: "#dfe6ee",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "10px",
       fontStyle: "bold",
-      letterSpacing: 0.8,
+      letterSpacing: 1,
     });
     this.#pressureText.setOrigin(0.5);
     this.container = scene.add.container(0, 0, [
       this.#background,
+      this.#halo,
+      this.#innerMatte,
       this.#frame,
       this.#ornament,
       this.#accentBar,
@@ -134,8 +146,21 @@ class PortraitCard {
     });
 
     this.#background.setFillStyle(
-      spotlight ? 0x11212c : targeted ? 0x24151a : 0x081018,
-      spotlight ? 0.92 : 0.88,
+      spotlight ? 0x122230 : targeted ? 0x24151a : 0x081018,
+      spotlight ? 0.95 : 0.9,
+    );
+    this.#halo.setFillStyle(
+      targeted ? 0xff8c78 : appearance.portraitGlowColor,
+      spotlight ? 0.24 : targeted ? 0.18 : 0.12,
+    );
+    this.#innerMatte.setFillStyle(
+      spotlight ? 0x101b26 : targeted ? 0x1b1014 : 0x0c1620,
+      spotlight ? 0.94 : 0.9,
+    );
+    this.#innerMatte.setStrokeStyle(
+      spotlight ? 1.6 : 1,
+      targeted ? 0xff9d83 : appearance.maskAccentColor,
+      spotlight ? 0.4 : 0.22,
     );
     this.#frame.setStrokeStyle(
       spotlight ? 3 : targeted ? 2.5 : 2,
@@ -149,12 +174,12 @@ class PortraitCard {
     this.#accentBar.setSize(
       (
         {
-          arch: 82,
-          velvet: 96,
-          brass: 78,
-          laurel: 86,
-          thorn: 90,
-          gallery: 88,
+          arch: 88,
+          velvet: 102,
+          brass: 82,
+          laurel: 90,
+          thorn: 94,
+          gallery: 92,
         } as const
       )[appearance.portraitFrameStyle],
       8,
@@ -182,15 +207,15 @@ class PortraitCard {
           ? visiblePostureLabel(visiblePosture).toUpperCase()
           : "SILENCED"),
     );
-    this.#pressurePlate.setFillStyle(actionLabel ? 0x1a1416 : 0x101a23, 0.82);
+    this.#pressurePlate.setFillStyle(actionLabel ? 0x1a1416 : 0x101a23, 0.86);
     this.#pressurePlate.setStrokeStyle(
       1,
       actionLabel ? 0xe7a282 : appearance.trimColor,
-      actionLabel ? 0.34 : 0.24,
+      actionLabel ? 0.42 : 0.28,
     );
     this.#drawFrameMotif(appearance, spotlight, targeted);
     this.container.setAlpha(player.connected ? 1 : 0.58);
-    this.container.setScale(spotlight ? 1.05 : targeted ? 1.02 : 1);
+    this.container.setScale(spotlight ? 1.06 : targeted ? 1.03 : 1);
   }
 
   update(delta: number) {
@@ -296,13 +321,14 @@ export class MeetingPortraitStrip {
   constructor(scene: Phaser.Scene) {
     this.#scene = scene;
     this.#backplate = scene.add
-      .rectangle(0, 0, 772, 346, 0x050b12, 0.8)
-      .setStrokeStyle(1, 0xa1c4d9, 0.18);
-    this.#title = scene.add.text(0, -148, "Grand Hall Tribunal", {
+      .rectangle(0, 0, 794, 360, 0x050b12, 0.84)
+      .setStrokeStyle(1, 0xcbb58d, 0.22);
+    this.#title = scene.add.text(0, -154, "Grand Hall Tribunal", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "24px",
+      fontSize: "25px",
       fontStyle: "bold",
+      letterSpacing: 0.6,
     });
     this.#title.setOrigin(0.5);
     this.#container = scene.add.container(0, 0, [this.#backplate, this.#title]);
@@ -353,7 +379,7 @@ export class MeetingPortraitStrip {
 
       const column = index % 5;
       const row = Math.floor(index / 5);
-      card.container.setPosition(-288 + column * 144, -32 + row * 160);
+      card.container.setPosition(-292 + column * 146, -28 + row * 172);
       card.apply(
         player,
         phaseId,
@@ -380,7 +406,7 @@ export class MeetingPortraitStrip {
   }
 
   resize(width: number, height: number) {
-    this.#container.setPosition(width / 2, height - 188);
+    this.#container.setPosition(width / 2, height - 196);
   }
 
   setVisible(visible: boolean) {

@@ -95,36 +95,36 @@ class PlayerAvatar {
     this.id = player.id;
     this.#rig = new AvatarRig(scene, appearance, "world");
     this.#presenceGlow = scene.add
-      .ellipse(0, 9, 54, 22, appearance.trimColor, 0.16)
+      .ellipse(0, 10, 58, 24, appearance.trimColor, 0.18)
       .setBlendMode(Phaser.BlendModes.SCREEN);
     this.#presenceRing = scene.add
-      .ellipse(0, 8, 46, 14, appearance.trimColor, 0.14)
-      .setStrokeStyle(2, appearance.trimColor, 0.42);
+      .ellipse(0, 9, 50, 15, appearance.trimColor, 0.16)
+      .setStrokeStyle(2.2, appearance.trimColor, 0.44);
     this.#labelPlate = scene.add
-      .rectangle(0, 43, 96, 20, 0x081118, 0.78)
-      .setStrokeStyle(1, appearance.trimColor, 0.32);
+      .rectangle(0, 44, 104, 22, 0x081118, 0.8)
+      .setStrokeStyle(1.2, appearance.trimColor, 0.34);
     this.#label = scene.add.text(0, 43, player.displayName, {
       align: "center",
       color: appearance.nameColor,
       fontFamily: "Georgia, Times, serif",
-      fontSize: "13px",
+      fontSize: "14px",
       fontStyle: "600",
       stroke: "#05070a",
       strokeThickness: 3,
-      wordWrap: { width: 104, useAdvancedWrap: true },
+      wordWrap: { width: 112, useAdvancedWrap: true },
     });
     this.#label.setOrigin(0.5);
     this.#statusPip = scene.add.circle(20, -36, 5, 0x8de4ff, 1);
     this.#statusPlate = scene.add
-      .rectangle(0, 64, 82, 20, 0x081118, 0.78)
-      .setStrokeStyle(1, appearance.trimColor, 0.36);
+      .rectangle(0, 66, 88, 22, 0x081118, 0.8)
+      .setStrokeStyle(1, appearance.trimColor, 0.38);
     this.#statusText = scene.add.text(0, 64, "CALM", {
       align: "center",
       color: "#eef4fb",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "10px",
+      fontSize: "11px",
       fontStyle: "bold",
-      letterSpacing: 1.1,
+      letterSpacing: 1.2,
     });
     this.#statusText.setOrigin(0.5);
     this.container = scene.add.container(0, 0, [

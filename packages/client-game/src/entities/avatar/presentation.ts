@@ -88,6 +88,20 @@ export type AvatarPortraitFrameStyle =
   | "laurel"
   | "thorn"
   | "gallery";
+export type AvatarHeaddressStyle =
+  | "none"
+  | "tiara"
+  | "feather-halo"
+  | "veil"
+  | "crownlet"
+  | "laurel";
+export type AvatarMaskDetailStyle =
+  | "filigree"
+  | "jeweled"
+  | "split"
+  | "lace"
+  | "etched"
+  | "winged";
 export type AvatarStanceBias =
   | "grounded"
   | "guarded"
@@ -107,13 +121,19 @@ export type AvatarAppearance = {
   hairStyle: AvatarHairStyle;
   bubbleStyle: AvatarBubbleStyle;
   portraitFrameStyle: AvatarPortraitFrameStyle;
+  headdressStyle: AvatarHeaddressStyle;
+  maskDetailStyle: AvatarMaskDetailStyle;
   stanceBias: AvatarStanceBias;
   bodyColor: number;
   shadowColor: number;
   outfitColor: number;
+  secondaryColor: number;
+  liningColor: number;
   trimColor: number;
   accessoryColor: number;
   maskColor: number;
+  maskAccentColor: number;
+  portraitGlowColor: number;
   nameColor: string;
   bubbleFill: number;
   bubbleStroke: number;
@@ -142,6 +162,11 @@ type PersonaIdentityKit = Pick<
   | "trimColor"
   | "accessoryColor"
   | "maskColor"
+>;
+
+type PersonaAdornmentKit = Pick<
+  AvatarAppearance,
+  "headdressStyle" | "maskDetailStyle"
 >;
 
 export type AvatarInteractionCue = {
@@ -457,6 +482,76 @@ const PERSONA_IDENTITY_KITS = {
   PersonaIdentityKit
 >;
 
+const PERSONA_ADORNMENT_KITS = {
+  "clockwork-advocate": {
+    headdressStyle: "crownlet",
+    maskDetailStyle: "etched",
+  },
+  "velvet-host": {
+    headdressStyle: "tiara",
+    maskDetailStyle: "jeweled",
+  },
+  "iron-witness": {
+    headdressStyle: "none",
+    maskDetailStyle: "winged",
+  },
+  "spark-journalist": {
+    headdressStyle: "feather-halo",
+    maskDetailStyle: "filigree",
+  },
+  "hearth-keeper": {
+    headdressStyle: "veil",
+    maskDetailStyle: "lace",
+  },
+  "marble-skeptic": {
+    headdressStyle: "none",
+    maskDetailStyle: "split",
+  },
+  "lantern-peacemaker": {
+    headdressStyle: "laurel",
+    maskDetailStyle: "filigree",
+  },
+  "glass-fox": {
+    headdressStyle: "crownlet",
+    maskDetailStyle: "split",
+  },
+  "storm-orator": {
+    headdressStyle: "feather-halo",
+    maskDetailStyle: "winged",
+  },
+  "quiet-ledger": {
+    headdressStyle: "none",
+    maskDetailStyle: "etched",
+  },
+  "parlor-comedian": {
+    headdressStyle: "feather-halo",
+    maskDetailStyle: "jeweled",
+  },
+  "oak-sentinel": {
+    headdressStyle: "laurel",
+    maskDetailStyle: "etched",
+  },
+  "mirror-diplomat": {
+    headdressStyle: "tiara",
+    maskDetailStyle: "split",
+  },
+  "cinder-gambler": {
+    headdressStyle: "crownlet",
+    maskDetailStyle: "jeweled",
+  },
+  "velour-romantic": {
+    headdressStyle: "veil",
+    maskDetailStyle: "filigree",
+  },
+  "needle-cross-examiner": {
+    headdressStyle: "none",
+    maskDetailStyle: "etched",
+  },
+} as const satisfies Record<
+  (typeof SEASON_01_PERSONA_CARDS)[number]["id"],
+  PersonaAdornmentKit
+>;
+
 const STANCE_MOTION = {
   grounded: { cadence: 0.88, idle: 0.84 },
   guarded: { cadence: 0.82, idle: 0.72 },
@@ -501,6 +596,24 @@ const hashString = (value: string) => {
   }
 
   return hash >>> 0;
+};
+
+const splitColor = (color: number) => ({
+  r: (color >> 16) & 0xff,
+  g: (color >> 8) & 0xff,
+  b: color & 0xff,
+});
+
+const blendColor = (fromColor: number, toColor: number, amount: number) => {
+  const from = splitColor(fromColor);
+  const to = splitColor(toColor);
+  const t = Math.max(0, Math.min(1, amount));
+
+  return (
+    (Math.round(from.r + (to.r - from.r) * t) << 16) |
+    (Math.round(from.g + (to.g - from.g) * t) << 8) |
+    Math.round(from.b + (to.b - from.b) * t)
+  );
 };
 
 const pickVariant = <TValue>(values: readonly TValue[], seed: number) => {
@@ -601,6 +714,17 @@ const createFallbackIdentityKit = (
   maskColor: pickVariant(
     [0xf2e6cf, 0xdde8f4, 0xf0d1cc, 0xeadfae] as const,
     seed >>> 12,
+  ),
+});
+
+const createFallbackAdornmentKit = (seed: number): PersonaAdornmentKit => ({
+  headdressStyle: pickVariant(
+    ["none", "tiara", "feather-halo", "veil", "crownlet", "laurel"] as const,
+    seed,
+  ),
+  maskDetailStyle: pickVariant(
+    ["filigree", "jeweled", "split", "lace", "etched", "winged"] as const,
+    seed >>> 1,
   ),
 });
 
@@ -731,9 +855,32 @@ export const resolveAvatarAppearance = (
   const identityKit =
     PERSONA_IDENTITY_KITS[persona.id] ??
     createFallbackIdentityKit(persona, seed >>> 1);
+  const adornmentKit =
+    PERSONA_ADORNMENT_KITS[persona.id] ??
+    createFallbackAdornmentKit(seed >>> 13);
   const bubbleStyle = identityKit.bubbleStyle;
   const bubbleBase = BUBBLE_STYLE_BASE[bubbleStyle];
   const stanceMotion = STANCE_MOTION[identityKit.stanceBias];
+  const secondaryColor = blendColor(
+    identityKit.outfitColor,
+    identityKit.trimColor,
+    0.34,
+  );
+  const liningColor = blendColor(
+    identityKit.outfitColor,
+    identityKit.accessoryColor,
+    0.48,
+  );
+  const maskAccentColor = blendColor(
+    identityKit.maskColor,
+    identityKit.accessoryColor,
+    0.56,
+  );
+  const portraitGlowColor = blendColor(
+    identityKit.trimColor,
+    identityKit.accessoryColor,
+    0.42,
+  );
 
   return {
     key: `${player.id}:${persona.id}`,
@@ -746,13 +893,19 @@ export const resolveAvatarAppearance = (
     hairStyle: identityKit.hairStyle,
     bubbleStyle,
     portraitFrameStyle: identityKit.portraitFrameStyle,
+    headdressStyle: adornmentKit.headdressStyle,
+    maskDetailStyle: adornmentKit.maskDetailStyle,
     stanceBias: identityKit.stanceBias,
     bodyColor: identityKit.bodyColor,
     shadowColor: 0x05070a,
     outfitColor: identityKit.outfitColor,
+    secondaryColor,
+    liningColor,
     trimColor: identityKit.trimColor,
     accessoryColor: identityKit.accessoryColor,
     maskColor: identityKit.maskColor,
+    maskAccentColor,
+    portraitGlowColor,
     nameColor:
       persona.socialStyle.assertiveness >= 0.72 ? "#fff0df" : "#eef3fb",
     bubbleFill: bubbleBase.fill,

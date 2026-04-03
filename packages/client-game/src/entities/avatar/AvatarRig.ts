@@ -25,8 +25,8 @@ type AvatarRigState = {
 };
 
 const MODE = {
-  world: { scale: 1.04, bubbleWidth: 168, bubbleY: -96, fontSize: 12 },
-  portrait: { scale: 1.24, bubbleWidth: 120, bubbleY: -112, fontSize: 11 },
+  world: { scale: 1.07, bubbleWidth: 176, bubbleY: -100, fontSize: 12 },
+  portrait: { scale: 1.38, bubbleWidth: 132, bubbleY: -120, fontSize: 11 },
 } as const satisfies Record<
   AvatarRigMode,
   { scale: number; bubbleWidth: number; bubbleY: number; fontSize: number }
@@ -171,9 +171,9 @@ const actionAnchor = (
 };
 
 const BODY_TYPE_PROFILE = {
-  short: { scaleX: 0.94, scaleY: 0.93, heightOffset: 4, headScale: 0.94 },
+  short: { scaleX: 0.91, scaleY: 0.9, heightOffset: 5, headScale: 0.93 },
   medium: { scaleX: 1, scaleY: 1, heightOffset: 0, headScale: 1 },
-  tall: { scaleX: 1.04, scaleY: 1.08, heightOffset: -4, headScale: 1.06 },
+  tall: { scaleX: 1.06, scaleY: 1.12, heightOffset: -5, headScale: 1.04 },
 } as const satisfies Record<
   AvatarAppearance["bodyType"],
   { scaleX: number; scaleY: number; heightOffset: number; headScale: number }
@@ -181,52 +181,52 @@ const BODY_TYPE_PROFILE = {
 
 const SILHOUETTE_PROFILE = {
   lithe: {
-    torsoWidth: 16,
-    shoulderWidth: 16,
-    torsoHeight: 26,
-    hemWidth: 18,
-    auraWidth: 32,
-    auraHeight: 52,
+    torsoWidth: 15,
+    shoulderWidth: 15,
+    torsoHeight: 27,
+    hemWidth: 17,
+    auraWidth: 31,
+    auraHeight: 54,
   },
   regal: {
     torsoWidth: 19,
-    shoulderWidth: 21,
-    torsoHeight: 29,
-    hemWidth: 27,
-    auraWidth: 36,
-    auraHeight: 60,
+    shoulderWidth: 22,
+    torsoHeight: 30,
+    hemWidth: 31,
+    auraWidth: 38,
+    auraHeight: 64,
   },
   broad: {
-    torsoWidth: 22,
-    shoulderWidth: 25,
+    torsoWidth: 23,
+    shoulderWidth: 28,
     torsoHeight: 28,
-    hemWidth: 23,
-    auraWidth: 39,
-    auraHeight: 58,
+    hemWidth: 25,
+    auraWidth: 42,
+    auraHeight: 60,
   },
   compact: {
     torsoWidth: 17,
     shoulderWidth: 17,
-    torsoHeight: 25,
-    hemWidth: 18,
+    torsoHeight: 24,
+    hemWidth: 17,
     auraWidth: 30,
-    auraHeight: 48,
+    auraHeight: 47,
   },
   draped: {
     torsoWidth: 18,
     shoulderWidth: 20,
     torsoHeight: 28,
-    hemWidth: 29,
-    auraWidth: 36,
-    auraHeight: 60,
+    hemWidth: 32,
+    auraWidth: 38,
+    auraHeight: 62,
   },
   structured: {
     torsoWidth: 18,
-    shoulderWidth: 22,
+    shoulderWidth: 24,
     torsoHeight: 27,
-    hemWidth: 21,
-    auraWidth: 34,
-    auraHeight: 54,
+    hemWidth: 22,
+    auraWidth: 35,
+    auraHeight: 56,
   },
 } as const satisfies Record<
   AvatarAppearance["silhouette"],
@@ -498,6 +498,10 @@ export class AvatarRig {
         ? 0.32
         : this.#state.suspiciousness * 0.28,
     );
+    const auraColor =
+      this.#mode === "portrait"
+        ? mixColor(aura, this.#appearance.portraitGlowColor, 0.38)
+        : aura;
     const hairColor = mixColor(
       this.#appearance.outfitColor,
       0x0c0b0f,
@@ -528,16 +532,17 @@ export class AvatarRig {
 
     this.#aura.clear();
     this.#aura.fillStyle(
-      aura,
+      auraColor,
       pose.aura * 0.9 +
         this.#state.suspiciousness * 0.06 +
-        (this.#state.visiblePosture === "alert" ? 0.05 : 0),
+        (this.#state.visiblePosture === "alert" ? 0.05 : 0) +
+        (this.#mode === "portrait" ? 0.07 : 0),
     );
     this.#aura.fillEllipse(
       0,
       -22 + bodyProfile.heightOffset * 0.25,
-      silhouette.auraWidth,
-      silhouette.auraHeight,
+      silhouette.auraWidth * (this.#mode === "portrait" ? 1.08 : 1),
+      silhouette.auraHeight * (this.#mode === "portrait" ? 0.96 : 1),
     );
 
     this.#body.clear();
@@ -607,6 +612,23 @@ export class AvatarRig {
 
     this.#back.clear();
     this.#front.clear();
+    if (this.#mode === "portrait") {
+      this.#back.fillStyle(this.#appearance.portraitGlowColor, 0.14);
+      this.#back.fillEllipse(
+        headX,
+        headY - 2,
+        silhouette.auraWidth * 0.68,
+        silhouette.auraHeight * 0.52,
+      );
+      this.#back.fillStyle(this.#appearance.portraitGlowColor, 0.06);
+      this.#back.fillRoundedRect(
+        -hemWidth * 0.62,
+        chestY - 12,
+        hemWidth * 1.24,
+        hipY - chestY + 30,
+        12,
+      );
+    }
     this.#drawPresenceSilhouette(
       shoulderWidth,
       chestY,
@@ -615,6 +637,7 @@ export class AvatarRig {
       mirror,
       posture.accent,
     );
+    this.#drawHeaddress(headX, headY, mirror, bodyProfile.headScale);
 
     this.#outfit.clear();
     this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
@@ -645,6 +668,9 @@ export class AvatarRig {
       mixColor(this.#appearance.maskColor, 0x111111, 0.45),
     );
     this.#drawMask(headX, headY, mirror, true);
+    this.#mask.lineStyle(1.15, this.#appearance.maskAccentColor, 0.84);
+    this.#mask.fillStyle(this.#appearance.maskAccentColor, 0.86);
+    this.#drawMaskDetails(headX, headY, mirror);
 
     this.#drawAccessory(headX, headY, chestY, mirror, facing.y);
 
@@ -698,9 +724,42 @@ export class AvatarRig {
     mirror: number,
   ) {
     const center = lean * 0.08;
+    const trimAlpha = this.#mode === "portrait" ? 0.7 : 0.54;
+    const liningAlpha = this.#mode === "portrait" ? 0.48 : 0.34;
+    const trimOutline = mixColor(this.#appearance.trimColor, 0x0b1014, 0.34);
+    const liningOutline = mixColor(
+      this.#appearance.liningColor,
+      0x080b0f,
+      0.42,
+    );
+
+    this.#back.fillStyle(this.#appearance.liningColor, liningAlpha);
+    this.#back.lineStyle(1, liningOutline, 0.36);
+    this.#front.fillStyle(this.#appearance.secondaryColor, trimAlpha);
+    this.#front.lineStyle(1.15, trimOutline, 0.76);
 
     switch (this.#appearance.outfitStyle) {
       case "cloakcoat":
+        this.#back.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.7, y: chestY - 5 },
+            { x: center + shoulderWidth * 0.48, y: chestY - 4 },
+            { x: center + hemWidth * 0.56, y: hipY + 8 },
+            { x: center + mirror * 2, y: hipY + 19 },
+            { x: center - hemWidth * 0.7, y: hipY + 12 },
+          ]),
+          true,
+        );
+        this.#back.strokePoints(
+          points([
+            { x: center - shoulderWidth * 0.7, y: chestY - 5 },
+            { x: center + shoulderWidth * 0.48, y: chestY - 4 },
+            { x: center + hemWidth * 0.56, y: hipY + 8 },
+            { x: center + mirror * 2, y: hipY + 19 },
+            { x: center - hemWidth * 0.7, y: hipY + 12 },
+          ]),
+          true,
+        );
         this.#outfit.fillPoints(
           points([
             { x: center - shoulderWidth * 0.58, y: chestY - 4 },
@@ -711,7 +770,7 @@ export class AvatarRig {
           ]),
           true,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.18);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.26);
         this.#outfit.fillTriangle(
           center,
           chestY - 4,
@@ -720,8 +779,47 @@ export class AvatarRig {
           center - mirror * 7,
           hipY + 10,
         );
+        this.#front.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.26, y: chestY - 1 },
+            { x: center, y: chestY + 12 },
+            { x: center - hemWidth * 0.18, y: hipY + 8 },
+            { x: center - torsoWidth * 0.2, y: hipY + 2 },
+          ]),
+          true,
+        );
+        this.#front.fillPoints(
+          points([
+            { x: center + shoulderWidth * 0.26, y: chestY - 1 },
+            { x: center, y: chestY + 12 },
+            { x: center + hemWidth * 0.18, y: hipY + 8 },
+            { x: center + torsoWidth * 0.2, y: hipY + 2 },
+          ]),
+          true,
+        );
+        this.#front.strokePoints(
+          points([
+            { x: center - shoulderWidth * 0.26, y: chestY - 1 },
+            { x: center, y: chestY + 12 },
+            { x: center + shoulderWidth * 0.26, y: chestY - 1 },
+          ]),
+          false,
+        );
+        this.#front.fillStyle(this.#appearance.trimColor, 0.92);
+        this.#front.fillCircle(center, chestY + 6, 1.4);
+        this.#front.fillCircle(center, chestY + 12, 1.2);
         return;
       case "ballgown":
+        this.#back.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.72, y: chestY + 2 },
+            { x: center + torsoWidth * 0.72, y: chestY + 2 },
+            { x: center + hemWidth, y: hipY + 10 },
+            { x: center, y: hipY + 22 },
+            { x: center - hemWidth, y: hipY + 10 },
+          ]),
+          true,
+        );
         this.#outfit.fillPoints(
           points([
             { x: center - torsoWidth * 0.58, y: chestY - 1 },
@@ -732,11 +830,47 @@ export class AvatarRig {
           ]),
           true,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.24);
-        this.#outfit.fillRoundedRect(center - 2, chestY + 1, 4, 22, 2);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.28);
+        this.#outfit.fillRoundedRect(center - 2.2, chestY + 1, 4.4, 22, 2.2);
+        this.#outfit.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.6, y: hipY + 4 },
+            { x: center - torsoWidth * 0.18, y: hipY + 16 },
+            { x: center - hemWidth * 0.72, y: hipY + 10 },
+          ]),
+          true,
+        );
+        this.#outfit.fillPoints(
+          points([
+            { x: center + torsoWidth * 0.6, y: hipY + 4 },
+            { x: center + torsoWidth * 0.18, y: hipY + 16 },
+            { x: center + hemWidth * 0.72, y: hipY + 10 },
+          ]),
+          true,
+        );
+        this.#front.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.54, y: chestY - 1 },
+            { x: center + shoulderWidth * 0.54, y: chestY - 1 },
+            { x: center + torsoWidth * 0.26, y: chestY + 7 },
+            { x: center - torsoWidth * 0.26, y: chestY + 7 },
+          ]),
+          true,
+        );
+        this.#front.fillStyle(this.#appearance.trimColor, 0.86);
+        this.#front.fillRoundedRect(center - 7, chestY + 7, 14, 3, 1.5);
         this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
         return;
       case "column-gown":
+        this.#back.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.46, y: chestY + 6 },
+            { x: center + torsoWidth * 0.32, y: chestY + 4 },
+            { x: center + hemWidth * 0.28, y: hipY + 18 },
+            { x: center - hemWidth * 0.18, y: hipY + 20 },
+          ]),
+          true,
+        );
         this.#outfit.fillRoundedRect(
           center - torsoWidth * 0.48,
           chestY - 2,
@@ -744,7 +878,7 @@ export class AvatarRig {
           hipY - chestY + 18,
           8,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.22);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.24);
         this.#outfit.fillPoints(
           points([
             { x: center - torsoWidth * 0.24, y: chestY + 2 },
@@ -754,9 +888,30 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#front.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.32, y: chestY },
+            { x: center + torsoWidth * 0.2, y: chestY + 6 },
+            { x: center - torsoWidth * 0.04, y: hipY + 14 },
+            { x: center - torsoWidth * 0.38, y: hipY + 9 },
+          ]),
+          true,
+        );
+        this.#front.fillStyle(this.#appearance.trimColor, 0.82);
+        this.#front.fillRoundedRect(center - 8, hipY + 9, 16, 3, 1.5);
         this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
         return;
       case "shawl-drape":
+        this.#back.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.62, y: chestY - 6 },
+            { x: center + shoulderWidth * 0.18, y: chestY - 2 },
+            { x: center - torsoWidth * 0.08, y: chestY + 10 },
+            { x: center - hemWidth * 0.72, y: hipY + 14 },
+            { x: center - hemWidth * 0.42, y: hipY + 5 },
+          ]),
+          true,
+        );
         this.#outfit.fillRoundedRect(
           center - torsoWidth * 0.52,
           chestY - 2,
@@ -764,7 +919,7 @@ export class AvatarRig {
           hipY - chestY + 13,
           8,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.22);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.24);
         this.#outfit.fillPoints(
           points([
             { x: center - shoulderWidth * 0.5, y: chestY - 5 },
@@ -774,9 +929,38 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#front.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.16, y: chestY - 2 },
+            { x: center + shoulderWidth * 0.44, y: chestY + 2 },
+            { x: center + torsoWidth * 0.2, y: hipY + 10 },
+            { x: center - torsoWidth * 0.1, y: hipY + 8 },
+          ]),
+          true,
+        );
+        this.#front.fillStyle(this.#appearance.trimColor, 0.88);
+        this.#front.fillCircle(center - mirror * 3, chestY + 8, 1.5);
         this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
         return;
       case "waistcoat":
+        this.#back.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.44, y: chestY + 7 },
+            { x: center - torsoWidth * 0.14, y: chestY + 11 },
+            { x: center - torsoWidth * 0.28, y: hipY + 18 },
+            { x: center - torsoWidth * 0.54, y: hipY + 12 },
+          ]),
+          true,
+        );
+        this.#back.fillPoints(
+          points([
+            { x: center + torsoWidth * 0.44, y: chestY + 7 },
+            { x: center + torsoWidth * 0.14, y: chestY + 11 },
+            { x: center + torsoWidth * 0.28, y: hipY + 18 },
+            { x: center + torsoWidth * 0.54, y: hipY + 12 },
+          ]),
+          true,
+        );
         this.#outfit.fillRoundedRect(
           center - torsoWidth * 0.52,
           chestY - 3,
@@ -784,13 +968,57 @@ export class AvatarRig {
           29,
           8,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.9);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.94);
+        this.#outfit.fillRoundedRect(
+          center - torsoWidth * 0.2,
+          chestY + 1,
+          torsoWidth * 0.4,
+          22,
+          4,
+        );
+        this.#outfit.fillStyle(this.#appearance.trimColor, 0.92);
         this.#outfit.fillRoundedRect(center - 2, chestY + 2, 4, 21, 2);
         this.#outfit.fillCircle(center - torsoWidth * 0.26, chestY + 8, 1.3);
         this.#outfit.fillCircle(center + torsoWidth * 0.26, chestY + 8, 1.3);
+        this.#outfit.fillCircle(center - torsoWidth * 0.24, chestY + 14, 1.2);
+        this.#outfit.fillCircle(center + torsoWidth * 0.24, chestY + 14, 1.2);
+        this.#front.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.42, y: chestY - 2 },
+            { x: center - torsoWidth * 0.08, y: chestY + 7 },
+            { x: center - torsoWidth * 0.22, y: chestY + 15 },
+          ]),
+          true,
+        );
+        this.#front.fillPoints(
+          points([
+            { x: center + shoulderWidth * 0.42, y: chestY - 2 },
+            { x: center + torsoWidth * 0.08, y: chestY + 7 },
+            { x: center + torsoWidth * 0.22, y: chestY + 15 },
+          ]),
+          true,
+        );
         this.#outfit.fillStyle(this.#appearance.outfitColor, 1);
         return;
       default:
+        this.#back.fillPoints(
+          points([
+            { x: center - torsoWidth * 0.46, y: chestY + 8 },
+            { x: center - torsoWidth * 0.1, y: chestY + 10 },
+            { x: center - torsoWidth * 0.28, y: hipY + 18 },
+            { x: center - torsoWidth * 0.54, y: hipY + 13 },
+          ]),
+          true,
+        );
+        this.#back.fillPoints(
+          points([
+            { x: center + torsoWidth * 0.46, y: chestY + 8 },
+            { x: center + torsoWidth * 0.1, y: chestY + 10 },
+            { x: center + torsoWidth * 0.28, y: hipY + 18 },
+            { x: center + torsoWidth * 0.54, y: hipY + 13 },
+          ]),
+          true,
+        );
         this.#outfit.fillPoints(
           points([
             { x: center - shoulderWidth * 0.44, y: chestY - 2 },
@@ -802,7 +1030,7 @@ export class AvatarRig {
           ]),
           true,
         );
-        this.#outfit.fillStyle(this.#appearance.trimColor, 0.18);
+        this.#outfit.fillStyle(this.#appearance.secondaryColor, 0.24);
         this.#outfit.fillPoints(
           points([
             { x: center - torsoWidth * 0.18, y: hipY + 3 },
@@ -816,6 +1044,22 @@ export class AvatarRig {
             { x: center + torsoWidth * 0.18, y: hipY + 3 },
             { x: center, y: hipY + 16 },
             { x: center + torsoWidth * 0.42, y: hipY + 9 },
+          ]),
+          true,
+        );
+        this.#front.fillPoints(
+          points([
+            { x: center - shoulderWidth * 0.38, y: chestY - 2 },
+            { x: center - torsoWidth * 0.04, y: chestY + 9 },
+            { x: center - torsoWidth * 0.2, y: chestY + 16 },
+          ]),
+          true,
+        );
+        this.#front.fillPoints(
+          points([
+            { x: center + shoulderWidth * 0.38, y: chestY - 2 },
+            { x: center + torsoWidth * 0.04, y: chestY + 9 },
+            { x: center + torsoWidth * 0.2, y: chestY + 16 },
           ]),
           true,
         );
@@ -987,6 +1231,186 @@ export class AvatarRig {
     }
   }
 
+  #drawMaskDetails(headX: number, headY: number, mirror: number) {
+    switch (this.#appearance.maskDetailStyle) {
+      case "filigree":
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - 6, headY - 2);
+        this.#mask.lineTo(headX, headY - 5.5);
+        this.#mask.lineTo(headX + 6, headY - 2);
+        this.#mask.strokePath();
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - 5, headY + 2.5);
+        this.#mask.lineTo(headX - 1.4, headY + 5.2);
+        this.#mask.moveTo(headX + 5, headY + 2.5);
+        this.#mask.lineTo(headX + 1.4, headY + 5.2);
+        this.#mask.strokePath();
+        break;
+      case "jeweled":
+        this.#mask.fillCircle(headX, headY - 5, 1.6);
+        this.#mask.fillCircle(headX - 4.6, headY - 2, 1.1);
+        this.#mask.fillCircle(headX + 4.6, headY - 2, 1.1);
+        break;
+      case "split":
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX + mirror * 0.6, headY - 6);
+        this.#mask.lineTo(headX + mirror * 0.6, headY + 6);
+        this.#mask.strokePath();
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - mirror * 6.4, headY - 1.5);
+        this.#mask.lineTo(headX - mirror * 1.4, headY - 4.8);
+        this.#mask.strokePath();
+        break;
+      case "lace":
+        for (const offset of [-5.5, -2.2, 2.2, 5.5] as const) {
+          this.#mask.fillCircle(headX + offset, headY - 5.2, 0.8);
+        }
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - 6.4, headY + 4.2);
+        this.#mask.lineTo(headX - 2.4, headY + 5.4);
+        this.#mask.lineTo(headX + 1.4, headY + 4.7);
+        this.#mask.lineTo(headX + 5.8, headY + 5.4);
+        this.#mask.strokePath();
+        break;
+      case "etched":
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - 5.2, headY - 3.6);
+        this.#mask.lineTo(headX - 1.2, headY - 0.8);
+        this.#mask.moveTo(headX + 5.2, headY - 3.6);
+        this.#mask.lineTo(headX + 1.2, headY - 0.8);
+        this.#mask.moveTo(headX, headY - 4.4);
+        this.#mask.lineTo(headX, headY + 4.4);
+        this.#mask.strokePath();
+        break;
+      case "winged":
+        this.#mask.beginPath();
+        this.#mask.moveTo(headX - 7.6, headY - 1);
+        this.#mask.lineTo(headX - 11.2, headY - 4.4);
+        this.#mask.moveTo(headX + 7.6, headY - 1);
+        this.#mask.lineTo(headX + 11.2, headY - 4.4);
+        this.#mask.moveTo(headX - 5.2, headY + 4.4);
+        this.#mask.lineTo(headX, headY + 2.8);
+        this.#mask.lineTo(headX + 5.2, headY + 4.4);
+        this.#mask.strokePath();
+        break;
+      default:
+        break;
+    }
+  }
+
+  #drawHeaddress(
+    headX: number,
+    headY: number,
+    _mirror: number,
+    headScale: number,
+  ) {
+    const outline = mixColor(this.#appearance.maskAccentColor, 0x090d12, 0.44);
+    const frontAlpha = this.#mode === "portrait" ? 0.94 : 0.82;
+    const veilAlpha = this.#mode === "portrait" ? 0.3 : 0.2;
+
+    this.#back.lineStyle(1, outline, 0.55);
+    this.#front.lineStyle(1.1, outline, 0.84);
+    this.#back.fillStyle(this.#appearance.maskAccentColor, 0.26);
+    this.#front.fillStyle(this.#appearance.maskAccentColor, frontAlpha);
+
+    switch (this.#appearance.headdressStyle) {
+      case "tiara":
+        this.#front.beginPath();
+        this.#front.moveTo(headX - 8 * headScale, headY - 9 * headScale);
+        this.#front.lineTo(headX - 4 * headScale, headY - 13 * headScale);
+        this.#front.lineTo(headX, headY - 10.5 * headScale);
+        this.#front.lineTo(headX + 4 * headScale, headY - 13 * headScale);
+        this.#front.lineTo(headX + 8 * headScale, headY - 9 * headScale);
+        this.#front.strokePath();
+        this.#front.fillCircle(
+          headX,
+          headY - 12.5 * headScale,
+          1.5 * headScale,
+        );
+        this.#front.fillCircle(
+          headX - 4.4 * headScale,
+          headY - 10.8 * headScale,
+          1 * headScale,
+        );
+        this.#front.fillCircle(
+          headX + 4.4 * headScale,
+          headY - 10.8 * headScale,
+          1 * headScale,
+        );
+        break;
+      case "feather-halo":
+        for (const feather of [-12, -4, 4, 12] as const) {
+          this.#back.fillPoints(
+            points([
+              {
+                x: headX + feather * 0.65 * headScale,
+                y: headY - 10 * headScale,
+              },
+              {
+                x: headX + feather * 0.95 * headScale,
+                y: headY - 20 * headScale,
+              },
+              {
+                x: headX + feather * 0.25 * headScale,
+                y: headY - 7 * headScale,
+              },
+            ]),
+            true,
+          );
+        }
+        this.#front.fillCircle(headX, headY - 9.5 * headScale, 1.2 * headScale);
+        break;
+      case "veil":
+        this.#back.fillStyle(this.#appearance.maskAccentColor, veilAlpha);
+        this.#back.fillPoints(
+          points([
+            { x: headX - 8 * headScale, y: headY - 7 * headScale },
+            { x: headX + 8 * headScale, y: headY - 7 * headScale },
+            { x: headX + 13 * headScale, y: headY + 12 * headScale },
+            { x: headX + 4 * headScale, y: headY + 17 * headScale },
+            { x: headX - 11 * headScale, y: headY + 10 * headScale },
+          ]),
+          true,
+        );
+        this.#front.fillRoundedRect(
+          headX - 8 * headScale,
+          headY - 9 * headScale,
+          16 * headScale,
+          3 * headScale,
+          1.5 * headScale,
+        );
+        break;
+      case "crownlet":
+        this.#front.beginPath();
+        this.#front.moveTo(headX - 7 * headScale, headY - 9 * headScale);
+        this.#front.lineTo(headX - 3.5 * headScale, headY - 15 * headScale);
+        this.#front.lineTo(headX, headY - 10.5 * headScale);
+        this.#front.lineTo(headX + 3.5 * headScale, headY - 15 * headScale);
+        this.#front.lineTo(headX + 7 * headScale, headY - 9 * headScale);
+        this.#front.strokePath();
+        this.#front.fillCircle(
+          headX,
+          headY - 10.2 * headScale,
+          1.2 * headScale,
+        );
+        break;
+      case "laurel":
+        for (const offset of [-7.5, -3.5, 3.5, 7.5] as const) {
+          const x = headX + offset * headScale;
+          const y = headY - 10 * headScale + Math.abs(offset) * 0.16;
+          this.#front.fillEllipse(x, y, 2.2 * headScale, 4.4 * headScale);
+        }
+        this.#front.beginPath();
+        this.#front.moveTo(headX - 6 * headScale, headY - 9 * headScale);
+        this.#front.lineTo(headX, headY - 7.3 * headScale);
+        this.#front.lineTo(headX + 6 * headScale, headY - 9 * headScale);
+        this.#front.strokePath();
+        break;
+      default:
+        break;
+    }
+  }
+
   #drawAccessory(
     headX: number,
     headY: number,
@@ -995,6 +1419,7 @@ export class AvatarRig {
     facingY: number,
   ) {
     const outline = mixColor(this.#appearance.accessoryColor, 0x090d12, 0.4);
+    const shine = mixColor(this.#appearance.accessoryColor, 0xf1dfb5, 0.48);
     this.#back.fillStyle(this.#appearance.accessoryColor, 0.95);
     this.#front.fillStyle(this.#appearance.accessoryColor, 0.95);
     this.#back.lineStyle(1.2, outline);
@@ -1002,18 +1427,26 @@ export class AvatarRig {
 
     switch (this.#appearance.accessoryStyle) {
       case "plume":
-        this.#back.fillPoints(
-          points([
-            { x: headX + mirror * 2, y: headY - 14 },
-            { x: headX + mirror * 11, y: headY - 25 },
-            { x: headX + mirror * 4, y: headY - 5 },
-          ]),
-          true,
-        );
+        for (const feather of [0, 1, 2] as const) {
+          const offset = feather * 3.2;
+          this.#back.fillPoints(
+            points([
+              { x: headX + mirror * (1 + offset), y: headY - (14 + feather) },
+              {
+                x: headX + mirror * (10 + offset),
+                y: headY - (25 + feather * 2),
+              },
+              { x: headX + mirror * (4 + offset), y: headY - (5 + feather) },
+            ]),
+            true,
+          );
+        }
         break;
       case "brooch":
         this.#front.fillCircle(mirror * 5, chestY + 8, 3.2);
         this.#front.strokeCircle(mirror * 5, chestY + 8, 3.2);
+        this.#front.fillStyle(shine, 1);
+        this.#front.fillCircle(mirror * 5, chestY + 8, 1.2);
         break;
       case "monocle":
         this.#front.strokeCircle(headX + mirror * 4.8, headY, 3);
@@ -1021,13 +1454,38 @@ export class AvatarRig {
         this.#front.moveTo(headX + mirror * 7.5, headY + 2);
         this.#front.lineTo(headX + mirror * 10.5, headY + 11);
         this.#front.strokePath();
+        this.#front.beginPath();
+        this.#front.moveTo(headX + mirror * 2.8, headY - 1.2);
+        this.#front.lineTo(headX + mirror * 1.2, headY + 1.1);
+        this.#front.strokePath();
         break;
       case "chain":
         this.#front.beginPath();
         this.#front.moveTo(-6 * mirror, chestY + 4);
         this.#front.lineTo(7 * mirror, chestY + 12);
         this.#front.strokePath();
+        this.#front.beginPath();
+        this.#front.moveTo(-2 * mirror, chestY + 3);
+        this.#front.lineTo(4 * mirror, chestY + 11);
+        this.#front.strokePath();
         this.#front.fillCircle(9 * mirror, chestY + 13, 2.4);
+        this.#front.fillStyle(shine, 1);
+        this.#front.fillCircle(9 * mirror, chestY + 13, 0.9);
+        break;
+      case "rose":
+        this.#front.fillCircle(mirror * 5, chestY + 7, 2.8);
+        this.#front.fillCircle(mirror * 2.4, chestY + 5, 2.1);
+        this.#front.fillCircle(mirror * 7.4, chestY + 4.8, 2.1);
+        this.#front.fillStyle(shine, 0.92);
+        this.#front.fillCircle(mirror * 5, chestY + 7, 0.8);
+        this.#front.fillStyle(this.#appearance.accessoryColor, 0.88);
+        this.#front.fillRoundedRect(
+          mirror > 0 ? 4.3 : -6.1,
+          chestY + 8.4,
+          1.8,
+          8,
+          1,
+        );
         break;
       case "fan":
         this.#front.fillPoints(
@@ -1046,6 +1504,14 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#front.beginPath();
+        this.#front.moveTo(mirror * 5, chestY + 6);
+        this.#front.lineTo(mirror * 12, chestY + 3);
+        this.#front.moveTo(mirror * 5, chestY + 6);
+        this.#front.lineTo(mirror * 12, chestY + 6.5);
+        this.#front.moveTo(mirror * 5, chestY + 6);
+        this.#front.lineTo(mirror * 12, chestY + 10);
+        this.#front.strokePath();
         break;
       case "cane":
         this.#front.beginPath();
@@ -1053,6 +1519,8 @@ export class AvatarRig {
         this.#front.lineTo(mirror * 10, chestY + 24);
         this.#front.strokePath();
         this.#front.strokeCircle(mirror * 8, chestY + 3, 2.1);
+        this.#front.fillStyle(shine, 0.9);
+        this.#front.fillCircle(mirror * 8, chestY + 3, 0.9);
         break;
       case "keyring":
         this.#front.strokeCircle(mirror * 6, chestY + 11, 2.8);
@@ -1062,6 +1530,8 @@ export class AvatarRig {
         this.#front.strokePath();
         this.#front.fillCircle(mirror * 10, chestY + 18, 1.2);
         this.#front.fillCircle(mirror * 7.5, chestY + 20.5, 1.1);
+        this.#front.fillStyle(shine, 0.92);
+        this.#front.fillCircle(mirror * 6, chestY + 11, 0.7);
         break;
       default:
         this.#front.fillCircle(mirror * 5, chestY + 6, 2.8);
@@ -1087,7 +1557,8 @@ export class AvatarRig {
     mirror: number,
     accentColor: number,
   ) {
-    this.#back.fillStyle(accentColor, 0.14);
+    const echoColor = mixColor(accentColor, this.#appearance.liningColor, 0.34);
+    this.#back.fillStyle(echoColor, 0.17);
     this.#back.lineStyle(0, 0, 0);
 
     switch (this.#appearance.silhouette) {
@@ -1099,9 +1570,17 @@ export class AvatarRig {
           14,
           6,
         );
+        this.#back.fillRoundedRect(
+          -shoulderWidth * 0.42,
+          chestY + 3,
+          shoulderWidth * 0.84,
+          8,
+          4,
+        );
         break;
       case "lithe":
         this.#back.fillEllipse(0, chestY - 1, shoulderWidth * 0.72, 12);
+        this.#back.fillEllipse(0, hipY + 8, hemWidth * 0.46, 9);
         break;
       case "regal":
         this.#back.fillPoints(
@@ -1114,6 +1593,7 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#back.fillRoundedRect(-6, chestY - 8, 12, 5, 2);
         break;
       case "compact":
         this.#back.fillPoints(
@@ -1125,6 +1605,7 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#back.fillEllipse(0, hipY + 7, hemWidth * 0.28, 7);
         break;
       case "draped":
         this.#back.fillPoints(
@@ -1137,6 +1618,14 @@ export class AvatarRig {
           ]),
           true,
         );
+        this.#back.fillPoints(
+          points([
+            { x: -shoulderWidth * 0.42, y: chestY - 6 },
+            { x: shoulderWidth * 0.1, y: chestY - 2 },
+            { x: -hemWidth * 0.2, y: hipY + 12 },
+          ]),
+          true,
+        );
         break;
       default:
         this.#back.fillRoundedRect(
@@ -1146,15 +1635,24 @@ export class AvatarRig {
           11,
           5,
         );
+        this.#back.fillRoundedRect(-4, chestY + 6, 8, 8, 3);
         break;
     }
 
-    this.#front.fillStyle(accentColor, 0.18);
+    this.#front.fillStyle(accentColor, 0.22);
     this.#front.fillRoundedRect(
       -hemWidth * 0.22,
       hipY + 7,
       hemWidth * 0.44,
       4,
+      2,
+    );
+    this.#front.fillStyle(this.#appearance.trimColor, 0.16);
+    this.#front.fillRoundedRect(
+      -shoulderWidth * 0.14,
+      chestY - 1,
+      shoulderWidth * 0.28,
+      6,
       2,
     );
   }
@@ -1214,6 +1712,32 @@ export class AvatarRig {
           headY - 7,
           15 * headScale,
           9 * headScale,
+        );
+        break;
+      case "waved":
+        this.#hair.fillEllipse(
+          headX,
+          headY - 8,
+          17 * headScale,
+          10 * headScale,
+        );
+        this.#hair.fillEllipse(
+          headX - 5.6 * headScale,
+          headY - 5.4 * headScale,
+          6 * headScale,
+          5.4 * headScale,
+        );
+        this.#hair.fillEllipse(
+          headX + 5.6 * headScale,
+          headY - 5.4 * headScale,
+          6 * headScale,
+          5.4 * headScale,
+        );
+        this.#hair.strokeEllipse(
+          headX,
+          headY - 8,
+          17 * headScale,
+          10 * headScale,
         );
         break;
       case "coiffed":

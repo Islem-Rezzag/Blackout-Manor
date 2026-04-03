@@ -62,8 +62,10 @@ describe("avatar presentation", () => {
           appearance.bodyType,
           appearance.outfitStyle,
           appearance.maskStyle,
+          appearance.maskDetailStyle,
           appearance.hairStyle,
           appearance.accessoryStyle,
+          appearance.headdressStyle,
           appearance.portraitFrameStyle,
           appearance.stanceBias,
           appearance.outfitColor,
@@ -73,6 +75,26 @@ describe("avatar presentation", () => {
     );
 
     expect(signatures.size).toBe(SEASON_01_PERSONA_CARDS.length);
+  });
+
+  it("keeps character adornment cues deterministic across repeated resolution", () => {
+    const appearances = SEASON_01_PERSONA_CARDS.map((card, index) =>
+      resolveAvatarAppearance(createPlayer(`player-${index + 1}`, card.label)),
+    );
+
+    expect(
+      new Set(appearances.map((appearance) => appearance.headdressStyle)).size,
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      new Set(appearances.map((appearance) => appearance.maskDetailStyle)).size,
+    ).toBeGreaterThanOrEqual(5);
+    expect(
+      appearances.every(
+        (appearance) =>
+          typeof appearance.secondaryColor === "number" &&
+          typeof appearance.portraitGlowColor === "number",
+      ),
+    ).toBe(true);
   });
 
   it("upgrades calm posture to confident when the public emotion reads dominant and positive", () => {
