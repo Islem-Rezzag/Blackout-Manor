@@ -1,5 +1,10 @@
 import type { PlayerId, PublicPlayerState } from "@blackout-manor/shared";
-import type { MeetingPresentation } from "../directors/types";
+import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
+import type {
+  CameraPlan,
+  InspectionPresentation,
+  MeetingPresentation,
+} from "../directors/types";
 import type {
   AvatarMovementOrigin,
   AvatarNavigationState,
@@ -11,9 +16,22 @@ import {
 } from "../navigation/manorNavigation";
 import { createMeetingSeatMap, worldSeatResolver } from "./seatResolvers";
 
-export const MEETING_ALARM_FOCUS_MS = 920;
-export const MEETING_PANEL_DELAY_MS = 280;
-export const MEETING_PORTRAIT_DELAY_MS = 640;
+export const MEETING_ALARM_FOCUS_MS = 1_040;
+export const MEETING_PANEL_DELAY_MS = 240;
+export const MEETING_PORTRAIT_DELAY_MS = 520;
+
+export type MeetingDirectionTimings = {
+  alarmFocusMs: number;
+  overviewReturnMs: number;
+  hallFocusMs: number;
+  panelRevealMs: number;
+  portraitRevealMs: number;
+};
+
+export type MeetingDirectionPhase = "alarm" | "overview" | "gather";
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
 const buildSnapshotSeatPositions = (
   players: readonly PublicPlayerState[],
@@ -105,10 +123,102 @@ export const createMeetingBlocking = (meeting: MeetingPresentation) => {
     );
   }
 
+  const longestTravelMs = Math.max(0, ...travelDurationsMs.values());
+  const alarmFocusMs = meeting.alarmRoomId ? MEETING_ALARM_FOCUS_MS : 0;
+  const overviewWindowMs = clamp(Math.round(longestTravelMs * 0.24), 540, 860);
+  const hallFocusMs = alarmFocusMs + overviewWindowMs;
+  const panelRevealMs = hallFocusMs + MEETING_PANEL_DELAY_MS;
+  const portraitRevealMs =
+    hallFocusMs +
+    Math.max(
+      MEETING_PORTRAIT_DELAY_MS,
+      clamp(Math.round(longestTravelMs * 0.16), 460, 740),
+    );
+
   return {
     seatPositions,
     movementOrigins,
     travelDurationsMs,
+    directionTimings: {
+      alarmFocusMs,
+      overviewReturnMs: alarmFocusMs,
+      hallFocusMs,
+      panelRevealMs,
+      portraitRevealMs,
+    } satisfies MeetingDirectionTimings,
+  };
+};
+
+export const resolveMeetingDirection = (options: {
+  meeting: MeetingPresentation;
+  elapsedMs: number;
+  directionTimings: MeetingDirectionTimings;
+}): {
+  phase: MeetingDirectionPhase;
+  camera: CameraPlan;
+  inspection: InspectionPresentation;
+} => {
+  const { directionTimings, elapsedMs, meeting } = options;
+
+  if (meeting.alarmRoomId && elapsedMs < directionTimings.alarmFocusMs) {
+    return {
+      phase: "alarm",
+      camera: {
+        roomId: meeting.alarmRoomId,
+        immediate: false,
+        reason: "report",
+        detail:
+          "The camera holds on the public alarm room before the hall gathers.",
+      },
+      inspection: {
+        mode: "inspect",
+        roomId: meeting.alarmRoomId,
+        immediate: false,
+        label: `Inspecting ${DEFAULT_ROOM_LABELS[meeting.alarmRoomId]}`,
+        detail:
+          "The alarm room stays readable first so the spectator understands why the manor is about to convene.",
+      },
+    };
+  }
+
+  if (elapsedMs < directionTimings.hallFocusMs) {
+    return {
+      phase: "overview",
+      camera: {
+        roomId: null,
+        immediate: false,
+        reason: "meeting",
+        detail:
+          "The view returns to the whole manor while surviving guests converge on the grand hall.",
+      },
+      inspection: {
+        mode: "overview",
+        roomId: null,
+        immediate: false,
+        label: "Whole manor overview",
+        detail:
+          "Meeting convergence keeps the entire floorplan legible until the tribunal settles.",
+      },
+    };
+  }
+
+  return {
+    phase: "gather",
+    camera: {
+      roomId: meeting.meetingRoomId,
+      immediate: false,
+      reason: "meeting",
+      detail:
+        "Grand hall framing holds the tribunal while public arrivals settle into place.",
+    },
+    inspection: {
+      mode: "inspect",
+      roomId: meeting.meetingRoomId,
+      immediate: false,
+      label: `Inspecting ${DEFAULT_ROOM_LABELS[meeting.meetingRoomId]}`,
+      detail:
+        "Meeting focus centers the tribunal table and public cast reactions without exposing hidden information.",
+    },
   };
 };
 

@@ -11,6 +11,11 @@ export class RuntimeBanner {
   readonly #eyebrow: Phaser.GameObjects.Text;
   readonly #title: Phaser.GameObjects.Text;
   readonly #detail: Phaser.GameObjects.Text;
+  #baseX = 0;
+  #baseY = 96;
+  #offsetY = 0;
+  #scale = 1;
+  #alpha = 1;
 
   constructor(options: RuntimeBannerOptions) {
     const width = options.width ?? 640;
@@ -58,11 +63,29 @@ export class RuntimeBanner {
     this.#container.setVisible(visible);
   }
 
+  setPresentation(options?: {
+    alpha?: number;
+    offsetY?: number;
+    scale?: number;
+  }) {
+    this.#alpha = options?.alpha ?? 1;
+    this.#offsetY = options?.offsetY ?? 0;
+    this.#scale = options?.scale ?? 1;
+    this.#applyPresentation();
+  }
+
   resize(width: number) {
-    this.#container.setPosition(width / 2, 96);
+    this.#baseX = width / 2;
+    this.#applyPresentation();
   }
 
   destroy() {
     this.#container.destroy(true);
+  }
+
+  #applyPresentation() {
+    this.#container.setPosition(this.#baseX, this.#baseY + this.#offsetY);
+    this.#container.setScale(this.#scale);
+    this.#container.setAlpha(this.#alpha);
   }
 }

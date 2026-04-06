@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { MeetingDirector } from "../directors/MeetingDirector";
 import { MockMatchConnection } from "../network/mockMatchConnection";
-import { createMeetingBlocking } from "./meetingBlocking";
+import {
+  createMeetingBlocking,
+  resolveMeetingDirection,
+} from "./meetingBlocking";
 
 const requireSnapshot = (value: MatchSnapshot | null) => {
   if (!value) {
@@ -62,6 +65,32 @@ describe("meeting blocking", () => {
     expect(
       [...blocking.travelDurationsMs.values()].every((value) => value >= 0),
     ).toBe(true);
+    expect(blocking.directionTimings.alarmFocusMs).toBeGreaterThan(0);
+    expect(blocking.directionTimings.hallFocusMs).toBeGreaterThan(
+      blocking.directionTimings.overviewReturnMs,
+    );
+    expect(blocking.directionTimings.panelRevealMs).toBeGreaterThan(
+      blocking.directionTimings.hallFocusMs,
+    );
+    expect(blocking.directionTimings.portraitRevealMs).toBeGreaterThan(
+      blocking.directionTimings.panelRevealMs,
+    );
+
+    const alarmDirection = resolveMeetingDirection({
+      meeting,
+      elapsedMs: 0,
+      directionTimings: blocking.directionTimings,
+    });
+    const hallDirection = resolveMeetingDirection({
+      meeting,
+      elapsedMs: blocking.directionTimings.hallFocusMs + 1,
+      directionTimings: blocking.directionTimings,
+    });
+
+    expect(alarmDirection.phase).toBe("alarm");
+    expect(alarmDirection.camera.reason).toBe("report");
+    expect(hallDirection.phase).toBe("gather");
+    expect(hallDirection.camera.roomId).toBe("grand-hall");
 
     vi.useRealTimers();
     await connection.disconnect();

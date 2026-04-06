@@ -56,6 +56,7 @@ export class ManorWorldScene extends Phaser.Scene {
       }
 
       this.#hud?.setContent({
+        camera: state.camera,
         inspection: state.inspection,
         surveillance: state.surveillance,
         phaseLabel: state.snapshot.phaseId.toUpperCase(),
@@ -70,8 +71,9 @@ export class ManorWorldScene extends Phaser.Scene {
       this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({
         snapshot: state.snapshot,
-        focusRoomId: state.camera.roomId,
+        camera: state.camera,
         inspection: state.inspection,
+        directionVariant: "manor",
         seatResolver: worldSeatResolver,
         showTaskChips:
           state.snapshot.phaseId === "roam" &&

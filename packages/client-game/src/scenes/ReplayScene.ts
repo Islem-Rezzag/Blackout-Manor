@@ -7,7 +7,7 @@ import type { SeatResolver } from "../stage/ManorWorldStage";
 import { ManorWorldStage } from "../stage/ManorWorldStage";
 import {
   createMeetingBlocking,
-  MEETING_ALARM_FOCUS_MS,
+  resolveMeetingDirection,
 } from "../stage/meetingBlocking";
 import {
   createFinaleSeatResolver,
@@ -141,17 +141,22 @@ export class ReplayScene extends Phaser.Scene {
     const elapsedMs = this.#meetingSequence
       ? Math.max(0, this.time.now - this.#meetingSequence.startedAt)
       : 0;
-    const focusRoomId =
-      meetingPresentation &&
-      elapsedMs < MEETING_ALARM_FOCUS_MS &&
-      meetingPresentation.alarmRoomId
-        ? meetingPresentation.alarmRoomId
-        : state.camera.roomId;
+    const meetingDirection =
+      meetingPresentation && this.#meetingSequence
+        ? resolveMeetingDirection({
+            meeting: meetingPresentation,
+            elapsedMs,
+            directionTimings: this.#meetingSequence.directionTimings,
+          })
+        : null;
     const snapshot =
       meetingPresentation?.stagedSnapshot ?? state.replay.snapshot;
+    const replayCamera = meetingDirection?.camera ?? state.camera;
+    const replayInspection = meetingDirection?.inspection ?? state.inspection;
 
     this.#hud?.setContent({
-      inspection: state.inspection,
+      camera: replayCamera,
+      inspection: replayInspection,
       surveillance: state.surveillance,
       phaseLabel: phaseId.toUpperCase(),
       timerText: replayTimerLine(
@@ -164,22 +169,18 @@ export class ReplayScene extends Phaser.Scene {
     this.#console?.setPresentation(state.surveillance);
     this.#stage?.render({
       snapshot,
-      focusRoomId,
-      inspection:
-        meetingPresentation &&
-        elapsedMs < MEETING_ALARM_FOCUS_MS &&
-        meetingPresentation.alarmRoomId
-          ? {
-              ...state.inspection,
-              mode: "inspect",
-              roomId: meetingPresentation.alarmRoomId,
-              immediate: false,
-            }
-          : state.inspection,
+      camera: replayCamera,
+      inspection: replayInspection,
+      directionVariant: meetingPresentation
+        ? "meeting"
+        : phaseId === "resolution"
+          ? "endgame"
+          : "replay",
       seatResolver: resolveSeatResolver(phaseId),
       ...(meetingPresentation && this.#meetingSequence
         ? {
             positionOverrides: this.#meetingSequence.seatPositions,
+            movementOrigins: this.#meetingSequence.movementOrigins,
           }
         : {}),
       showTaskChips:

@@ -63,12 +63,17 @@ export class EndgameScene extends Phaser.Scene {
       }
 
       this.#banner?.setContent(state.banner);
+      this.#banner?.setPresentation({
+        alpha: 1,
+        offsetY: 0,
+        scale: 1,
+      });
       this.#resultTitle?.setText(state.endgame.title);
       this.#resultDetail?.setText(state.endgame.subtitle);
       this.#resultTag?.setText(state.endgame.summaryTag.toUpperCase());
       this.#stage?.render({
         snapshot: state.endgame.stagedSnapshot,
-        focusRoomId: state.camera.roomId,
+        camera: state.camera,
         inspection: {
           mode: "inspect",
           roomId: state.camera.roomId,
@@ -76,6 +81,7 @@ export class EndgameScene extends Phaser.Scene {
           label: "Finale focus",
           detail: "Resolution staging holds on the public outcome.",
         },
+        directionVariant: "endgame",
         seatResolver: createFinaleSeatResolver("grand-hall"),
         showTaskChips: false,
       });

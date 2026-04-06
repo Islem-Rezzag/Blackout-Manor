@@ -1,6 +1,7 @@
 import type * as Phaser from "phaser";
 
 import type {
+  CameraPlan,
   InspectionPresentation,
   SurveillancePresentation,
 } from "../directors/types";
@@ -17,6 +18,7 @@ type StatusChip = {
 };
 
 type ObservationHudContent = {
+  camera: CameraPlan;
   inspection: InspectionPresentation;
   surveillance: SurveillancePresentation;
   phaseLabel: string;
@@ -42,6 +44,60 @@ const toneColors = {
   },
 } as const;
 
+const cameraPlateTone = {
+  default: {
+    fill: 0x051019,
+    stroke: 0xa1c4d9,
+    eyebrow: "#a5cadf",
+    hint: "#a8bfce",
+  },
+  actor: {
+    fill: 0x0a1318,
+    stroke: 0x8eb8da,
+    eyebrow: "#b7d6ec",
+    hint: "#a8bfce",
+  },
+  interaction: {
+    fill: 0x10141a,
+    stroke: 0xcbb78e,
+    eyebrow: "#dfcc9b",
+    hint: "#bdb59f",
+  },
+  sabotage: {
+    fill: 0x201418,
+    stroke: 0xf0ad8a,
+    eyebrow: "#ffd0be",
+    hint: "#dab5a8",
+  },
+  report: {
+    fill: 0x241418,
+    stroke: 0xf2a48a,
+    eyebrow: "#ffd3c5",
+    hint: "#ddb7aa",
+  },
+  surveillance: {
+    fill: 0x08141c,
+    stroke: 0x7cb9d9,
+    eyebrow: "#9fd7f0",
+    hint: "#9ebfd2",
+  },
+  meeting: {
+    fill: 0x120f18,
+    stroke: 0xd6b17e,
+    eyebrow: "#e4c790",
+    hint: "#c7b38d",
+  },
+  endgame: {
+    fill: 0x171018,
+    stroke: 0xd6bf89,
+    eyebrow: "#e2cca0",
+    hint: "#cbb994",
+  },
+} as const satisfies Record<
+  CameraPlan["reason"],
+  { fill: number; stroke: number; eyebrow: string; hint: string }
+>;
+
 const hintLine = (
   mode: SurveillancePresentation["mode"],
   inspection: InspectionPresentation,
@@ -55,6 +111,33 @@ const hintLine = (
   }
 
   return "Click room inspect | Esc whole manor | V surveillance";
+};
+
+const cameraTitle = (
+  camera: CameraPlan,
+  inspection: InspectionPresentation,
+  surveillance: SurveillancePresentation,
+) => {
+  if (surveillance.mode === "surveillance" || inspection.mode === "inspect") {
+    return inspection.label;
+  }
+
+  switch (camera.reason) {
+    case "report":
+      return "Public event focus";
+    case "sabotage":
+      return "Sabotage focus";
+    case "meeting":
+      return "Hall convergence";
+    case "endgame":
+      return "Finale focus";
+    case "interaction":
+      return "Public interaction";
+    case "actor":
+      return "Cast movement";
+    default:
+      return inspection.label;
+  }
 };
 
 const lightLabel = (
@@ -196,42 +279,67 @@ export class ObservationHud {
   }
 
   setContent(content: ObservationHudContent) {
-    const { contextText, inspection, phaseLabel, surveillance, timerText } =
-      content;
+    const {
+      camera,
+      contextText,
+      inspection,
+      phaseLabel,
+      surveillance,
+      timerText,
+    } = content;
     const inspecting = inspection.mode === "inspect";
+    const strongFocus =
+      inspecting ||
+      ["report", "sabotage", "meeting", "endgame"].includes(camera.reason);
+    const plateTone = cameraPlateTone[camera.reason];
     const viewModeLabel =
       surveillance.mode === "surveillance"
         ? "SURVEILLANCE"
         : inspection.mode === "inspect"
           ? "ROOM FOCUS"
           : "OVERVIEW";
-    const stateDetailText = timerText
-      ? `${timerText} | ${surveillance.indicatorLabel}`
-      : surveillance.indicatorLabel;
-    const stateHintText = contextText
-      ? `${contextText} | ${hintLine(surveillance.mode, inspection)}`
-      : `${inspection.detail} | ${hintLine(surveillance.mode, inspection)}`;
+    const stateDetailText = [timerText, surveillance.indicatorLabel]
+      .filter((value): value is string => Boolean(value))
+      .join(" | ");
+    const narrativeText = contextText ?? inspection.detail;
+    const stateHintText = strongFocus
+      ? `${camera.detail} | ${hintLine(surveillance.mode, inspection)}`
+      : `${narrativeText} | ${hintLine(surveillance.mode, inspection)}`;
 
     this.#stateEyebrow.setText(`${phaseLabel} | ${viewModeLabel}`);
-    this.#stateTitle.setText(inspection.label);
+    this.#stateTitle.setText(cameraTitle(camera, inspection, surveillance));
     this.#stateDetail.setText(stateDetailText);
     this.#stateHint.setText(stateHintText);
+    this.#stateBackplate.setDisplaySize(strongFocus ? 556 : 580, 124);
+    this.#stateBackplate.setFillStyle(
+      plateTone.fill,
+      strongFocus ? 0.86 : 0.82,
+    );
+    this.#stateBackplate.setStrokeStyle(
+      1,
+      plateTone.stroke,
+      strongFocus ? 0.28 : 0.22,
+    );
+    this.#stateEyebrow.setColor(plateTone.eyebrow);
+    this.#stateDetail.setColor("#dfe6ee");
+    this.#stateHint.setColor(plateTone.hint);
 
     const subtitle = surveillance.subtitle;
+    const expandedSubtitle = inspecting || strongFocus;
     if (subtitle) {
       const tone = toneColors[subtitle.tone];
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        inspecting ? 1000 : 960,
-        inspecting ? 82 : 68,
+        expandedSubtitle ? 1000 : 960,
+        expandedSubtitle ? 82 : 68,
       );
       this.#subtitlePlate.setFillStyle(tone.fill, 0.84);
       this.#subtitlePlate.setStrokeStyle(1, tone.stroke, 0.28);
       this.#subtitleSpeaker.setColor(tone.text);
       this.#subtitleText.setColor(tone.text);
-      this.#subtitleSpeaker.setFontSize(inspecting ? "13px" : "12px");
-      this.#subtitleText.setFontSize(inspecting ? "16px" : "15px");
-      this.#subtitleText.setWordWrapWidth(inspecting ? 920 : 878);
+      this.#subtitleSpeaker.setFontSize(expandedSubtitle ? "13px" : "12px");
+      this.#subtitleText.setFontSize(expandedSubtitle ? "16px" : "15px");
+      this.#subtitleText.setWordWrapWidth(expandedSubtitle ? 920 : 878);
       this.#subtitleSpeaker.setText(
         subtitle.speakerId
           ? `${subtitle.speakerId.toUpperCase()}`
@@ -243,16 +351,16 @@ export class ObservationHud {
     } else {
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        inspecting ? 1000 : 960,
-        inspecting ? 82 : 68,
+        expandedSubtitle ? 1000 : 960,
+        expandedSubtitle ? 82 : 68,
       );
       this.#subtitlePlate.setFillStyle(0x061018, 0.8);
       this.#subtitlePlate.setStrokeStyle(1, 0xa1c4d9, 0.16);
       this.#subtitleSpeaker.setColor("#a5cadf");
       this.#subtitleText.setColor("#dfe6ee");
-      this.#subtitleSpeaker.setFontSize(inspecting ? "13px" : "12px");
-      this.#subtitleText.setFontSize(inspecting ? "16px" : "15px");
-      this.#subtitleText.setWordWrapWidth(inspecting ? 920 : 878);
+      this.#subtitleSpeaker.setFontSize(expandedSubtitle ? "13px" : "12px");
+      this.#subtitleText.setFontSize(expandedSubtitle ? "16px" : "15px");
+      this.#subtitleText.setWordWrapWidth(expandedSubtitle ? 920 : 878);
       this.#subtitleSpeaker.setText("OBSERVATION");
       this.#subtitleText.setText(
         surveillance.mode === "surveillance"

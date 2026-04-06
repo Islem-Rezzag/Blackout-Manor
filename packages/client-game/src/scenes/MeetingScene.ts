@@ -7,9 +7,7 @@ import { ManorWorldStage } from "../stage/ManorWorldStage";
 import {
   createMeetingBlocking,
   deriveMeetingTravelStatuses,
-  MEETING_ALARM_FOCUS_MS,
-  MEETING_PANEL_DELAY_MS,
-  MEETING_PORTRAIT_DELAY_MS,
+  resolveMeetingDirection,
 } from "../stage/meetingBlocking";
 import { RuntimeBanner } from "../ui/RuntimeBanner";
 import { SCENE_KEYS } from "./keys";
@@ -18,6 +16,12 @@ type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
   id: string;
   startedAt: number;
 };
+
+const revealProgress = (
+  elapsedMs: number,
+  startMs: number,
+  durationMs: number,
+) => Phaser.Math.Clamp((elapsedMs - startMs) / Math.max(1, durationMs), 0, 1);
 
 export class MeetingScene extends Phaser.Scene {
   readonly #director: GameDirector;
@@ -136,31 +140,57 @@ export class MeetingScene extends Phaser.Scene {
     }
 
     const elapsedMs = Math.max(0, this.time.now - sequence.startedAt);
-    const focusRoomId =
-      elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
-        ? state.meeting.alarmRoomId
-        : state.camera.roomId;
-    const panelVisible = elapsedMs >= MEETING_PANEL_DELAY_MS;
-    const portraitsVisible = elapsedMs >= MEETING_PORTRAIT_DELAY_MS;
-
-    this.#meetingPlate?.setVisible(panelVisible);
-    this.#meetingGlow?.setAlpha(
-      elapsedMs < MEETING_ALARM_FOCUS_MS ? 0.22 : 0.14,
+    const direction = resolveMeetingDirection({
+      meeting: state.meeting,
+      elapsedMs,
+      directionTimings: sequence.directionTimings,
+    });
+    const hallReveal = revealProgress(
+      elapsedMs,
+      sequence.directionTimings.hallFocusMs,
+      420,
     );
-    this.#portraitStrip?.setVisible(portraitsVisible);
+    const panelReveal = revealProgress(
+      elapsedMs,
+      sequence.directionTimings.panelRevealMs,
+      280,
+    );
+    const portraitReveal = revealProgress(
+      elapsedMs,
+      sequence.directionTimings.portraitRevealMs,
+      320,
+    );
+
+    this.#banner?.setPresentation({
+      alpha: direction.phase === "overview" ? 0.9 : 1,
+      offsetY: direction.phase === "overview" ? -8 : 0,
+      scale: direction.phase === "gather" ? 1 : 0.985,
+    });
+    this.#meetingPlate?.setVisible(panelReveal > 0.01);
+    this.#meetingPlate?.setAlpha(panelReveal);
+    this.#meetingPlate?.setPosition(
+      this.scale.width / 2,
+      this.scale.height - 96 + (1 - panelReveal) * 22,
+    );
+    this.#meetingGlow?.setAlpha(
+      direction.phase === "alarm"
+        ? 0.24
+        : direction.phase === "overview"
+          ? 0.12
+          : 0.12 + hallReveal * 0.12,
+    );
+    this.#portraitStrip?.setVisible(portraitReveal > 0.01);
+    this.#portraitStrip?.setPresentation({
+      alpha: portraitReveal,
+      offsetY: (1 - portraitReveal) * 28,
+      scale: 0.98 + portraitReveal * 0.02,
+    });
 
     this.#stage?.render({
       snapshot: state.meeting.stagedSnapshot,
-      focusRoomId,
-      inspection: {
-        ...state.inspection,
-        mode: "inspect",
-        roomId: focusRoomId,
-        immediate:
-          elapsedMs < MEETING_ALARM_FOCUS_MS && state.meeting.alarmRoomId
-            ? false
-            : state.inspection.immediate,
-      },
+      camera: direction.camera,
+      inspection: direction.inspection,
+      directionVariant: "meeting",
       seatResolver: () => ({ x: 0, y: 0 }),
       positionOverrides: sequence.seatPositions,
       movementOrigins: sequence.movementOrigins,
@@ -175,10 +205,10 @@ export class MeetingScene extends Phaser.Scene {
     });
 
     this.#portraitStrip?.render(
-      portraitsVisible ? state.meeting.stagedSnapshot.players : [],
+      portraitReveal > 0.01 ? state.meeting.stagedSnapshot.players : [],
       state.meeting.stagedSnapshot.phaseId,
       state.meeting.stagedSnapshot.recentEvents,
-      portraitsVisible ? travelStatuses : new Map(),
+      portraitReveal > 0.01 ? travelStatuses : new Map(),
     );
   }
 

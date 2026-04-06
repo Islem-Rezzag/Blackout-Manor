@@ -41,10 +41,11 @@ export type EmbodiedMovementPlan = {
   waypoints: NavigationWaypoint[];
 };
 
-const ROOM_SPEED_PX_PER_SECOND = 58;
-const HALLWAY_SPEED_PX_PER_SECOND = 74;
-const THRESHOLD_PAUSE_MS = 190;
-const TASK_SETTLE_DELAY_MS = 430;
+const ROOM_SPEED_PX_PER_SECOND = 54;
+const HALLWAY_SPEED_PX_PER_SECOND = 66;
+const THRESHOLD_PAUSE_MS = 260;
+const ROOM_ENTRY_SETTLE_MS = 140;
+const TASK_SETTLE_DELAY_MS = 520;
 const DOOR_INTERIOR_OFFSET = 22;
 const CONTAINMENT_MARGIN = 24;
 const CORRIDOR_TOUCH_MARGIN = 16;
@@ -54,6 +55,7 @@ export const MOVEMENT_PACING = {
   hallwayPxPerSecond: HALLWAY_SPEED_PX_PER_SECOND,
   roomPxPerSecond: ROOM_SPEED_PX_PER_SECOND,
   thresholdPauseMs: THRESHOLD_PAUSE_MS,
+  roomEntryPauseMs: ROOM_ENTRY_SETTLE_MS,
   taskSettleDelayMs: TASK_SETTLE_DELAY_MS,
 } as const;
 
@@ -643,6 +645,7 @@ export const buildEmbodiedMovementPlan = (options: {
           "room-entry",
           nextRoomId,
           ROOM_SPEED_PX_PER_SECOND,
+          ROOM_ENTRY_SETTLE_MS,
         ),
       );
       traversalPoint = getDoorInteriorPoint(entryDoor);

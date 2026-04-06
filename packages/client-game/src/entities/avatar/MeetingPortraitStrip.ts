@@ -317,6 +317,11 @@ export class MeetingPortraitStrip {
   readonly #title: Phaser.GameObjects.Text;
   readonly #container: Phaser.GameObjects.Container;
   readonly #cards = new Map<string, PortraitCard>();
+  #baseX = 0;
+  #baseY = 0;
+  #offsetY = 0;
+  #scale = 1;
+  #alpha = 1;
 
   constructor(scene: Phaser.Scene) {
     this.#scene = scene;
@@ -406,11 +411,24 @@ export class MeetingPortraitStrip {
   }
 
   resize(width: number, height: number) {
-    this.#container.setPosition(width / 2, height - 196);
+    this.#baseX = width / 2;
+    this.#baseY = height - 196;
+    this.#applyPresentation();
   }
 
   setVisible(visible: boolean) {
     this.#container.setVisible(visible);
+  }
+
+  setPresentation(options?: {
+    alpha?: number;
+    offsetY?: number;
+    scale?: number;
+  }) {
+    this.#alpha = options?.alpha ?? 1;
+    this.#offsetY = options?.offsetY ?? 0;
+    this.#scale = options?.scale ?? 1;
+    this.#applyPresentation();
   }
 
   update(delta: number) {
@@ -426,5 +444,11 @@ export class MeetingPortraitStrip {
   destroy() {
     this.#container.destroy(true);
     this.#cards.clear();
+  }
+
+  #applyPresentation() {
+    this.#container.setPosition(this.#baseX, this.#baseY + this.#offsetY);
+    this.#container.setScale(this.#scale);
+    this.#container.setAlpha(this.#alpha);
   }
 }

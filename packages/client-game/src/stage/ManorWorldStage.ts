@@ -16,7 +16,7 @@ import {
   type PublicMovementFeedbackState,
 } from "../audio/publicEventFeedback";
 import { SoundBus } from "../audio/SoundBus";
-import type { InspectionPresentation } from "../directors/types";
+import type { CameraPlan, InspectionPresentation } from "../directors/types";
 import {
   type AvatarMovementOrigin,
   type AvatarNavigationState,
@@ -36,6 +36,11 @@ import {
   type ManorDoorNode,
   type ManorRenderRoom,
 } from "../tiled/manorLayout";
+import {
+  type DirectedCameraPlan,
+  resolveDirectedCameraPlan,
+  type StageDirectionVariant,
+} from "./cameraDirection";
 import {
   getCorridorFloorTextureKey,
   getDoorThresholdConfig,
@@ -140,8 +145,10 @@ export type SeatResolver = (
 
 export type ManorWorldStageRenderOptions = {
   snapshot: MatchSnapshot;
-  focusRoomId: RoomId | null;
+  camera?: CameraPlan;
+  focusRoomId?: RoomId | null;
   inspection: InspectionPresentation;
+  directionVariant?: StageDirectionVariant;
   phaseId?: PhaseId;
   seatResolver: SeatResolver;
   positionOverrides?: ReadonlyMap<string, { x: number; y: number }>;
@@ -202,6 +209,11 @@ const createDecorShape = (
   );
 };
 
+const distanceBetween = (
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) => Math.hypot(to.x - from.x, to.y - from.y);
+
 export class ManorWorldStage {
   readonly #scene: Phaser.Scene;
   readonly #soundBus = new SoundBus();
@@ -217,11 +229,12 @@ export class ManorWorldStage {
   readonly #onStartTask: ((taskId: TaskId) => void) | null;
   #activeRoomId: RoomId | null = null;
   #inspectedRoomId: RoomId | null = null;
-  #cameraTargetRoomId: RoomId | null = null;
   #hoveredRoomId: RoomId | null = null;
   #baseZoom = 1;
   #lastSnapshot: MatchSnapshot | null = null;
   #phaseId: PhaseId | null = null;
+  #directedCameraPlan: DirectedCameraPlan | null = null;
+  #cameraPlanSignature = "";
   readonly #lastNavigationStates = new Map<string, AvatarNavigationState>();
   #movementFeedbackStates: PublicMovementFeedbackState[] = [];
   #stormPressure = 0;
@@ -327,7 +340,7 @@ export class ManorWorldStage {
     const phaseId = options.phaseId ?? options.snapshot.phaseId;
     const signals = createRoomSignalMap(options.snapshot);
     const taskReadability = buildTaskReadabilityPresentation(options.snapshot);
-    const activeRoomId =
+    const fallbackRoomId =
       options.focusRoomId ??
       [...options.snapshot.recentEvents]
         .reverse()
@@ -335,18 +348,27 @@ export class ManorWorldStage {
         .find((roomId): roomId is RoomId => roomId !== null) ??
       options.snapshot.rooms[0]?.roomId ??
       null;
+    const camera = options.camera ?? {
+      roomId: fallbackRoomId,
+      immediate: options.inspection.immediate,
+      reason: fallbackRoomId ? "interaction" : "default",
+      detail: options.inspection.detail,
+    };
     const inspectionRoomId =
       options.inspection.mode === "inspect"
-        ? (options.inspection.roomId ?? activeRoomId)
+        ? (options.inspection.roomId ?? camera.roomId ?? fallbackRoomId)
         : null;
-    this.#activeRoomId = activeRoomId;
-    this.#inspectedRoomId = inspectionRoomId;
-
-    if (inspectionRoomId) {
-      this.#focusRoom(inspectionRoomId, options.inspection.immediate);
-    } else {
-      this.#focusWholeManor(options.inspection.immediate);
-    }
+    const directedPlan = resolveDirectedCameraPlan({
+      camera,
+      inspection: {
+        ...options.inspection,
+        roomId: inspectionRoomId,
+      },
+      variant: options.directionVariant ?? "manor",
+    });
+    this.#activeRoomId = directedPlan.activeRoomId;
+    this.#inspectedRoomId = directedPlan.inspectionRoomId;
+    this.#applyDirectedCameraPlan(directedPlan, camera.reason);
 
     const stormPressure =
       options.snapshot.rooms.filter(
@@ -377,7 +399,7 @@ export class ManorWorldStage {
     this.#taskReadabilityLayer.render({
       presentation: taskReadability,
       phaseId,
-      focusRoomId: this.#activeRoomId,
+      focusRoomId: directedPlan.focusRoomId,
       hoveredRoomId: this.#hoveredRoomId,
       inspectionRoomId: this.#inspectedRoomId,
       showTaskChips: options.showTaskChips ?? false,
@@ -411,7 +433,7 @@ export class ManorWorldStage {
     this.#soundBus.syncAmbience(
       deriveAmbienceState({
         snapshot: options.snapshot,
-        focusedRoomId: inspectionRoomId ?? activeRoomId,
+        focusedRoomId: directedPlan.focusRoomId,
         stormLevel: 0.72 + stormPressure * 0.28,
       }),
     );
@@ -1071,7 +1093,9 @@ export class ManorWorldStage {
     snapshot: MatchSnapshot,
     taskReadability: TaskReadabilityPresentation,
   ) {
-    const focused = this.#activeRoomId === room.roomId;
+    const focused =
+      (this.#directedCameraPlan?.focusRoomId ?? this.#activeRoomId) ===
+      room.roomId;
     const palette = createRoomRenderPalette({
       room,
       roomState,
@@ -1277,7 +1301,8 @@ export class ManorWorldStage {
         ?.some((task) => task.tone !== "available") ?? false;
     const showRoomTaskChips =
       showTaskChips &&
-      ((this.#inspectedRoomId ?? this.#activeRoomId) === roomId ||
+      ((this.#directedCameraPlan?.focusRoomId ?? this.#activeRoomId) ===
+        roomId ||
         hasImportantTaskCue);
 
     for (const [index, chip] of visual.taskChips.entries()) {
@@ -1307,64 +1332,92 @@ export class ManorWorldStage {
     }
   }
 
-  #focusRoom(roomId: RoomId, immediate: boolean) {
-    if (this.#cameraTargetRoomId === roomId && !immediate) {
+  #applyDirectedCameraPlan(
+    plan: DirectedCameraPlan,
+    reason: CameraPlan["reason"],
+  ) {
+    const signature = [
+      plan.activeRoomId ?? "room:none",
+      plan.focusRoomId ?? "focus:none",
+      plan.inspectionRoomId ?? "inspect:none",
+      reason,
+      Math.round(plan.targetX),
+      Math.round(plan.targetY),
+      plan.zoomMultiplier.toFixed(3),
+      plan.transitionMs,
+    ].join(":");
+
+    this.#directedCameraPlan = plan;
+
+    if (plan.transitionMs === 0) {
+      this.#cameraPlanSignature = signature;
+      this.#scene.cameras.main.centerOn(plan.targetX, plan.targetY);
+      this.#scene.cameras.main.setZoom(this.#baseZoom * plan.zoomMultiplier);
       return;
     }
 
-    const room = getRoomRenderData(roomId);
-    this.#cameraTargetRoomId = roomId;
-    const duration = immediate ? 0 : 620;
+    if (this.#cameraPlanSignature === signature) {
+      return;
+    }
 
+    this.#cameraPlanSignature = signature;
     this.#scene.cameras.main.pan(
-      room.cameraAnchor.x,
-      room.cameraAnchor.y,
-      duration,
+      plan.targetX,
+      plan.targetY,
+      plan.transitionMs,
       Phaser.Math.Easing.Cubic.Out,
       true,
     );
     this.#scene.cameras.main.zoomTo(
-      this.#baseZoom * room.focusZoom * 1.08,
-      duration,
+      this.#baseZoom * plan.zoomMultiplier,
+      plan.transitionMs,
       Phaser.Math.Easing.Cubic.Out,
       true,
     );
-    this.#refreshRoomFocus();
-  }
-
-  #focusWholeManor(immediate: boolean) {
-    if (this.#cameraTargetRoomId === null && !immediate) {
-      return;
-    }
-
-    this.#cameraTargetRoomId = null;
-    const duration = immediate ? 0 : 620;
-
-    this.#scene.cameras.main.pan(
-      MANOR_WORLD_BOUNDS.width / 2,
-      MANOR_WORLD_BOUNDS.height / 2,
-      duration,
-      Phaser.Math.Easing.Cubic.Out,
-      true,
-    );
-    this.#scene.cameras.main.zoomTo(
-      this.#baseZoom,
-      duration,
-      Phaser.Math.Easing.Cubic.Out,
-      true,
-    );
-    this.#refreshRoomFocus();
   }
 
   #refreshRoomFocus() {
+    const directedPlan = this.#directedCameraPlan;
+    const focusRoomId = directedPlan?.focusRoomId ?? this.#activeRoomId;
+    const emphasis = directedPlan?.emphasis ?? 0;
+    const roomScaleBoost = directedPlan?.roomScaleBoost ?? 0.014;
+    const dimStrength = directedPlan?.dimStrength ?? 0.12;
+    const doorwayEmphasis = directedPlan?.doorwayEmphasis ?? 0.18;
+    const corridorEmphasis = directedPlan?.corridorEmphasis ?? 0.08;
+    const focusedRoom = focusRoomId ? getRoomRenderData(focusRoomId) : null;
+    const inspectedRoom = this.#inspectedRoomId
+      ? getRoomRenderData(this.#inspectedRoomId)
+      : null;
+
     for (const [roomId, visual] of this.#roomVisuals.entries()) {
-      const focused = this.#activeRoomId === roomId;
+      const active = this.#activeRoomId === roomId;
+      const focused = focusRoomId === roomId;
       const inspected = this.#inspectedRoomId === roomId;
       const hovered = this.#hoveredRoomId === roomId;
       const room = getRoomRenderData(roomId);
-      const scale = inspected ? 1.06 : focused ? 1.022 : hovered ? 1.01 : 1;
-      const dimmed = this.#inspectedRoomId !== null && !inspected;
-      const alpha = dimmed ? (focused ? 0.62 : 0.26) : 1;
+      const scale = inspected
+        ? 1 + roomScaleBoost
+        : focused
+          ? 1 + roomScaleBoost * 0.72
+          : active
+            ? 1 + roomScaleBoost * 0.34
+            : hovered
+              ? 1.012
+              : 1;
+      const alpha =
+        this.#inspectedRoomId !== null
+          ? inspected
+            ? 1
+            : focused
+              ? Math.max(0.58, 1 - dimStrength * 0.52)
+              : Math.max(0.24, 1 - dimStrength)
+          : focused
+            ? 1
+            : active
+              ? 0.95
+              : hovered
+                ? 0.98
+                : 0.92 - emphasis * 0.16;
 
       for (const container of visual.allContainers) {
         container.setScale(scale);
@@ -1373,42 +1426,125 @@ export class ManorWorldStage {
 
       visual.focusBeam
         .setTint(room.surfaces.focusColor)
-        .setAlpha(inspected ? 0.42 : focused ? 0.26 : hovered ? 0.1 : 0);
+        .setAlpha(
+          inspected
+            ? 0.44 + emphasis * 0.18
+            : focused
+              ? 0.22 + emphasis * 0.18
+              : active
+                ? 0.12 + emphasis * 0.08
+                : hovered
+                  ? 0.1
+                  : 0,
+        );
       visual.focusFrame.setStrokeStyle(
         2.4,
         room.surfaces.focusColor,
-        inspected ? 1 : focused ? 0.9 : hovered ? 0.46 : 0,
+        inspected
+          ? 1
+          : focused
+            ? 0.86 + emphasis * 0.1
+            : active
+              ? 0.56 + emphasis * 0.08
+              : hovered
+                ? 0.42
+                : 0,
       );
       visual.hitTarget.setFillStyle(
         0xffffff,
         hovered && !inspected ? 0.04 : 0.001,
       );
       visual.interiorVignette.setAlpha(
-        inspected ? 0.34 : focused ? 0.28 : hovered ? 0.22 : 0.18,
+        inspected
+          ? 0.36 + emphasis * 0.12
+          : focused
+            ? 0.28 + emphasis * 0.08
+            : hovered
+              ? 0.22
+              : 0.18,
       );
       visual.cutawayBacking.setAlpha(
-        inspected ? 0.72 : focused ? 0.58 : hovered ? 0.48 : 0.4,
+        inspected
+          ? 0.72 + emphasis * 0.08
+          : focused
+            ? 0.58 + emphasis * 0.08
+            : active
+              ? 0.48 + emphasis * 0.06
+              : hovered
+                ? 0.48
+                : 0.38,
       );
-      visual.cutawayWall.setAlpha(inspected ? 1 : focused ? 0.94 : 0.86);
+      visual.cutawayWall.setAlpha(
+        inspected ? 1 : focused ? 0.96 : active ? 0.9 : 0.84,
+      );
       visual.cutawayTrim.setFillStyle(
         room.accentColor,
-        inspected ? 0.58 : focused ? 0.46 : 0.24,
+        inspected
+          ? 0.58 + emphasis * 0.06
+          : focused
+            ? 0.46 + emphasis * 0.08
+            : active
+              ? 0.32 + emphasis * 0.04
+              : 0.22,
       );
       visual.titlePlate.setFillStyle(
         room.surfaces.titlePlateColor,
-        inspected ? 0.38 : focused ? 0.31 : 0.22,
+        inspected
+          ? 0.38 + emphasis * 0.04
+          : focused
+            ? 0.31 + emphasis * 0.05
+            : 0.22,
       );
-      visual.title.setScale(inspected ? 1.06 : focused ? 1.02 : 1);
-      visual.theme.setScale(inspected ? 1.04 : focused ? 1.01 : 1);
+      visual.statePlate.setScale(inspected ? 1.02 : focused ? 1.01 : 1);
+      visual.title.setScale(
+        inspected ? 1.06 : focused ? 1.03 : active ? 1.01 : 1,
+      );
+      visual.theme.setScale(inspected ? 1.04 : focused ? 1.02 : 1);
+    }
+
+    for (const visual of this.#corridorVisuals) {
+      const center = {
+        x: visual.segment.x + visual.segment.width / 2,
+        y: visual.segment.y + visual.segment.height / 2,
+      };
+      const focusDistance = focusedRoom
+        ? distanceBetween(center, focusedRoom.cameraAnchor)
+        : Number.POSITIVE_INFINITY;
+      const inspectDistance = inspectedRoom
+        ? distanceBetween(center, inspectedRoom.cameraAnchor)
+        : Number.POSITIVE_INFINITY;
+      const proximity = focusedRoom
+        ? Phaser.Math.Clamp(
+            1 -
+              Math.min(focusDistance, inspectDistance) /
+                (this.#inspectedRoomId ? 360 : 430),
+            0,
+            1,
+          )
+        : 0;
+      const highlight = proximity * corridorEmphasis;
+
+      visual.shellShadow.setAlpha(0.18 + highlight * 0.16);
+      visual.shell.setAlpha(
+        this.#inspectedRoomId !== null
+          ? 0.76 - dimStrength * 0.14 + highlight * 0.12
+          : 0.9 + highlight * 0.06,
+      );
+      visual.floor.setAlpha(
+        this.#inspectedRoomId !== null
+          ? 0.84 - dimStrength * 0.12 + highlight * 0.12
+          : 0.94 + highlight * 0.04,
+      );
+      visual.specular.setAlpha(0.08 + highlight * 0.18);
+      visual.glow.setAlpha(0.08 + highlight * 0.28);
+      visual.trim.setAlpha(0.18 + highlight * 0.48);
     }
 
     for (const visual of this.#doorNodeVisuals) {
       const emphasized =
-        visual.node.roomId === this.#activeRoomId ||
+        visual.node.roomId === focusRoomId ||
         visual.node.roomId === this.#hoveredRoomId ||
-        visual.node.targetRoomIds.includes(
-          this.#activeRoomId ?? visual.node.roomId,
-        ) ||
+        visual.node.targetRoomIds.includes(focusRoomId ?? visual.node.roomId) ||
         visual.node.targetRoomIds.includes(
           this.#hoveredRoomId ?? visual.node.roomId,
         );
@@ -1422,23 +1558,39 @@ export class ManorWorldStage {
         inspected
           ? visual.node.alpha
           : emphasized
-            ? visual.node.alpha
-            : visual.node.alpha * 0.74,
+            ? visual.node.alpha * (0.82 + doorwayEmphasis * 0.2)
+            : visual.node.alpha * (0.56 + doorwayEmphasis * 0.08),
       );
       visual.thresholdArt.setAlpha(
         inspected
-          ? visual.node.alpha * 0.78
+          ? visual.node.alpha * (0.82 + doorwayEmphasis * 0.12)
           : emphasized
-            ? visual.node.alpha * 0.66
-            : visual.node.alpha * 0.26,
+            ? visual.node.alpha * (0.58 + doorwayEmphasis * 0.18)
+            : visual.node.alpha * (0.18 + doorwayEmphasis * 0.08),
       );
       visual.frame.setStrokeStyle(
         2,
         visual.node.stroke ?? 0xe4c391,
-        inspected ? 0.72 : emphasized ? 0.6 : 0.22,
+        inspected
+          ? 0.7 + doorwayEmphasis * 0.14
+          : emphasized
+            ? 0.5 + doorwayEmphasis * 0.18
+            : 0.18 + doorwayEmphasis * 0.06,
       );
-      visual.glow.setAlpha(inspected ? 0.22 : emphasized ? 0.14 : 0.03);
-      visual.marker.setAlpha(inspected ? 1 : emphasized ? 0.92 : 0.42);
+      visual.glow.setAlpha(
+        inspected
+          ? 0.16 + doorwayEmphasis * 0.16
+          : emphasized
+            ? 0.08 + doorwayEmphasis * 0.2
+            : 0.02 + doorwayEmphasis * 0.06,
+      );
+      visual.marker.setAlpha(
+        inspected
+          ? 1
+          : emphasized
+            ? 0.78 + doorwayEmphasis * 0.16
+            : 0.32 + doorwayEmphasis * 0.08,
+      );
     }
   }
 
@@ -1459,20 +1611,20 @@ export class ManorWorldStage {
       this.#soundBus.syncAmbience(
         deriveAmbienceState({
           snapshot: this.#lastSnapshot,
-          focusedRoomId: this.#inspectedRoomId ?? this.#activeRoomId,
+          focusedRoomId:
+            this.#directedCameraPlan?.focusRoomId ?? this.#activeRoomId,
           stormLevel: 0.72 + this.#stormPressure * 0.28,
         }),
       );
     }
 
-    if (this.#cameraTargetRoomId) {
-      const focusedRoom = getRoomRenderData(this.#cameraTargetRoomId);
+    if (this.#directedCameraPlan) {
       this.#scene.cameras.main.centerOn(
-        focusedRoom.cameraAnchor.x,
-        focusedRoom.cameraAnchor.y,
+        this.#directedCameraPlan.targetX,
+        this.#directedCameraPlan.targetY,
       );
       this.#scene.cameras.main.setZoom(
-        this.#baseZoom * focusedRoom.focusZoom * 1.08,
+        this.#baseZoom * this.#directedCameraPlan.zoomMultiplier,
       );
       return;
     }
