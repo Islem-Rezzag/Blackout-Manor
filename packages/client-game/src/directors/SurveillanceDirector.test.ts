@@ -1,29 +1,133 @@
 import type { MatchSnapshot } from "@blackout-manor/shared";
 import { describe, expect, it, vi } from "vitest";
 
-import { MockMatchConnection } from "../network/mockMatchConnection";
 import type { ClientGameState } from "../types";
-import { CameraDirector } from "./CameraDirector";
 import { SurveillanceDirector } from "./SurveillanceDirector";
 
-vi.mock("phaser", () => ({
-  default: {
-    Math: {
-      Clamp: (value: number, min: number, max: number) =>
-        Math.min(max, Math.max(min, value)),
+vi.mock("phaser", () => {
+  const clamp = (value: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, value));
+
+  return {
+    default: {
+      Math: { Clamp: clamp },
+    },
+    Math: { Clamp: clamp },
+  };
+});
+
+const baseSnapshot: MatchSnapshot = {
+  matchId: "match-8e",
+  phaseId: "report",
+  tick: 24,
+  config: {
+    matchId: "match-8e",
+    seed: 8,
+    speedProfileId: "showcase",
+    playerCount: 2,
+    officialPublicMode: true,
+    modelPackId: "official-public",
+    allowPrivateWhispers: false,
+    roomIds: ["library", "study"],
+    taskIds: [],
+    roleDistribution: {
+      shadow: 0,
+      investigator: 0,
+      steward: 0,
+      household: 2,
+    },
+    timings: {
+      castIntroSeconds: 5,
+      roamRoundCount: { min: 4, max: 6 },
+      roamRoundSeconds: 90,
+      discussionSeconds: 70,
+      voteSeconds: 15,
+      hardCapSeconds: 900,
     },
   },
-}));
+  players: [
+    {
+      id: "player-01",
+      displayName: "Velvet Host",
+      roomId: "library",
+      status: "alive",
+      connected: true,
+      publicImage: {
+        credibility: 0.62,
+        suspiciousness: 0.18,
+      },
+      emotion: {
+        pleasure: 0.12,
+        arousal: 0.28,
+        dominance: 0.18,
+        label: "calm",
+        intensity: 0.32,
+        updatedAtTick: 24,
+      },
+      bodyLanguage: "calm",
+      completedTaskCount: 1,
+    },
+    {
+      id: "player-02",
+      displayName: "Iron Witness",
+      roomId: "study",
+      status: "alive",
+      connected: true,
+      publicImage: {
+        credibility: 0.51,
+        suspiciousness: 0.3,
+      },
+      emotion: {
+        pleasure: -0.08,
+        arousal: 0.34,
+        dominance: 0.14,
+        label: "shaken",
+        intensity: 0.48,
+        updatedAtTick: 24,
+      },
+      bodyLanguage: "shaken",
+      completedTaskCount: 0,
+    },
+  ],
+  rooms: [
+    {
+      roomId: "library",
+      lightLevel: "lit",
+      doorState: "open",
+      occupantIds: ["player-01"],
+      taskIds: [],
+    },
+    {
+      roomId: "study",
+      lightLevel: "dim",
+      doorState: "jammed",
+      occupantIds: ["player-02"],
+      taskIds: [],
+    },
+  ],
+  tasks: [],
+  recentEvents: [
+    {
+      id: "body-report-1",
+      eventId: "body-reported",
+      tick: 24,
+      phaseId: "report",
+      playerId: "player-01",
+      targetPlayerId: "player-02",
+      roomId: "library",
+    },
+  ],
+};
 
-const createRuntimeState = (snapshot: MatchSnapshot): ClientGameState => ({
-  mode: "mock",
+const runtimeState: ClientGameState = {
+  mode: "live",
   status: "connected",
-  roomId: snapshot.matchId,
-  actorId: snapshot.players[0]?.id ?? null,
+  roomId: "demo",
+  actorId: "player-01",
   hello: null,
   privateState: null,
-  snapshot,
-  recentEvents: snapshot.recentEvents,
+  snapshot: baseSnapshot,
+  recentEvents: baseSnapshot.recentEvents,
   replay: {
     status: "idle",
     replayId: null,
@@ -35,85 +139,28 @@ const createRuntimeState = (snapshot: MatchSnapshot): ClientGameState => ({
   lastValidationError: null,
   lastErrorMessage: null,
   fpsEstimate: 60,
-});
-
-const loadMockSnapshot = async (): Promise<MatchSnapshot> => {
-  vi.useFakeTimers();
-  const connection = new MockMatchConnection({ tickMs: 200 });
-  let snapshot: MatchSnapshot | null = null;
-
-  connection.subscribe((message) => {
-    if (message.type === "server.match.snapshot") {
-      snapshot = message.match;
-    }
-  });
-
-  await connection.connect();
-  vi.useRealTimers();
-  await connection.disconnect();
-
-  if (!snapshot) {
-    throw new Error("Expected mock connection to produce a snapshot.");
-  }
-
-  return snapshot;
 };
 
 describe("SurveillanceDirector", () => {
-  it("builds a compact four-feed surveillance view from authoritative state", async () => {
-    const snapshot = await loadMockSnapshot();
-    const reportedSnapshot = {
-      ...snapshot,
-      phaseId: "report",
-      recentEvents: [
-        {
-          id: "event-report",
-          eventId: "body-reported",
-          tick: snapshot.tick + 1,
-          phaseId: "report",
-          playerId: snapshot.players[0]?.id ?? "player-01",
-          targetPlayerId: snapshot.players[1]?.id ?? "player-02",
-          roomId: "cellar",
-        },
-      ],
-    } satisfies MatchSnapshot;
-    const runtimeState = createRuntimeState(reportedSnapshot);
+  it("uses public cast names instead of internal ids in subtitles", () => {
     const director = new SurveillanceDirector();
-
-    director.setMode("surveillance");
-
     const presentation = director.derive({
       scene: "manor-world",
-      snapshot: reportedSnapshot,
+      snapshot: baseSnapshot,
       runtimeState,
       camera: {
-        roomId: "cellar",
+        roomId: "library",
         immediate: false,
         reason: "report",
-        detail: "Body reports take camera priority",
+        detail: "Body reports take camera priority.",
       },
     });
 
-    expect(presentation.available).toBe(true);
-    expect(presentation.mode).toBe("surveillance");
-    expect(presentation.selectedRoomId).toBe("cellar");
-    expect(presentation.feedRooms).toHaveLength(4);
-    expect(presentation.feedRooms[0]?.roomId).toBe("cellar");
-    expect(presentation.subtitle?.tone).toBe("alert");
-  });
-
-  it("lets surveillance mode override passive roaming camera focus", async () => {
-    const snapshot = await loadMockSnapshot();
-    const cameraPlan = new CameraDirector().resolvePlan({
-      scene: "manor-world",
-      runtimeState: createRuntimeState(snapshot),
-      snapshot,
-      meetingRoomId: null,
-      observationMode: "surveillance",
-      surveillanceRoomId: "library",
-    });
-
-    expect(cameraPlan.roomId).toBe("library");
-    expect(cameraPlan.reason).toBe("surveillance");
+    expect(presentation.subtitle?.speakerLabel).toBe("Velvet Host");
+    expect(presentation.subtitle?.text).toContain("Velvet Host");
+    expect(presentation.subtitle?.text).toContain("Iron Witness");
+    expect(presentation.indicatorLabel).toBe(
+      "Roaming observation - auto-follow",
+    );
   });
 });

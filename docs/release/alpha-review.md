@@ -36,6 +36,11 @@ Blackout Manor is currently a spectator-first alpha on the `feat/world-first-run
 - this is not the final public release
 - merge/release packaging docs are still being tightened
 
+## Deferred After 8E
+- final painted environment shells, portraits, and bespoke sprite animation are still deferred to post-alpha production art
+- surveillance cards now read more coherently, but they still rely on simplified feed abstraction rather than final monitor-wall art direction
+- the public audio layer is showcase-safe and readable, but it is not a final authored Foley or music pass
+
 ## Important Boundaries
 - live routes are `/game` and `/game/[roomId]`
 - replay and fairness live behind `/dev`

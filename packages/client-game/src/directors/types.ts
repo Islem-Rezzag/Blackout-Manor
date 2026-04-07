@@ -66,6 +66,7 @@ export type ReplayPresentation = {
 export type VisibleSubtitle = {
   text: string;
   speakerId: PlayerId | null;
+  speakerLabel: string | null;
   roomId: RoomId | null;
   tone: "speech" | "alert" | "status";
 };

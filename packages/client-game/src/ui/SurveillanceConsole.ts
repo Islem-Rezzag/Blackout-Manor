@@ -6,6 +6,7 @@ import type {
   SurveillancePresentation,
 } from "../directors/types";
 import { resolveAvatarAppearance } from "../entities/avatar/presentation";
+import { getImportedRoomArt } from "../stage/importedArt";
 import { createFeedPalette } from "../stage/renderTheme";
 import { getRoomRenderData, getRoomSeatPosition } from "../tiled/manorLayout";
 
@@ -21,9 +22,9 @@ type FeedCard = {
   status: Phaser.GameObjects.Text;
   frame: Phaser.GameObjects.Rectangle;
   shell: Phaser.GameObjects.Image;
-  floor: Phaser.GameObjects.Rectangle;
+  floor: Phaser.GameObjects.Image;
   accent: Phaser.GameObjects.Rectangle;
-  cutaway: Phaser.GameObjects.Rectangle;
+  cutaway: Phaser.GameObjects.Image;
   dust: Phaser.GameObjects.Image;
   specular: Phaser.GameObjects.Image;
   marker: Phaser.GameObjects.Text;
@@ -202,27 +203,19 @@ export class SurveillanceConsole {
       .setDisplaySize(CARD_WIDTH - 8, CARD_HEIGHT - 26)
       .setAlpha(0.94);
     const frame = this.#scene.add
-      .rectangle(0, 18, CARD_WIDTH - 24, 78, 0x0e151b, 0.96)
+      .rectangle(0, 18, CARD_WIDTH - 24, 78, 0x0e151b, 0.9)
       .setStrokeStyle(1, 0x73a8c9, 0.14);
-    const floor = this.#scene.add.rectangle(
-      0,
-      18,
-      CARD_WIDTH - 36,
-      62,
-      0x24303a,
-      1,
-    );
+    const floor = this.#scene.add
+      .image(0, 18, "floor-grand-hall")
+      .setDisplaySize(CARD_WIDTH - 36, 62)
+      .setAlpha(0.92);
     const accent = this.#scene.add
       .rectangle(0, 18, CARD_WIDTH - 58, 34, 0x365062, 0.2)
       .setBlendMode(Phaser.BlendModes.SCREEN);
-    const cutaway = this.#scene.add.rectangle(
-      0,
-      -7,
-      CARD_WIDTH - 30,
-      18,
-      0x4c5a64,
-      0.88,
-    );
+    const cutaway = this.#scene.add
+      .image(0, -7, "wall-grand-hall")
+      .setDisplaySize(CARD_WIDTH - 30, 18)
+      .setAlpha(0.9);
     const dust = this.#scene.add
       .image(0, 18, "room-dust")
       .setDisplaySize(CARD_WIDTH - 44, 60)
@@ -310,6 +303,7 @@ export class SurveillanceConsole {
     const marker = markerLabel(feed);
     const markerStyle = markerColor(feed);
     const room = getRoomRenderData(feed.roomId);
+    const roomArt = getImportedRoomArt(feed.roomId);
     const palette = createFeedPalette({
       room,
       lightLevel: feed.lightLevel,
@@ -332,9 +326,13 @@ export class SurveillanceConsole {
       palette.plateStroke,
       feed.selected ? 0.3 : 0.14,
     );
-    card.floor.setFillStyle(palette.frameFill, 1);
+    card.floor.setTexture(roomArt.floorKey);
+    card.floor.setTint(palette.frameFill);
+    card.floor.setAlpha(feed.selected ? 0.98 : 0.92);
     card.accent.setFillStyle(palette.accentFill, 0.22);
-    card.cutaway.setFillStyle(palette.cutawayFill, 0.9);
+    card.cutaway.setTexture(roomArt.wallKey);
+    card.cutaway.setTint(palette.cutawayFill);
+    card.cutaway.setAlpha(feed.selected ? 0.94 : 0.88);
     card.dust.setTint(palette.dustTint);
     card.specular.setTint(room.ambienceColor);
     card.marker.setText(marker || `${feed.lightLevel.toUpperCase()}`);

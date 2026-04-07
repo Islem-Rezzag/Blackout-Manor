@@ -166,6 +166,69 @@ const doorLabel = (
   }
 };
 
+export const deriveObservationHudLayout = (options: {
+  camera: CameraPlan;
+  inspection: InspectionPresentation;
+  surveillance: SurveillancePresentation;
+  hasSubtitle: boolean;
+}) => {
+  const { camera, hasSubtitle, inspection, surveillance } = options;
+  const inspecting = inspection.mode === "inspect";
+  const strongFocus =
+    inspecting ||
+    ["report", "sabotage", "meeting", "endgame"].includes(camera.reason);
+  const flaggedIndicatorCount = surveillance.statusIndicators.filter(
+    (indicator) => indicator.flagged,
+  ).length;
+
+  return {
+    inspecting,
+    strongFocus,
+    showFallbackSubtitle:
+      !hasSubtitle && (surveillance.mode === "surveillance" || strongFocus),
+    showSubtitle:
+      hasSubtitle || surveillance.mode === "surveillance" || strongFocus,
+    expandedSubtitle: hasSubtitle
+      ? strongFocus
+      : surveillance.mode === "surveillance" || strongFocus,
+    maxStatusChips:
+      surveillance.mode === "surveillance"
+        ? 3
+        : strongFocus
+          ? 2
+          : Math.min(2, flaggedIndicatorCount),
+  };
+};
+
+export const selectObservationStatusIndicators = (options: {
+  surveillance: SurveillancePresentation;
+  strongFocus: boolean;
+  maxStatusChips: number;
+}) => {
+  const { maxStatusChips, strongFocus, surveillance } = options;
+
+  if (maxStatusChips <= 0) {
+    return [] as const;
+  }
+
+  if (surveillance.mode === "surveillance") {
+    return surveillance.statusIndicators.slice(0, maxStatusChips);
+  }
+
+  const flaggedIndicators = surveillance.statusIndicators.filter(
+    (indicator) => indicator.flagged,
+  );
+
+  if (!strongFocus) {
+    return flaggedIndicators.slice(0, maxStatusChips);
+  }
+
+  return [
+    ...flaggedIndicators,
+    ...surveillance.statusIndicators.filter((indicator) => !indicator.flagged),
+  ].slice(0, maxStatusChips);
+};
+
 export class ObservationHud {
   readonly #statePlate: Phaser.GameObjects.Container;
   readonly #stateBackplate: Phaser.GameObjects.Rectangle;
@@ -287,10 +350,13 @@ export class ObservationHud {
       surveillance,
       timerText,
     } = content;
-    const inspecting = inspection.mode === "inspect";
-    const strongFocus =
-      inspecting ||
-      ["report", "sabotage", "meeting", "endgame"].includes(camera.reason);
+    const subtitle = surveillance.subtitle;
+    const layout = deriveObservationHudLayout({
+      camera,
+      inspection,
+      surveillance,
+      hasSubtitle: Boolean(subtitle),
+    });
     const plateTone = cameraPlateTone[camera.reason];
     const viewModeLabel =
       surveillance.mode === "surveillance"
@@ -302,77 +368,96 @@ export class ObservationHud {
       .filter((value): value is string => Boolean(value))
       .join(" | ");
     const narrativeText = contextText ?? inspection.detail;
-    const stateHintText = strongFocus
+    const stateHintText = layout.strongFocus
       ? `${camera.detail} | ${hintLine(surveillance.mode, inspection)}`
       : `${narrativeText} | ${hintLine(surveillance.mode, inspection)}`;
+    const visibleIndicators = selectObservationStatusIndicators({
+      surveillance,
+      strongFocus: layout.strongFocus,
+      maxStatusChips: layout.maxStatusChips,
+    });
 
     this.#stateEyebrow.setText(`${phaseLabel} | ${viewModeLabel}`);
     this.#stateTitle.setText(cameraTitle(camera, inspection, surveillance));
     this.#stateDetail.setText(stateDetailText);
     this.#stateHint.setText(stateHintText);
-    this.#stateBackplate.setDisplaySize(strongFocus ? 556 : 580, 124);
+    this.#stateBackplate.setDisplaySize(layout.strongFocus ? 556 : 580, 124);
     this.#stateBackplate.setFillStyle(
       plateTone.fill,
-      strongFocus ? 0.86 : 0.82,
+      layout.strongFocus ? 0.86 : 0.82,
     );
     this.#stateBackplate.setStrokeStyle(
       1,
       plateTone.stroke,
-      strongFocus ? 0.28 : 0.22,
+      layout.strongFocus ? 0.28 : 0.22,
     );
     this.#stateEyebrow.setColor(plateTone.eyebrow);
     this.#stateDetail.setColor("#dfe6ee");
     this.#stateHint.setColor(plateTone.hint);
 
-    const subtitle = surveillance.subtitle;
-    const expandedSubtitle = inspecting || strongFocus;
     if (subtitle) {
       const tone = toneColors[subtitle.tone];
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        expandedSubtitle ? 1000 : 960,
-        expandedSubtitle ? 82 : 68,
+        layout.expandedSubtitle ? 1000 : 960,
+        layout.expandedSubtitle ? 82 : 68,
       );
       this.#subtitlePlate.setFillStyle(tone.fill, 0.84);
       this.#subtitlePlate.setStrokeStyle(1, tone.stroke, 0.28);
       this.#subtitleSpeaker.setColor(tone.text);
       this.#subtitleText.setColor(tone.text);
-      this.#subtitleSpeaker.setFontSize(expandedSubtitle ? "13px" : "12px");
-      this.#subtitleText.setFontSize(expandedSubtitle ? "16px" : "15px");
-      this.#subtitleText.setWordWrapWidth(expandedSubtitle ? 920 : 878);
+      this.#subtitleSpeaker.setFontSize(
+        layout.expandedSubtitle ? "13px" : "12px",
+      );
+      this.#subtitleText.setFontSize(layout.expandedSubtitle ? "16px" : "15px");
+      this.#subtitleText.setWordWrapWidth(layout.expandedSubtitle ? 920 : 878);
       this.#subtitleSpeaker.setText(
-        subtitle.speakerId
-          ? `${subtitle.speakerId.toUpperCase()}`
-          : subtitle.tone === "alert"
-            ? "MANOR ALERT"
-            : "PUBLIC SIGNAL",
+        subtitle.speakerLabel ??
+          (subtitle.speakerId
+            ? `${subtitle.speakerId.toUpperCase()}`
+            : subtitle.tone === "alert"
+              ? "MANOR ALERT"
+              : "PUBLIC SIGNAL"),
       );
       this.#subtitleText.setText(subtitle.text);
-    } else {
+    } else if (layout.showFallbackSubtitle) {
       this.#subtitleContainer.setVisible(true);
       this.#subtitlePlate.setDisplaySize(
-        expandedSubtitle ? 1000 : 960,
-        expandedSubtitle ? 82 : 68,
+        layout.expandedSubtitle ? 920 : 860,
+        layout.expandedSubtitle ? 66 : 54,
       );
-      this.#subtitlePlate.setFillStyle(0x061018, 0.8);
-      this.#subtitlePlate.setStrokeStyle(1, 0xa1c4d9, 0.16);
-      this.#subtitleSpeaker.setColor("#a5cadf");
+      this.#subtitlePlate.setFillStyle(
+        surveillance.mode === "surveillance" ? 0x08141c : 0x061018,
+        0.78,
+      );
+      this.#subtitlePlate.setStrokeStyle(
+        1,
+        surveillance.mode === "surveillance" ? 0x7cb9d9 : 0xa1c4d9,
+        0.2,
+      );
+      this.#subtitleSpeaker.setColor(
+        surveillance.mode === "surveillance" ? "#9fd7f0" : "#a5cadf",
+      );
       this.#subtitleText.setColor("#dfe6ee");
-      this.#subtitleSpeaker.setFontSize(expandedSubtitle ? "13px" : "12px");
-      this.#subtitleText.setFontSize(expandedSubtitle ? "16px" : "15px");
-      this.#subtitleText.setWordWrapWidth(expandedSubtitle ? 920 : 878);
-      this.#subtitleSpeaker.setText("OBSERVATION");
+      this.#subtitleSpeaker.setFontSize("11px");
+      this.#subtitleText.setFontSize(layout.expandedSubtitle ? "14px" : "13px");
+      this.#subtitleText.setWordWrapWidth(layout.expandedSubtitle ? 836 : 780);
+      this.#subtitleSpeaker.setText(
+        surveillance.mode === "surveillance" ? "CAMERA NOTE" : "ROOM NOTE",
+      );
       this.#subtitleText.setText(
         surveillance.mode === "surveillance"
-          ? "The console keeps several rooms live while the main camera stays locked to the selected feed."
+          ? "The selected public feed stays locked while the monitor wall keeps the next priority rooms visible."
           : inspection.mode === "inspect"
-            ? "Room focus enlarges public speech, cast silhouettes, and task readability without exposing any hidden-role data."
-            : "The whole manor stays visible while public room activity remains framed across the house.",
+            ? "Room focus favors cast spacing, task props, and the nearest threshold before returning to the full manor."
+            : "Public event framing lingers long enough to keep the manor readable before the camera releases back to overview.",
       );
+    } else {
+      this.#subtitleContainer.setVisible(false);
     }
 
     for (const [index, chip] of this.#statusChips.entries()) {
-      const indicator = surveillance.statusIndicators[index];
+      const indicator = visibleIndicators[index];
 
       if (!indicator) {
         chip.container.setVisible(false);
@@ -384,14 +469,25 @@ export class ObservationHud {
       chip.detail.setText(
         `${indicator.occupantCount} present | ${lightLabel(indicator.lightLevel)} | ${doorLabel(indicator.doorState)}`,
       );
+      chip.plate.setDisplaySize(
+        surveillance.mode === "surveillance" ? 232 : 220,
+        surveillance.mode === "surveillance" ? 60 : 56,
+      );
       chip.plate.setFillStyle(
         indicator.flagged ? 0x1d1415 : 0x071018,
-        indicator.flagged ? 0.84 : 0.72,
+        indicator.flagged ? 0.84 : 0.7,
       );
       chip.plate.setStrokeStyle(
         1,
         indicator.flagged ? 0xe49781 : 0x73a8c9,
         indicator.flagged ? 0.3 : 0.16,
+      );
+      chip.container.setAlpha(
+        surveillance.mode === "surveillance"
+          ? 1
+          : indicator.flagged
+            ? 0.92
+            : 0.82,
       );
     }
   }

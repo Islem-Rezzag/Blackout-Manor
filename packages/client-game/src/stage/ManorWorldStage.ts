@@ -1103,6 +1103,16 @@ export class ManorWorldStage {
       focused,
     });
     const lightFactor = lightLevelToFactor(roomState.lightLevel);
+    const attentionActive =
+      signal.body ||
+      signal.sabotage ||
+      signal.clue ||
+      roomState.lightLevel !== "lit" ||
+      roomState.doorState !== "open";
+    const occupied = roomState.occupantIds.length > 0;
+    const crowded = roomState.occupantIds.length >= 3;
+    const showTheme = focused || attentionActive || crowded;
+    const showState = focused || attentionActive || crowded;
 
     visual.shell.setTint(palette.shellFill);
     visual.shell.setAlpha(0.97);
@@ -1149,11 +1159,32 @@ export class ManorWorldStage {
       focused ? 0.16 : 0.1,
     );
     visual.title.setColor(lightFactor < 0.2 ? "#f0f4f7" : "#f5f0e4");
-    visual.theme.setAlpha(0.72 + lightFactor * 0.16 + (focused ? 0.06 : 0));
+    visual.title.setAlpha(
+      signal.body || signal.sabotage
+        ? 1
+        : focused
+          ? 0.98
+          : occupied
+            ? 0.92
+            : 0.8,
+    );
+    visual.titlePlate.setAlpha(
+      focused ? 1 : attentionActive || occupied ? 0.92 : 0.74,
+    );
+    visual.theme.setVisible(showTheme);
+    visual.theme.setAlpha(
+      showTheme ? 0.72 + lightFactor * 0.16 + (focused ? 0.06 : 0) : 0,
+    );
     visual.state.setText(
       `${describeSignalLabel(roomState, signal)} | ${roomState.occupantIds.length} present`,
     );
     visual.state.setColor(focused ? "#eef4fb" : "#d8e2eb");
+    visual.statePlate.setVisible(showState);
+    visual.state.setVisible(showState);
+    visual.statePlate.setAlpha(
+      showState ? (focused ? 1 : attentionActive ? 0.92 : 0.8) : 0,
+    );
+    visual.state.setAlpha(showState ? (focused ? 1 : 0.92) : 0);
 
     for (const [index, shadow] of visual.decorShadows.entries()) {
       const decor = room.decor[index];

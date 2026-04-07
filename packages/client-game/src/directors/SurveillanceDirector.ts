@@ -4,6 +4,7 @@ import type {
   RoomId,
 } from "@blackout-manor/shared";
 import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
+
 import {
   createRoomSignalMap,
   describeSignalLabel,
@@ -105,6 +106,15 @@ const roomPriority = (options: {
   return priority;
 };
 
+const playerLabel = (
+  snapshot: MatchSnapshot,
+  playerId: PublicPlayerState["id"] | null | undefined,
+) =>
+  playerId
+    ? (snapshot.players.find((player) => player.id === playerId)?.displayName ??
+      playerId)
+    : null;
+
 const buildSubtitle = (snapshot: MatchSnapshot): VisibleSubtitle | null => {
   for (const event of [...snapshot.recentEvents].reverse()) {
     switch (event.eventId) {
@@ -112,13 +122,15 @@ const buildSubtitle = (snapshot: MatchSnapshot): VisibleSubtitle | null => {
         return {
           text: event.text,
           speakerId: event.playerId,
+          speakerLabel: playerLabel(snapshot, event.playerId),
           roomId: null,
           tone: "speech",
         };
       case "body-reported":
         return {
-          text: `${event.playerId} reports ${event.targetPlayerId} in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
+          text: `${playerLabel(snapshot, event.playerId) ?? "A witness"} reports ${playerLabel(snapshot, event.targetPlayerId) ?? "a body"} in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
           speakerId: event.playerId,
+          speakerLabel: playerLabel(snapshot, event.playerId),
           roomId: event.roomId,
           tone: "alert",
         };
@@ -126,20 +138,23 @@ const buildSubtitle = (snapshot: MatchSnapshot): VisibleSubtitle | null => {
         return {
           text: `${readableTaskLabel(event.actionId)} disturbs ${event.roomId ? DEFAULT_ROOM_LABELS[event.roomId] : "the manor"}.`,
           speakerId: null,
+          speakerLabel: null,
           roomId: event.roomId ?? null,
           tone: "alert",
         };
       case "task-completed":
         return {
-          text: `${event.playerId} finishes ${readableTaskLabel(event.taskId)} in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
+          text: `${playerLabel(snapshot, event.playerId) ?? "A witness"} finishes ${readableTaskLabel(event.taskId)} in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
           speakerId: event.playerId,
+          speakerLabel: playerLabel(snapshot, event.playerId),
           roomId: event.roomId,
           tone: "status",
         };
       case "clue-discovered":
         return {
-          text: `${event.playerId} surfaces a clue in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
+          text: `${playerLabel(snapshot, event.playerId) ?? "A witness"} surfaces a clue in ${DEFAULT_ROOM_LABELS[event.roomId]}.`,
           speakerId: event.playerId,
+          speakerLabel: playerLabel(snapshot, event.playerId),
           roomId: event.roomId,
           tone: "status",
         };
@@ -319,8 +334,8 @@ export class SurveillanceDirector {
       subtitle: buildSubtitle(snapshot),
       indicatorLabel:
         this.#mode === "surveillance"
-          ? `Surveillance console · ${feedRooms.length} feeds`
-          : "Roaming observation · auto-follow",
+          ? `Surveillance console - ${feedRooms.length} feeds`
+          : "Roaming observation - auto-follow",
       cameraLabel:
         this.#mode === "surveillance"
           ? `${DEFAULT_ROOM_LABELS[finalSelectedRoomId ?? camera.roomId ?? snapshot.rooms[0]?.roomId ?? "grand-hall"]} feed`
