@@ -1,0 +1,7 @@
+interface:
+  display_name: "Production Art Guard"
+  short_description: "Guide premium visual polish without breaking game or benchmark boundaries."
+  brand_color: "#D97706"
+  default_prompt: "Audit this visual/polish change for readability, composition, legal safety, and benchmark-safe game-first presentation."
+policy:
+  allow_implicit_invocation: true

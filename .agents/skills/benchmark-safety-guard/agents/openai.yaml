@@ -1,0 +1,7 @@
+interface:
+  display_name: "Benchmark Safety Guard"
+  short_description: "Protect live/dev route boundaries and replay safety."
+  brand_color: "#B91C1C"
+  default_prompt: "Verify that this change does not leak analytics, hidden-role info, or replay-only interpretation into /game."
+policy:
+  allow_implicit_invocation: true

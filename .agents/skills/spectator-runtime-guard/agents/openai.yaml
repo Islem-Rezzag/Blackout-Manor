@@ -1,0 +1,7 @@
+interface:
+  display_name: "Spectator Runtime Guard"
+  short_description: "Protect the live runtime from dashboard drift and benchmark leakage."
+  brand_color: "#0F766E"
+  default_prompt: "Check that this runtime change preserves game-first spectator presentation and does not leak dev tooling into /game."
+policy:
+  allow_implicit_invocation: true

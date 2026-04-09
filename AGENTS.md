@@ -1,7 +1,13 @@
 # Blackout Manor Agent Guide
 
-## Product Surface
+## Read First
+- Start with `START_HERE.md` for the current repo reading order.
+- Use `docs/ACTIVE_DOCS.md` to determine which docs are active guidance versus supporting reference.
+- Read `docs/project/PROJECT_CHARTER.md` before making milestone or planning decisions.
 - Before changing `packages/client-game` presentation, read `docs/design/SPECTATOR_MODE_BIBLE.md`.
+- Before changing live versus dev route boundaries, replay surfaces, fairness, or analytics placement, read `docs/architecture/benchmark-safety.md`.
+
+## Product Surface
 - `packages/client-game` is the primary product surface.
 - `apps/web` is only a thin shell that boots the runtime, provides route entry points, and mounts non-default secondary tools.
 - `/game/[roomId]` is the primary live match route.

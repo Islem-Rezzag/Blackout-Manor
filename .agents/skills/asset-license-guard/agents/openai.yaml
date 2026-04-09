@@ -1,0 +1,7 @@
+interface:
+  display_name: "Asset License Guard"
+  short_description: "Protect legal clarity and provenance for imported assets."
+  brand_color: "#7C3AED"
+  default_prompt: "Check this asset change for license safety, source clarity, and required documentation updates."
+policy:
+  allow_implicit_invocation: true

@@ -2,7 +2,26 @@
 
 Blackout Manor is currently a spectator-first AI social-deduction alpha. Ten AI agents move through a storm-locked manor, perform evidence-generating tasks, lie, accuse, panic, vote, and leave behind deterministic replay data for review. The main experience on this branch is a real full-screen Phaser runtime, not a dashboard.
 
-Current review target: `feat/world-first-runtime`. This branch is the merge candidate for `main`.
+Current review target: `feat/production-art-gap-audit`. This branch is the merge candidate for `main`.
+
+## Production-Art Branch Status
+
+### What 8A Through 8E Accomplished
+- `8A` locked the production-art gap audit, replacement priorities, and toolchain recommendation
+- `8B` replaced the most generic manor baseline with a more bespoke environment pass
+- `8C` replaced the weakest placeholder cast presentation with a stronger authored identity pass
+- `8D` directed camera framing, mode transitions, and pacing for spectator readability
+- `8E` closed alpha-showcase QA on whole-manor readability, surveillance/HUD clarity, and public presentation consistency
+
+### What Is Still Intentionally Alpha-Quality
+- some environment, portrait, and UI presentation still depends on approved baseline or procedural assets rather than final painted art
+- surveillance still uses simplified public feed cards rather than a fully bespoke monitor-wall presentation
+- public audio is showcase-safe and readable, but not yet final Foley or music mastering
+
+### What Is Deferred After Merge
+- final painted manor shells, portraits, and bespoke sprite animation
+- final surveillance console art direction and monitor-wall treatment
+- final authored audio pass and any post-alpha visual mastering
 
 ## What Blackout Manor Is Right Now
 - A game-first launcher at `/`
@@ -122,13 +141,19 @@ Then open [http://127.0.0.1:3000/dev/fairness](http://127.0.0.1:3000/dev/fairnes
   - room inspection mode
   - baseline asset and license integration
   - benchmark-safety hardening
+- Production-art phase through Milestone `8E`
+  - production-art gap audit and replacement plan
+  - bespoke environment replacement pass
+  - authored character replacement pass
+  - spectator camera and pacing direction pass
+  - alpha visual QA and showcase-readiness pass
 - Public launcher
 - Replay-backed EQ analytics in dev fairness tooling
 
 ### Still Placeholder Or Alpha-Quality
 - Placeholder or procedural assets still exist in parts of the presentation stack
-- Approved baseline imports are in place, but not all final bespoke manor art/audio is done
-- Tooling and docs are strong enough for alpha review and merge review, but not yet final-release polished
+- Approved baseline imports are in place, but not all final bespoke manor art, portraits, surveillance framing, and audio are done
+- Tooling and docs are strong enough for alpha review, PR review, and merge review, but not yet final-release polished
 - The branch is ready for spectator-first alpha review, not for a finished public launch
 
 ## Release Hardening Notes
@@ -150,6 +175,7 @@ pnpm ci:quality
   - hidden-role analytics and private reasoning stay out of live mode
 - Merge target:
   - this branch is being packaged for merge review into `main`, not presented as a final public release branch
+  - the branch is ready for PR review as an alpha-quality production-art baseline
 
 ## Fairness And EQ Reports
 - `pnpm fairness:report` exports both balance metrics and replay-backed EQ metrics for `/dev/fairness`.
@@ -190,6 +216,10 @@ pnpm fairness:check
 ```
 
 ## Documentation
+- [Start Here](./START_HERE.md)
+- [Active Docs Boundary](./docs/ACTIVE_DOCS.md)
+- [Project Charter](./docs/project/PROJECT_CHARTER.md)
+- [Roadmap](./plans/ROADMAP.md)
 - [Local Quickstart](./docs/local-quickstart.md)
 - [Alpha Review Guide](./docs/release/alpha-review.md)
 - [Merge Readiness Checklist](./docs/release/merge-readiness.md)

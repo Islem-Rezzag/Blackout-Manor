@@ -1,0 +1,7 @@
+interface:
+  display_name: "Manor Plan Orchestrator"
+  short_description: "Create or update a Blackout Manor plan before major changes."
+  brand_color: "#4F46E5"
+  default_prompt: "Create or update a Blackout Manor plan before implementing this slice."
+policy:
+  allow_implicit_invocation: true
