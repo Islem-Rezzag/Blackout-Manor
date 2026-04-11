@@ -12,8 +12,11 @@ import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
 import { ReplayMatchConnection } from "./network/replayMatchConnection";
 import {
+  getCorridorFloorTextureKey,
   getDoorThresholdConfig,
   getImportedRoomArt,
+  isVerticalSliceCorridorSegment,
+  isVerticalSliceRoomId,
 } from "./stage/importedArt";
 import {
   getDoorNodesForRoom,
@@ -100,9 +103,15 @@ describe("client-game package", () => {
     expect(assetKeys).toContain("focus-beam");
     expect(assetKeys).toContain("storm-cloud");
     expect(assetKeys).toContain("floor-grand-hall");
+    expect(assetKeys).toContain("floor-grand-hall-premium");
+    expect(assetKeys).toContain("floor-library-premium");
+    expect(assetKeys).toContain("floor-meeting-wing");
     expect(assetKeys).toContain("wall-greenhouse");
+    expect(assetKeys).toContain("wall-grand-hall-premium");
     expect(assetKeys).toContain("door-threshold-social");
     expect(assetKeys).toContain("prop-ballroom-stage");
+    expect(assetKeys).toContain("prop-grand-tribunal-table");
+    expect(assetKeys).toContain("prop-library-desk");
     expect(derivedAssetKeys).toContain("floor-parquet");
     expect(derivedAssetKeys).toContain("wall-stone");
     expect(derivedAssetKeys).toContain("prop-kitchen-range");
@@ -113,6 +122,7 @@ describe("client-game package", () => {
 
   it("maps bespoke manor surfaces and thresholds to the environment pass", () => {
     const grandHallArt = getImportedRoomArt("grand-hall");
+    const libraryArt = getImportedRoomArt("library");
     const ballroomArt = getImportedRoomArt("ballroom");
     const greenhouseDoor = getDoorNodesForRoom("greenhouse")[0];
     const mechanicalDoor = {
@@ -127,10 +137,31 @@ describe("client-game package", () => {
       throw new Error("Expected a greenhouse door node.");
     }
 
-    expect(grandHallArt.floorKey).toBe("floor-grand-hall");
-    expect(grandHallArt.wallKey).toBe("wall-grand-hall");
-    expect(grandHallArt.heroProps).toHaveLength(2);
+    const eastSliceCorridor = MANOR_RENDER_MAP.corridors.find(
+      (segment) => segment.x === 960 && segment.y === 220,
+    );
+
+    expect(grandHallArt.floorKey).toBe("floor-grand-hall-premium");
+    expect(grandHallArt.wallKey).toBe("wall-grand-hall-premium");
+    expect(grandHallArt.heroProps).toHaveLength(5);
+    expect(libraryArt.floorKey).toBe("floor-library-premium");
+    expect(libraryArt.wallKey).toBe("wall-library-premium");
+    expect(libraryArt.heroProps).toHaveLength(5);
     expect(ballroomArt.heroProps).toHaveLength(2);
+    expect(isVerticalSliceRoomId("grand-hall")).toBe(true);
+    expect(isVerticalSliceRoomId("study")).toBe(false);
+    expect(getCorridorFloorTextureKey("meeting-wing")).toBe(
+      "floor-meeting-wing",
+    );
+    expect(isVerticalSliceCorridorSegment("meeting-wing")).toBe(true);
+    expect(eastSliceCorridor).toBeDefined();
+    if (!eastSliceCorridor) {
+      throw new Error("Expected the hall-library corridor segment.");
+    }
+    expect(isVerticalSliceCorridorSegment(eastSliceCorridor)).toBe(true);
+    expect(getCorridorFloorTextureKey(eastSliceCorridor)).toBe(
+      "floor-meeting-wing",
+    );
     expect(getDoorThresholdConfig(greenhouseDoor).key).toBe(
       "door-threshold-greenhouse",
     );

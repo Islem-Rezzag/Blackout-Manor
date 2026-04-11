@@ -175,6 +175,121 @@ const SOCIAL_ROOM_SURFACE_ASSETS = {
   ),
 } as const;
 
+const VERTICAL_SLICE_SURFACE_ASSETS = {
+  floorGrandHallPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="grandHallPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#6a4429"/>
+          <stop offset="100%" stop-color="#1f1410"/>
+        </linearGradient>
+        <linearGradient id="grandHallRunner" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#7e1e2a"/>
+          <stop offset="100%" stop-color="#421019"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#grandHallPremiumFloor)"/>
+      <path d="M0 40h256M0 80h256M0 120h256M0 160h256M0 200h256" stroke="#9a6942" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M32 0v256M64 0v256M96 0v256M128 0v256M160 0v256M192 0v256M224 0v256" stroke="#d8ab71" stroke-opacity="0.12" stroke-width="2"/>
+      <rect x="16" y="16" width="224" height="224" fill="none" stroke="#f2ddb4" stroke-opacity="0.18" stroke-width="5"/>
+      <rect x="74" y="24" width="108" height="208" rx="20" fill="url(#grandHallRunner)" stroke="#efcf96" stroke-opacity="0.46" stroke-width="5"/>
+      <path d="M86 54h84M86 202h84" stroke="#f7e5c2" stroke-opacity="0.24" stroke-width="4"/>
+      <rect x="92" y="92" width="72" height="72" rx="24" fill="#251515" fill-opacity="0.52" stroke="#f0d6a3" stroke-opacity="0.42" stroke-width="4"/>
+      <path d="M128 102l10 24 26 8-26 8-10 24-10-24-26-8 26-8z" fill="#ead19f" fill-opacity="0.7"/>
+      <ellipse cx="128" cy="132" rx="60" ry="34" fill="#100c0b" fill-opacity="0.24"/>
+    `,
+  ),
+  wallGrandHallPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="grandHallPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#8d5d38"/>
+          <stop offset="100%" stop-color="#2d1c14"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#grandHallPremiumWall)"/>
+      <rect x="0" y="0" width="320" height="14" fill="#110d0b"/>
+      <path d="M18 18h284" stroke="#e8cb95" stroke-opacity="0.22" stroke-width="4"/>
+      <path d="M34 18v72M286 18v72" stroke="#2a150f" stroke-opacity="0.8" stroke-width="12"/>
+      <path d="M96 18c20 18 20 56 0 74M224 18c20 18 20 56 0 74" stroke="#efcf96" stroke-opacity="0.18" stroke-width="18"/>
+      <rect x="38" y="28" width="62" height="54" fill="none" stroke="#e9d1a8" stroke-opacity="0.18" stroke-width="3"/>
+      <rect x="112" y="22" width="96" height="66" rx="10" fill="#56311f" fill-opacity="0.54" stroke="#f2dfbd" stroke-opacity="0.24" stroke-width="3"/>
+      <path d="M160 30c18 14 22 34 22 50h-44c0-16 4-36 22-50z" fill="#281510" fill-opacity="0.64"/>
+      <circle cx="160" cy="46" r="12" fill="#d8b985" fill-opacity="0.36"/>
+      <rect x="220" y="28" width="62" height="54" fill="none" stroke="#e9d1a8" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M0 100h320" stroke="#050608" stroke-opacity="0.68" stroke-width="12"/>
+    `,
+  ),
+  floorLibraryPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="libraryPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#4f3422"/>
+          <stop offset="100%" stop-color="#18110e"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#libraryPremiumFloor)"/>
+      <path d="M0 36h256M0 72h256M0 108h256M0 144h256M0 180h256M0 216h256" stroke="#7a5438" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M36 0v256M72 0v256M108 0v256M144 0v256M180 0v256M216 0v256" stroke="#c89962" stroke-opacity="0.1" stroke-width="2"/>
+      <rect x="18" y="18" width="220" height="220" fill="none" stroke="#e0ca9e" stroke-opacity="0.16" stroke-width="4"/>
+      <rect x="28" y="48" width="104" height="156" rx="18" fill="#2e241b" fill-opacity="0.48" stroke="#ccb07d" stroke-opacity="0.38" stroke-width="4"/>
+      <rect x="140" y="88" width="88" height="96" rx="16" fill="#3d1f18" fill-opacity="0.56" stroke="#e0c497" stroke-opacity="0.28" stroke-width="4"/>
+      <path d="M54 74h52M54 178h52" stroke="#f2deb6" stroke-opacity="0.2" stroke-width="4"/>
+      <ellipse cx="182" cy="136" rx="42" ry="26" fill="#191211" fill-opacity="0.34"/>
+    `,
+  ),
+  wallLibraryPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="libraryPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#614029"/>
+          <stop offset="100%" stop-color="#231611"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#libraryPremiumWall)"/>
+      <rect x="0" y="0" width="320" height="12" fill="#0c0907"/>
+      <path d="M24 18h272" stroke="#dec89b" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M42 22v68M106 22v68M214 22v68M278 22v68" stroke="#281810" stroke-opacity="0.82" stroke-width="12"/>
+      <path d="M26 48h82M212 48h82" stroke="#f3dfbc" stroke-opacity="0.12" stroke-width="18"/>
+      <path d="M26 72h82M212 72h82" stroke="#f3dfbc" stroke-opacity="0.08" stroke-width="18"/>
+      <rect x="122" y="24" width="76" height="58" rx="10" fill="#352219" stroke="#f2deb8" stroke-opacity="0.22" stroke-width="3"/>
+      <path d="M160 32c14 10 18 28 18 42h-36c0-14 4-32 18-42z" fill="#d7bb87" fill-opacity="0.2"/>
+      <path d="M0 100h320" stroke="#050608" stroke-opacity="0.62" stroke-width="12"/>
+    `,
+  ),
+  floorMeetingWing: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="meetingWingFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#563722"/>
+          <stop offset="100%" stop-color="#1a110d"/>
+        </linearGradient>
+        <linearGradient id="meetingWingRunner" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#6d1b24"/>
+          <stop offset="100%" stop-color="#381018"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#meetingWingFloor)"/>
+      <path d="M0 40h256M0 80h256M0 120h256M0 160h256M0 200h256" stroke="#86573a" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M40 0v256M88 0v256M136 0v256M184 0v256" stroke="#d4aa72" stroke-opacity="0.08" stroke-width="3"/>
+      <rect x="92" y="12" width="72" height="232" rx="16" fill="url(#meetingWingRunner)" stroke="#edc98f" stroke-opacity="0.42" stroke-width="4"/>
+      <path d="M102 44h52M102 212h52" stroke="#f7e4bf" stroke-opacity="0.2" stroke-width="3"/>
+      <path d="M28 122h40M188 122h40" stroke="#f0d39f" stroke-opacity="0.16" stroke-width="6" stroke-linecap="round"/>
+      <rect x="18" y="18" width="220" height="220" fill="none" stroke="#e5cfa2" stroke-opacity="0.12" stroke-width="4"/>
+    `,
+  ),
+} as const;
+
 const SERVICE_ROOM_SURFACE_ASSETS = {
   floorKitchen: surfaceAsset(
     256,
@@ -389,6 +504,7 @@ const SERVICE_ROOM_SURFACE_ASSETS = {
 
 export const INLINE_ROOM_SURFACE_ASSETS = {
   ...SOCIAL_ROOM_SURFACE_ASSETS,
+  ...VERTICAL_SLICE_SURFACE_ASSETS,
   ...SERVICE_ROOM_SURFACE_ASSETS,
 } as const;
 
@@ -543,6 +659,110 @@ const SOCIAL_PROP_ASSETS = {
   ),
 } as const;
 
+const VERTICAL_SLICE_PROP_ASSETS = {
+  propGrandTribunalChairbank: surfaceAsset(
+    304,
+    156,
+    `
+      <path d="M52 108h200" stroke="#180f0e" stroke-opacity="0.7" stroke-width="18" stroke-linecap="round"/>
+      <rect x="34" y="62" width="24" height="34" rx="8" fill="#503123" stroke="#ddb987" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="70" y="56" width="22" height="40" rx="8" fill="#5a1d24" stroke="#edca92" stroke-opacity="0.18" stroke-width="3"/>
+      <rect x="102" y="54" width="22" height="42" rx="8" fill="#503123" stroke="#ddb987" stroke-opacity="0.18" stroke-width="3"/>
+      <rect x="134" y="50" width="36" height="50" rx="10" fill="#6d2430" stroke="#f0d5a2" stroke-opacity="0.2" stroke-width="3"/>
+      <rect x="180" y="54" width="22" height="42" rx="8" fill="#503123" stroke="#ddb987" stroke-opacity="0.18" stroke-width="3"/>
+      <rect x="212" y="56" width="22" height="40" rx="8" fill="#5a1d24" stroke="#edca92" stroke-opacity="0.18" stroke-width="3"/>
+      <rect x="246" y="62" width="24" height="34" rx="8" fill="#503123" stroke="#ddb987" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="22" y="70" width="20" height="38" rx="8" fill="#6f2530" stroke="#f0d7a8" stroke-opacity="0.24" stroke-width="3"/>
+      <rect x="262" y="70" width="20" height="38" rx="8" fill="#6f2530" stroke="#f0d7a8" stroke-opacity="0.24" stroke-width="3"/>
+      <path d="M42 110h220" stroke="#d9b27c" stroke-opacity="0.16" stroke-width="6" stroke-linecap="round"/>
+    `,
+  ),
+  propGrandTribunalTable: surfaceAsset(
+    284,
+    140,
+    `
+      <defs>
+        <linearGradient id="tribunalTableWood" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#7f4f31"/>
+          <stop offset="100%" stop-color="#2c1a14"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="142" cy="116" rx="110" ry="18" fill="#110c0b" fill-opacity="0.62"/>
+      <rect x="34" y="48" width="216" height="44" rx="20" fill="url(#tribunalTableWood)" stroke="#efcf98" stroke-opacity="0.26" stroke-width="5"/>
+      <path d="M48 68h188" stroke="#f6e4bf" stroke-opacity="0.22" stroke-width="4" stroke-linecap="round"/>
+      <path d="M72 92v16M110 92v18M142 92v18M174 92v18M212 92v16" stroke="#1b1110" stroke-opacity="0.86" stroke-width="6" stroke-linecap="round"/>
+      <rect x="78" y="40" width="18" height="14" rx="5" fill="#d4b47f" fill-opacity="0.52"/>
+      <rect x="188" y="40" width="18" height="14" rx="5" fill="#d4b47f" fill-opacity="0.52"/>
+      <path d="M88 38c6-10 10-18 10-26 0 8 4 16 10 26M198 38c6-10 10-18 10-26 0 8 4 16 10 26" fill="none" stroke="#f4ddb0" stroke-opacity="0.52" stroke-width="3" stroke-linecap="round"/>
+      <path d="M118 54h48" stroke="#4b2e21" stroke-opacity="0.7" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  propGrandConsole: surfaceAsset(
+    184,
+    132,
+    `
+      <rect x="24" y="108" width="136" height="12" rx="6" fill="#120c0b"/>
+      <rect x="42" y="76" width="100" height="26" rx="8" fill="#70462b" stroke="#e0bf8f" stroke-opacity="0.2" stroke-width="4"/>
+      <path d="M54 76v-26M130 76v-26" stroke="#e7c892" stroke-opacity="0.3" stroke-width="5" stroke-linecap="round"/>
+      <rect x="52" y="18" width="80" height="48" rx="10" fill="#4f261d" stroke="#efdbb7" stroke-opacity="0.24" stroke-width="4"/>
+      <path d="M62 28h60M62 56h60" stroke="#f6e4bf" stroke-opacity="0.14" stroke-width="4"/>
+      <circle cx="84" cy="74" r="7" fill="#d2b07c" fill-opacity="0.44"/>
+      <circle cx="118" cy="74" r="7" fill="#d2b07c" fill-opacity="0.44"/>
+    `,
+  ),
+  propLibraryDesk: surfaceAsset(
+    188,
+    136,
+    `
+      <ellipse cx="94" cy="112" rx="74" ry="16" fill="#100c0b" fill-opacity="0.52"/>
+      <rect x="34" y="54" width="120" height="30" rx="10" fill="#6a442a" stroke="#e1c291" stroke-opacity="0.26" stroke-width="4"/>
+      <path d="M50 84v18M78 84v18M110 84v18M138 84v18" stroke="#281710" stroke-opacity="0.84" stroke-width="6" stroke-linecap="round"/>
+      <rect x="46" y="42" width="54" height="16" rx="5" fill="#2c351d" stroke="#d1d992" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="106" y="38" width="28" height="20" rx="5" fill="#54423a" stroke="#d9be8d" stroke-opacity="0.24" stroke-width="3"/>
+      <circle cx="120" cy="42" r="4" fill="#86c2f0" fill-opacity="0.52"/>
+      <path d="M134 42c8-4 14-10 16-20" fill="none" stroke="#d5c08d" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round"/>
+      <path d="M62 58h62" stroke="#f8e9c9" stroke-opacity="0.2" stroke-width="3" stroke-linecap="round"/>
+    `,
+  ),
+  propLibraryStacks: surfaceAsset(
+    196,
+    164,
+    `
+      <rect x="22" y="134" width="150" height="12" rx="6" fill="#0f0c0b"/>
+      <rect x="30" y="28" width="58" height="106" rx="10" fill="#4c3123" stroke="#dcc59d" stroke-opacity="0.22" stroke-width="4"/>
+      <rect x="104" y="18" width="58" height="116" rx="10" fill="#4f3425" stroke="#dcc59d" stroke-opacity="0.22" stroke-width="4"/>
+      <path d="M40 52h38M40 78h38M40 104h38" stroke="#2a1a12" stroke-opacity="0.84" stroke-width="10"/>
+      <path d="M114 42h38M114 68h38M114 94h38M114 120h38" stroke="#2a1a12" stroke-opacity="0.84" stroke-width="10"/>
+      <rect x="78" y="96" width="26" height="34" rx="6" fill="#785439" stroke="#e1c28d" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M84 110h14" stroke="#2b1a13" stroke-opacity="0.7" stroke-width="3"/>
+    `,
+  ),
+  propLibraryLadder: surfaceAsset(
+    128,
+    172,
+    `
+      <path d="M28 144l36-112M84 144l16-112" stroke="#c8a775" stroke-opacity="0.8" stroke-width="6" stroke-linecap="round"/>
+      <path d="M40 122h44M46 100h36M52 78h28M58 56h20" stroke="#e9d3a7" stroke-opacity="0.54" stroke-width="4" stroke-linecap="round"/>
+      <rect x="18" y="140" width="88" height="10" rx="5" fill="#130e0d"/>
+      <circle cx="30" cy="146" r="6" fill="#544137"/>
+      <circle cx="94" cy="146" r="6" fill="#544137"/>
+    `,
+  ),
+  propLibraryReadingClub: surfaceAsset(
+    184,
+    124,
+    `
+      <ellipse cx="92" cy="100" rx="70" ry="16" fill="#120d0c" fill-opacity="0.48"/>
+      <rect x="30" y="48" width="38" height="28" rx="14" fill="#5b1c24" stroke="#e4c38f" stroke-opacity="0.18" stroke-width="4"/>
+      <rect x="116" y="48" width="38" height="28" rx="14" fill="#5b1c24" stroke="#e4c38f" stroke-opacity="0.18" stroke-width="4"/>
+      <circle cx="92" cy="56" r="14" fill="#d0a86e" fill-opacity="0.36"/>
+      <path d="M92 42v-14" stroke="#ead7ae" stroke-opacity="0.42" stroke-width="4" stroke-linecap="round"/>
+      <path d="M58 78v12M126 78v12" stroke="#231612" stroke-opacity="0.84" stroke-width="6" stroke-linecap="round"/>
+      <rect x="74" y="62" width="36" height="18" rx="8" fill="#70462a" stroke="#eccd95" stroke-opacity="0.18" stroke-width="3"/>
+    `,
+  ),
+} as const;
+
 const SERVICE_PROP_ASSETS = {
   propKitchenIsland: surfaceAsset(
     208,
@@ -652,6 +872,7 @@ const SERVICE_PROP_ASSETS = {
 
 export const INLINE_HERO_PROP_ASSETS = {
   ...SOCIAL_PROP_ASSETS,
+  ...VERTICAL_SLICE_PROP_ASSETS,
   ...SERVICE_PROP_ASSETS,
 } as const;
 

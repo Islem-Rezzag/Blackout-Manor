@@ -48,26 +48,26 @@ export class MeetingScene extends Phaser.Scene {
       .image(this.scale.width / 2, this.scale.height - 192, "focus-beam")
       .setScrollFactor(0)
       .setDepth(321)
-      .setDisplaySize(860, 260)
-      .setTint(0xe1be86)
+      .setDisplaySize(920, 292)
+      .setTint(0xe7c38c)
       .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.18);
+      .setAlpha(0.2);
     this.#portraitStrip = new MeetingPortraitStrip(this);
 
     const plate = this.add
-      .rectangle(0, 0, 796, 118, 0x081018, 0.84)
-      .setStrokeStyle(1, 0xa1c4d9, 0.18);
+      .rectangle(0, 0, 812, 124, 0x120d12, 0.88)
+      .setStrokeStyle(1.2, 0xe3c08c, 0.22);
     const header = this.add.text(-356, -26, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "24px",
+      fontSize: "26px",
       fontStyle: "bold",
       wordWrap: { width: 708 },
     });
     const detail = this.add.text(-356, 16, "", {
-      color: "#dfe6ee",
+      color: "#e7dccb",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "14px",
+      fontSize: "15px",
       wordWrap: { width: 708 },
     });
 

@@ -1,7 +1,11 @@
 import type { RoomId, TaskId } from "@blackout-manor/shared";
 
 import { getTaskInteractionGeometry } from "../tasking/taskReadability";
-import { getRoomRenderData, type ManorDoorNode } from "../tiled/manorLayout";
+import {
+  getRoomRenderData,
+  type ManorCorridorSegment,
+  type ManorDoorNode,
+} from "../tiled/manorLayout";
 
 export type ImportedHeroPropPlacement = {
   key: string;
@@ -116,6 +120,32 @@ const resolveHeroProp = (
   );
 };
 
+const VERTICAL_SLICE_ROOM_IDS = new Set<RoomId>(["grand-hall", "library"]);
+
+export const isVerticalSliceRoomId = (roomId: RoomId) =>
+  VERTICAL_SLICE_ROOM_IDS.has(roomId);
+
+export const isVerticalSliceCorridorSegment = (
+  corridor:
+    | Pick<ManorCorridorSegment, "className" | "x" | "y" | "width" | "height">
+    | string,
+) => {
+  if (typeof corridor === "string") {
+    return corridor === "meeting-wing";
+  }
+
+  return (
+    corridor.className === "meeting-wing" ||
+    (corridor.className === "corridor" &&
+      corridor.x >= 940 &&
+      corridor.y <= 240 &&
+      corridor.height >= 300)
+  );
+};
+
+export const isVerticalSliceDoorNode = (node: ManorDoorNode) =>
+  [node.roomId, ...node.targetRoomIds].some(isVerticalSliceRoomId);
+
 const ROOM_ART: Record<
   RoomId,
   {
@@ -125,15 +155,37 @@ const ROOM_ART: Record<
   }
 > = {
   "grand-hall": {
-    floorKey: "floor-grand-hall",
-    wallKey: "wall-grand-hall",
+    floorKey: "floor-grand-hall-premium",
+    wallKey: "wall-grand-hall-premium",
     heroProps: [
       {
         key: "prop-grand-stair",
-        roomPosition: { x: 0.24, y: 0.28 },
-        width: 148,
-        height: 108,
+        roomPosition: { x: 0.22, y: 0.28 },
+        width: 156,
+        height: 114,
         alpha: 0.94,
+      },
+      {
+        key: "prop-grand-console",
+        roomPosition: { x: 0.2, y: 0.56 },
+        width: 124,
+        height: 90,
+        alpha: 0.9,
+      },
+      {
+        key: "prop-grand-tribunal-chairbank",
+        roomPosition: { x: 0.54, y: 0.57 },
+        width: 260,
+        height: 120,
+        alpha: 0.88,
+      },
+      {
+        key: "prop-grand-tribunal-table",
+        roomPosition: { x: 0.54, y: 0.57 },
+        width: 228,
+        height: 96,
+        alpha: 0.95,
+        offsetY: 4,
       },
       {
         key: "prop-grand-clock",
@@ -177,24 +229,45 @@ const ROOM_ART: Record<
     ],
   },
   library: {
-    floorKey: "floor-library",
-    wallKey: "wall-library",
+    floorKey: "floor-library-premium",
+    wallKey: "wall-library-premium",
     heroProps: [
       {
         key: "prop-library-fireplace",
         roomPosition: { x: 0.24, y: 0.31 },
-        width: 104,
-        height: 82,
+        width: 110,
+        height: 86,
         alpha: 0.9,
       },
       {
-        key: "prop-bookshelf",
+        key: "prop-library-stacks",
+        roomPosition: { x: 0.76, y: 0.3 },
+        width: 146,
+        height: 122,
+        alpha: 0.92,
+      },
+      {
+        key: "prop-library-reading-club",
+        roomPosition: { x: 0.34, y: 0.64 },
+        width: 144,
+        height: 86,
+        alpha: 0.9,
+      },
+      {
+        key: "prop-library-ladder",
+        roomPosition: { x: 0.79, y: 0.35 },
+        width: 66,
+        height: 118,
+        alpha: 0.88,
+      },
+      {
+        key: "prop-library-desk",
         taskId: "tune-police-band-radio",
-        width: 104,
-        height: 148,
-        alpha: 0.94,
-        offsetX: 10,
-        offsetY: -8,
+        width: 136,
+        height: 98,
+        alpha: 0.96,
+        offsetX: 4,
+        offsetY: 8,
       },
     ],
   },
@@ -371,12 +444,23 @@ export const getImportedRoomArt = (roomId: RoomId): ImportedRoomArt => {
   };
 };
 
-export const getCorridorFloorTextureKey = (className: string) => {
+export const getCorridorFloorTextureKey = (
+  corridor:
+    | Pick<ManorCorridorSegment, "className" | "x" | "y" | "width" | "height">
+    | string,
+) => {
+  const className =
+    typeof corridor === "string" ? corridor : corridor.className;
+
   if (className === "service-band" || className === "service-link") {
     return "floor-service-corridor";
   }
 
-  if (className === "meeting-wing" || className === "gallery") {
+  if (isVerticalSliceCorridorSegment(corridor)) {
+    return "floor-meeting-wing";
+  }
+
+  if (className === "gallery") {
     return "floor-gallery";
   }
 
