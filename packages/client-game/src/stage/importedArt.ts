@@ -19,6 +19,7 @@ export type ImportedHeroPropPlacement = {
 export type ImportedRoomArt = {
   floorKey: string;
   wallKey: string;
+  supportProps: readonly ImportedHeroPropPlacement[];
   heroProps: readonly ImportedHeroPropPlacement[];
 };
 
@@ -225,6 +226,7 @@ const ROOM_ART: Record<
   {
     floorKey: string;
     wallKey: string;
+    supportProps?: readonly ImportedHeroPropBlueprint[];
     heroProps?: readonly ImportedHeroPropBlueprint[];
   }
 > = {
@@ -274,6 +276,22 @@ const ROOM_ART: Record<
   kitchen: {
     floorKey: "floor-kitchen-premium",
     wallKey: "wall-kitchen-premium",
+    supportProps: [
+      {
+        key: "prop-kitchen-dish-shelf",
+        roomPosition: { x: 0.18, y: 0.54 },
+        width: 88,
+        height: 84,
+        alpha: 0.82,
+      },
+      {
+        key: "prop-kitchen-butcher-block",
+        roomPosition: { x: 0.52, y: 0.68 },
+        width: 94,
+        height: 68,
+        alpha: 0.84,
+      },
+    ],
     heroProps: [
       {
         key: "prop-kitchen-range-premium",
@@ -362,6 +380,22 @@ const ROOM_ART: Record<
   study: {
     floorKey: "floor-study-premium",
     wallKey: "wall-study-premium",
+    supportProps: [
+      {
+        key: "prop-study-side-table",
+        roomPosition: { x: 0.22, y: 0.64 },
+        width: 78,
+        height: 76,
+        alpha: 0.8,
+      },
+      {
+        key: "prop-study-portrait-rail",
+        roomPosition: { x: 0.56, y: 0.22 },
+        width: 112,
+        height: 48,
+        alpha: 0.78,
+      },
+    ],
     heroProps: [
       {
         key: "prop-study-desk-premium",
@@ -398,6 +432,22 @@ const ROOM_ART: Record<
   ballroom: {
     floorKey: "floor-ballroom-premium",
     wallKey: "wall-ballroom-premium",
+    supportProps: [
+      {
+        key: "prop-ballroom-bench",
+        roomPosition: { x: 0.77, y: 0.64 },
+        width: 102,
+        height: 56,
+        alpha: 0.8,
+      },
+      {
+        key: "prop-ballroom-drape-stand",
+        roomPosition: { x: 0.18, y: 0.5 },
+        width: 96,
+        height: 96,
+        alpha: 0.76,
+      },
+    ],
     heroProps: [
       {
         key: "prop-ballroom-organ",
@@ -435,6 +485,22 @@ const ROOM_ART: Record<
   greenhouse: {
     floorKey: "floor-greenhouse-premium",
     wallKey: "wall-greenhouse-premium",
+    supportProps: [
+      {
+        key: "prop-greenhouse-pot-shelf",
+        roomPosition: { x: 0.18, y: 0.28 },
+        width: 94,
+        height: 84,
+        alpha: 0.8,
+      },
+      {
+        key: "prop-greenhouse-hanging-basket",
+        roomPosition: { x: 0.78, y: 0.18 },
+        width: 74,
+        height: 92,
+        alpha: 0.82,
+      },
+    ],
     heroProps: [
       {
         key: "prop-greenhouse-planter-bed",
@@ -471,6 +537,29 @@ const ROOM_ART: Record<
   "surveillance-hall": {
     floorKey: "floor-surveillance-hall-premium",
     wallKey: "wall-surveillance-hall-premium",
+    supportProps: [
+      {
+        key: "prop-surveillance-cable-rack",
+        roomPosition: { x: 0.52, y: 0.18 },
+        width: 144,
+        height: 52,
+        alpha: 0.74,
+      },
+      {
+        key: "prop-surveillance-task-lamp",
+        roomPosition: { x: 0.38, y: 0.58 },
+        width: 64,
+        height: 74,
+        alpha: 0.84,
+      },
+      {
+        key: "prop-surveillance-reel-stack",
+        roomPosition: { x: 0.8, y: 0.65 },
+        width: 92,
+        height: 94,
+        alpha: 0.82,
+      },
+    ],
     heroProps: [
       {
         key: "prop-surveillance-screenwall",
@@ -506,6 +595,22 @@ const ROOM_ART: Record<
   "generator-room": {
     floorKey: "floor-generator-room-premium",
     wallKey: "wall-generator-room-premium",
+    supportProps: [
+      {
+        key: "prop-generator-fuse-crate",
+        roomPosition: { x: 0.16, y: 0.28 },
+        width: 82,
+        height: 62,
+        alpha: 0.78,
+      },
+      {
+        key: "prop-generator-cable-bundle",
+        roomPosition: { x: 0.18, y: 0.68 },
+        width: 92,
+        height: 54,
+        alpha: 0.82,
+      },
+    ],
     heroProps: [
       {
         key: "prop-generator-core",
@@ -542,6 +647,22 @@ const ROOM_ART: Record<
   cellar: {
     floorKey: "floor-cellar-premium",
     wallKey: "wall-cellar-premium",
+    supportProps: [
+      {
+        key: "prop-cellar-workbench",
+        roomPosition: { x: 0.24, y: 0.66 },
+        width: 112,
+        height: 78,
+        alpha: 0.8,
+      },
+      {
+        key: "prop-cellar-coal-scuttle",
+        roomPosition: { x: 0.56, y: 0.66 },
+        width: 74,
+        height: 58,
+        alpha: 0.84,
+      },
+    ],
     heroProps: [
       {
         key: "prop-cellar-coal",
@@ -579,6 +700,22 @@ const ROOM_ART: Record<
   "servants-corridor": {
     floorKey: "floor-service-corridor-premium",
     wallKey: "wall-service-corridor-premium",
+    supportProps: [
+      {
+        key: "prop-service-umbrella-stand",
+        roomPosition: { x: 0.16, y: 0.66 },
+        width: 56,
+        height: 90,
+        alpha: 0.82,
+      },
+      {
+        key: "prop-service-hamper",
+        roomPosition: { x: 0.78, y: 0.6 },
+        width: 82,
+        height: 72,
+        alpha: 0.82,
+      },
+    ],
     heroProps: [
       {
         key: "prop-service-hooks",
@@ -618,6 +755,8 @@ export const getImportedRoomArt = (roomId: RoomId): ImportedRoomArt => {
   return {
     floorKey: roomArt.floorKey,
     wallKey: roomArt.wallKey,
+    supportProps:
+      roomArt.supportProps?.map((prop) => resolveHeroProp(roomId, prop)) ?? [],
     heroProps:
       roomArt.heroProps?.map((prop) => resolveHeroProp(roomId, prop)) ?? [],
   };

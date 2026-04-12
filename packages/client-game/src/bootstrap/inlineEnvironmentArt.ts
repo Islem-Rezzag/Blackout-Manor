@@ -1272,6 +1272,35 @@ const FRONT_OF_HOUSE_PROP_ASSETS = {
       <path d="M106 54v26" stroke="#b29f88" stroke-opacity="0.42" stroke-width="8" stroke-linecap="round"/>
     `,
   ),
+  propKitchenDishShelf: surfaceAsset(
+    132,
+    122,
+    `
+      <rect x="18" y="18" width="96" height="16" rx="8" fill="#6b4b32"/>
+      <rect x="28" y="42" width="76" height="54" rx="10" fill="#6d5a48" stroke="#ddc7a4" stroke-opacity="0.22" stroke-width="4"/>
+      <path d="M38 58h56M38 76h56" stroke="#241812" stroke-opacity="0.62" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="48" cy="54" r="8" fill="#e7e0d2"/>
+      <circle cx="70" cy="54" r="8" fill="#d3c4b1"/>
+      <circle cx="92" cy="54" r="8" fill="#ece7dd"/>
+      <rect x="44" y="70" width="16" height="10" rx="4" fill="#c9b79f"/>
+      <rect x="64" y="70" width="16" height="10" rx="4" fill="#e0d8ca"/>
+      <rect x="84" y="70" width="12" height="10" rx="4" fill="#b99160" fill-opacity="0.7"/>
+      <path d="M32 96v14M100 96v14" stroke="#ceb892" stroke-opacity="0.32" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propKitchenButcherBlock: surfaceAsset(
+    146,
+    118,
+    `
+      <ellipse cx="74" cy="100" rx="52" ry="10" fill="#100d0c" fill-opacity="0.42"/>
+      <rect x="36" y="42" width="76" height="34" rx="8" fill="#8b613d" stroke="#e0bd89" stroke-opacity="0.24" stroke-width="4"/>
+      <path d="M48 76v16M100 76v16" stroke="#d6c29f" stroke-opacity="0.34" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 54h52" stroke="#f1e0ba" stroke-opacity="0.18" stroke-width="4" stroke-linecap="round"/>
+      <rect x="46" y="30" width="18" height="10" rx="3" fill="#d1d6d8"/>
+      <rect x="70" y="26" width="12" height="14" rx="3" fill="#c3a26a" fill-opacity="0.82"/>
+      <rect x="88" y="28" width="14" height="12" rx="3" fill="#d6d8da"/>
+    `,
+  ),
   propStudyDeskPremium: surfaceAsset(
     192,
     138,
@@ -1334,6 +1363,49 @@ const FRONT_OF_HOUSE_PROP_ASSETS = {
       <path d="M48 134h18l8 12H22l8-12z" fill="#261615"/>
     `,
   ),
+  propStudySideTable: surfaceAsset(
+    122,
+    122,
+    `
+      <ellipse cx="60" cy="102" rx="42" ry="10" fill="#0f0b0a" fill-opacity="0.4"/>
+      <rect x="34" y="46" width="52" height="24" rx="8" fill="#6d4a33" stroke="#dfbf8e" stroke-opacity="0.22" stroke-width="4"/>
+      <path d="M42 70v16M78 70v16" stroke="#d7c5a5" stroke-opacity="0.32" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="50" cy="40" r="9" fill="#f0dbac" fill-opacity="0.34"/>
+      <rect x="66" y="30" width="16" height="16" rx="4" fill="#cdc1ad"/>
+      <path d="M50 34v-10" stroke="#d7c18e" stroke-opacity="0.34" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propStudyPortraitRail: surfaceAsset(
+    168,
+    88,
+    `
+      <rect x="18" y="18" width="132" height="42" rx="12" fill="#5c3229" stroke="#e0c596" stroke-opacity="0.18" stroke-width="4"/>
+      <rect x="34" y="28" width="30" height="22" rx="6" fill="#cfb996" fill-opacity="0.42"/>
+      <rect x="70" y="26" width="26" height="24" rx="6" fill="#b98a62" fill-opacity="0.42"/>
+      <rect x="104" y="28" width="26" height="22" rx="6" fill="#d6c8b6" fill-opacity="0.4"/>
+      <path d="M34 62h96" stroke="#170f10" stroke-opacity="0.66" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  propBallroomBench: surfaceAsset(
+    156,
+    104,
+    `
+      <ellipse cx="78" cy="92" rx="56" ry="10" fill="#110c0c" fill-opacity="0.4"/>
+      <rect x="30" y="46" width="96" height="22" rx="10" fill="#6e1f26" stroke="#e8c58f" stroke-opacity="0.18" stroke-width="4"/>
+      <path d="M44 68v14M112 68v14" stroke="#d9c3a2" stroke-opacity="0.3" stroke-width="4" stroke-linecap="round"/>
+      <path d="M42 42h72" stroke="#f0dfc2" stroke-opacity="0.16" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propBallroomDrapeStand: surfaceAsset(
+    132,
+    154,
+    `
+      <path d="M34 134h64" stroke="#2b1819" stroke-opacity="0.8" stroke-width="10" stroke-linecap="round"/>
+      <path d="M66 130V34" stroke="#d8be94" stroke-opacity="0.42" stroke-width="6" stroke-linecap="round"/>
+      <path d="M48 36c14 8 24 8 36 0v48c-12 8-24 10-36 0z" fill="#6c1f29" fill-opacity="0.84" stroke="#e8c58f" stroke-opacity="0.16" stroke-width="4"/>
+      <path d="M54 48c10 6 16 6 24 0M54 66c10 6 16 6 24 0" fill="none" stroke="#f2d9b2" stroke-opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+    `,
+  ),
 } as const;
 
 const UTILITY_PROP_ASSETS = {
@@ -1359,6 +1431,32 @@ const UTILITY_PROP_ASSETS = {
       <circle cx="96" cy="46" r="12" fill="#b48b57" fill-opacity="0.56"/>
       <path d="M52 34v24M40 46h24M96 34v24M84 46h24" stroke="#efe3cd" stroke-opacity="0.3" stroke-width="3"/>
       <path d="M42 80v16M106 80v16" stroke="#7d8d86" stroke-opacity="0.42" stroke-width="5" stroke-linecap="round"/>
+    `,
+  ),
+  propGreenhousePotShelf: surfaceAsset(
+    142,
+    126,
+    `
+      <rect x="22" y="38" width="98" height="18" rx="8" fill="#6a5845" stroke="#d9c8a8" stroke-opacity="0.16" stroke-width="4"/>
+      <rect x="34" y="62" width="74" height="14" rx="7" fill="#5b4c3d"/>
+      <path d="M34 56v34M108 56v34" stroke="#d9eadf" stroke-opacity="0.24" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="42" cy="30" r="12" fill="#5d8c46" fill-opacity="0.84"/>
+      <circle cx="68" cy="24" r="10" fill="#7ab35c" fill-opacity="0.82"/>
+      <circle cx="94" cy="30" r="12" fill="#94bf67" fill-opacity="0.8"/>
+      <circle cx="52" cy="54" r="9" fill="#6a9d53" fill-opacity="0.78"/>
+      <circle cx="88" cy="56" r="9" fill="#84b864" fill-opacity="0.74"/>
+    `,
+  ),
+  propGreenhouseHangingBasket: surfaceAsset(
+    112,
+    146,
+    `
+      <path d="M56 18v28" stroke="#dff2e7" stroke-opacity="0.36" stroke-width="4" stroke-linecap="round"/>
+      <path d="M34 46h44" stroke="#dff2e7" stroke-opacity="0.26" stroke-width="4" stroke-linecap="round"/>
+      <path d="M38 48c4 18 12 34 18 44c6-10 14-26 18-44" fill="#73593f" stroke="#dcccad" stroke-opacity="0.16" stroke-width="4"/>
+      <circle cx="42" cy="88" r="14" fill="#5b8a47" fill-opacity="0.82"/>
+      <circle cx="56" cy="98" r="16" fill="#72aa54" fill-opacity="0.84"/>
+      <circle cx="72" cy="88" r="13" fill="#8ac067" fill-opacity="0.82"/>
     `,
   ),
   propSurveillanceDesk: surfaceAsset(
@@ -1387,6 +1485,37 @@ const UTILITY_PROP_ASSETS = {
       <path d="M40 96v12M112 96v12" stroke="#252a30" stroke-opacity="0.8" stroke-width="5" stroke-linecap="round"/>
     `,
   ),
+  propSurveillanceCableRack: surfaceAsset(
+    208,
+    88,
+    `
+      <rect x="16" y="20" width="176" height="18" rx="9" fill="#20272d" stroke="#9fd7e8" stroke-opacity="0.14" stroke-width="4"/>
+      <path d="M36 38v22M68 38v18M100 38v24M132 38v20M164 38v24" stroke="#86cee5" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round"/>
+      <path d="M40 62c12 8 18 8 30 0s18-8 30 0s18 8 30 0s18-8 30 0" fill="none" stroke="#c18f57" stroke-opacity="0.22" stroke-width="5" stroke-linecap="round"/>
+    `,
+  ),
+  propSurveillanceReelStack: surfaceAsset(
+    128,
+    138,
+    `
+      <rect x="30" y="30" width="68" height="80" rx="10" fill="#42474f" stroke="#c2c7d2" stroke-opacity="0.16" stroke-width="4"/>
+      <circle cx="64" cy="52" r="16" fill="#1c2127" stroke="#d7b47c" stroke-opacity="0.34" stroke-width="4"/>
+      <circle cx="64" cy="52" r="6" fill="#89919a"/>
+      <circle cx="64" cy="86" r="16" fill="#1c2127" stroke="#d7b47c" stroke-opacity="0.34" stroke-width="4"/>
+      <circle cx="64" cy="86" r="6" fill="#89919a"/>
+      <path d="M24 112h80" stroke="#111417" stroke-opacity="0.72" stroke-width="10" stroke-linecap="round"/>
+    `,
+  ),
+  propSurveillanceTaskLamp: surfaceAsset(
+    96,
+    124,
+    `
+      <path d="M44 102h24" stroke="#1b2024" stroke-opacity="0.76" stroke-width="8" stroke-linecap="round"/>
+      <path d="M56 98V54" stroke="#d6bc8e" stroke-opacity="0.44" stroke-width="5" stroke-linecap="round"/>
+      <path d="M54 58c8-14 16-20 24-20l-10 22c-6 0-10 0-14-2z" fill="#48505b" stroke="#d7dbe3" stroke-opacity="0.18" stroke-width="4"/>
+      <circle cx="72" cy="62" r="14" fill="#8ed5ea" fill-opacity="0.28"/>
+    `,
+  ),
   propGeneratorBreakerWall: surfaceAsset(
     152,
     122,
@@ -1411,6 +1540,26 @@ const UTILITY_PROP_ASSETS = {
       <circle cx="104" cy="88" r="8" fill="#403b39"/>
       <rect x="54" y="34" width="18" height="10" rx="3" fill="#f0b266" fill-opacity="0.54"/>
       <rect x="80" y="34" width="18" height="10" rx="3" fill="#7de08e" fill-opacity="0.42"/>
+    `,
+  ),
+  propGeneratorCableBundle: surfaceAsset(
+    136,
+    88,
+    `
+      <path d="M24 56c18 10 34 10 52 0s34-10 52 0" fill="none" stroke="#262b30" stroke-opacity="0.86" stroke-width="10" stroke-linecap="round"/>
+      <path d="M22 66c14 8 26 8 40 0s26-8 40 0s26 8 40 0" fill="none" stroke="#d47d4b" stroke-opacity="0.42" stroke-width="6" stroke-linecap="round"/>
+      <path d="M30 46c12 8 22 8 34 0s22-8 34 0s22 8 34 0" fill="none" stroke="#8fd39a" stroke-opacity="0.26" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propGeneratorFuseCrate: surfaceAsset(
+    128,
+    102,
+    `
+      <rect x="26" y="30" width="76" height="44" rx="8" fill="#5a5246" stroke="#d9c3a0" stroke-opacity="0.16" stroke-width="4"/>
+      <rect x="38" y="42" width="18" height="12" rx="3" fill="#aeb4be"/>
+      <rect x="60" y="42" width="18" height="12" rx="3" fill="#f0b468" fill-opacity="0.72"/>
+      <rect x="82" y="42" width="12" height="12" rx="3" fill="#8ce296" fill-opacity="0.7"/>
+      <path d="M34 74h60" stroke="#181b1f" stroke-opacity="0.68" stroke-width="8" stroke-linecap="round"/>
     `,
   ),
 } as const;
@@ -1476,6 +1625,48 @@ const WHOLE_HOUSE_PROP_ASSETS = {
       <rect x="42" y="64" width="22" height="10" rx="3" fill="#c7b8a2"/>
       <rect x="70" y="64" width="18" height="10" rx="3" fill="#d7d7d9"/>
       <rect x="44" y="94" width="42" height="10" rx="3" fill="#ece3d0"/>
+    `,
+  ),
+  propCellarWorkbench: surfaceAsset(
+    164,
+    122,
+    `
+      <ellipse cx="82" cy="104" rx="58" ry="10" fill="#110f0e" fill-opacity="0.42"/>
+      <rect x="30" y="48" width="104" height="24" rx="8" fill="#6a503b" stroke="#d7bc96" stroke-opacity="0.18" stroke-width="4"/>
+      <path d="M42 72v16M122 72v16" stroke="#d2c0a1" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round"/>
+      <rect x="46" y="34" width="20" height="10" rx="3" fill="#a0abb4"/>
+      <rect x="72" y="30" width="28" height="14" rx="3" fill="#c9a26d" fill-opacity="0.78"/>
+      <rect x="106" y="34" width="16" height="10" rx="3" fill="#d0d5d8"/>
+    `,
+  ),
+  propCellarCoalScuttle: surfaceAsset(
+    112,
+    98,
+    `
+      <path d="M24 74c8-28 20-42 32-42s24 14 32 42" fill="#4c3727" stroke="#c29e70" stroke-opacity="0.2" stroke-width="4"/>
+      <path d="M38 54l10-16 10 12 10-14 12 18" stroke="#181514" stroke-opacity="0.82" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M34 26c10 10 34 10 44 0" fill="none" stroke="#d0b48a" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propServiceUmbrellaStand: surfaceAsset(
+    92,
+    132,
+    `
+      <ellipse cx="46" cy="112" rx="28" ry="8" fill="#100d0c" fill-opacity="0.38"/>
+      <path d="M46 106V34" stroke="#d8c7a8" stroke-opacity="0.34" stroke-width="4" stroke-linecap="round"/>
+      <path d="M34 50c8 6 12 6 20 0s12-6 20 0" fill="none" stroke="#5d4d42" stroke-opacity="0.8" stroke-width="8" stroke-linecap="round"/>
+      <path d="M30 98h32" stroke="#4a3a31" stroke-opacity="0.88" stroke-width="8" stroke-linecap="round"/>
+      <path d="M34 34v40M46 30v44M58 36v38" stroke="#6f1e28" stroke-opacity="0.52" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propServiceHamper: surfaceAsset(
+    126,
+    104,
+    `
+      <ellipse cx="62" cy="90" rx="44" ry="10" fill="#100d0c" fill-opacity="0.38"/>
+      <rect x="28" y="34" width="68" height="38" rx="10" fill="#7a6552" stroke="#dfcfb2" stroke-opacity="0.18" stroke-width="4"/>
+      <path d="M38 46h48M40 58h44" stroke="#eee4d0" stroke-opacity="0.24" stroke-width="4" stroke-linecap="round"/>
+      <path d="M40 72v10M84 72v10" stroke="#d5c6a8" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round"/>
     `,
   ),
 } as const;

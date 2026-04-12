@@ -88,6 +88,8 @@ type RoomVisual = {
   decorShadows: Phaser.GameObjects.Image[];
   decorObjects: Phaser.GameObjects.Shape[];
   decorHighlights: Phaser.GameObjects.Image[];
+  supportPropShadows: Phaser.GameObjects.Image[];
+  supportProps: Phaser.GameObjects.Image[];
   heroPropShadows: Phaser.GameObjects.Image[];
   heroProps: Phaser.GameObjects.Image[];
   lightGlows: Phaser.GameObjects.Image[];
@@ -959,6 +961,22 @@ export class ManorWorldStage {
           .setBlendMode(Phaser.BlendModes.SCREEN)
           .setAlpha(0.1),
       );
+      const supportPropShadows = importedArt.supportProps.map((prop) =>
+        this.#scene.add
+          .image(
+            prop.x - room.x,
+            prop.y - room.y + prop.height * 0.18,
+            "room-shadow",
+          )
+          .setDisplaySize(prop.width * 1.04, Math.max(22, prop.height * 0.36))
+          .setAlpha(0.16),
+      );
+      const supportProps = importedArt.supportProps.map((prop) =>
+        this.#scene.add
+          .image(prop.x - room.x, prop.y - room.y, prop.key)
+          .setDisplaySize(prop.width, prop.height)
+          .setAlpha(prop.alpha),
+      );
       const heroPropShadows = importedArt.heroProps.map((prop) =>
         this.#scene.add
           .image(
@@ -1206,6 +1224,8 @@ export class ManorWorldStage {
         ...decorShadows,
         ...decorObjects,
         ...decorHighlights,
+        ...supportPropShadows,
+        ...supportProps,
         ...heroPropShadows,
         ...heroProps,
       ]);
@@ -1248,6 +1268,8 @@ export class ManorWorldStage {
         decorShadows,
         decorObjects,
         decorHighlights,
+        supportPropShadows,
+        supportProps,
         heroPropShadows,
         heroProps,
         lightGlows,
@@ -1504,6 +1526,21 @@ export class ManorWorldStage {
       highlight.setTint(palette.floorSpecularTint);
       highlight.setAlpha(
         0.06 + lightFactor * 0.1 + roomState.occupantIds.length * 0.006,
+      );
+    }
+
+    for (const supportPropShadow of visual.supportPropShadows) {
+      supportPropShadow.setAlpha(
+        (premiumRoom ? 0.14 : 0.12) + lightFactor * 0.06 + (focused ? 0.04 : 0),
+      );
+    }
+
+    for (const supportProp of visual.supportProps) {
+      supportProp.setAlpha(
+        (premiumRoom ? 0.5 : 0.44) + lightFactor * 0.22 + (focused ? 0.06 : 0),
+      );
+      supportProp.setTint(
+        mixColor(0xffffff, palette.floorSpecularTint, focused ? 0.06 : 0.03),
       );
     }
 

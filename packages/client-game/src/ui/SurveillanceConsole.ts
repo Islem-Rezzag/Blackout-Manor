@@ -28,6 +28,8 @@ type FeedCard = {
   dust: Phaser.GameObjects.Image;
   specular: Phaser.GameObjects.Image;
   marker: Phaser.GameObjects.Text;
+  propShadows: Phaser.GameObjects.Image[];
+  props: Phaser.GameObjects.Image[];
   occupants: Phaser.GameObjects.Arc[];
   occupantLabel: Phaser.GameObjects.Text;
   hitArea: Phaser.GameObjects.Rectangle;
@@ -39,6 +41,11 @@ const CARD_HEIGHT = 148;
 const CARD_GAP = 16;
 const CARD_COLUMNS = 2;
 const MAX_OCCUPANT_PIPS = 8;
+const MAX_FEED_PROP_SPRITES = 3;
+const CONSOLE_SIDE_WING = 88;
+const CONSOLE_WIDTH =
+  CARD_WIDTH * CARD_COLUMNS + CARD_GAP + 28 + CONSOLE_SIDE_WING * 2;
+const CONSOLE_HEIGHT = 48 + CARD_GAP + CARD_HEIGHT * 2 + CARD_GAP + 28;
 
 const occupancyLabel = (occupants: number) =>
   occupants === 1 ? "1 witness" : `${occupants} present`;
@@ -84,9 +91,20 @@ const occupantTint = (player: PublicPlayerState) => {
   };
 };
 
+const selectFeedProps = (roomArt: ReturnType<typeof getImportedRoomArt>) =>
+  [...roomArt.supportProps, ...roomArt.heroProps].slice(
+    0,
+    MAX_FEED_PROP_SPRITES,
+  );
+
 export class SurveillanceConsole {
   readonly #scene: Phaser.Scene;
   readonly #root: Phaser.GameObjects.Container;
+  readonly #consoleBackdrop: Phaser.GameObjects.Rectangle;
+  readonly #consoleGlow: Phaser.GameObjects.Image;
+  readonly #cableRack: Phaser.GameObjects.Image;
+  readonly #leftArchive: Phaser.GameObjects.Image;
+  readonly #rightReels: Phaser.GameObjects.Image;
   readonly #titlePlate: Phaser.GameObjects.Rectangle;
   readonly #title: Phaser.GameObjects.Text;
   readonly #hint: Phaser.GameObjects.Text;
@@ -96,11 +114,40 @@ export class SurveillanceConsole {
   constructor(options: SurveillanceConsoleOptions) {
     this.#scene = options.scene;
     this.#onSelectRoom = options.onSelectRoom;
+    this.#consoleBackdrop = options.scene.add
+      .rectangle(0, 116, CONSOLE_WIDTH, CONSOLE_HEIGHT, 0x040d14, 0.38)
+      .setStrokeStyle(1, 0x73a8c9, 0.14);
+    this.#consoleGlow = options.scene.add
+      .image(0, 134, "room-glow")
+      .setDisplaySize(CONSOLE_WIDTH - 36, CONSOLE_HEIGHT - 54)
+      .setTint(0x7dbfd8)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setAlpha(0.08);
+    this.#cableRack = options.scene.add
+      .image(0, 32, "prop-surveillance-cable-rack")
+      .setDisplaySize(CONSOLE_WIDTH - 52, 46)
+      .setAlpha(0.74);
+    this.#leftArchive = options.scene.add
+      .image(
+        -(CARD_WIDTH + CARD_GAP / 2) - 88,
+        174,
+        "prop-surveillance-archive",
+      )
+      .setDisplaySize(92, 92)
+      .setAlpha(0.72);
+    this.#rightReels = options.scene.add
+      .image(
+        CARD_WIDTH + CARD_GAP / 2 + 88,
+        174,
+        "prop-surveillance-reel-stack",
+      )
+      .setDisplaySize(92, 102)
+      .setAlpha(0.76);
     this.#titlePlate = options.scene.add
-      .rectangle(0, 0, CARD_WIDTH * 2 + CARD_GAP + 28, 48, 0x061018, 0.78)
-      .setStrokeStyle(1, 0x73a8c9, 0.18);
+      .rectangle(0, 0, CONSOLE_WIDTH - 20, 48, 0x061018, 0.84)
+      .setStrokeStyle(1, 0x73a8c9, 0.2);
     this.#title = options.scene.add.text(
-      -(CARD_WIDTH + CARD_GAP / 2) + 8,
+      -(CONSOLE_WIDTH / 2) + 28,
       -8,
       "Surveillance Console",
       {
@@ -111,7 +158,7 @@ export class SurveillanceConsole {
       },
     );
     this.#hint = options.scene.add.text(
-      -(CARD_WIDTH + CARD_GAP / 2) + 8,
+      -(CONSOLE_WIDTH / 2) + 28,
       12,
       "Click a feed or press 1-4 to lock the camera.",
       {
@@ -125,6 +172,11 @@ export class SurveillanceConsole {
       this.#createCard(index),
     );
     this.#root = options.scene.add.container(0, 0, [
+      this.#consoleBackdrop,
+      this.#consoleGlow,
+      this.#cableRack,
+      this.#leftArchive,
+      this.#rightReels,
       this.#titlePlate,
       this.#title,
       this.#hint,
@@ -163,11 +215,9 @@ export class SurveillanceConsole {
   }
 
   resize(width: number, height: number) {
-    const totalWidth = CARD_WIDTH * 2 + CARD_GAP + 28;
-    const totalHeight = 48 + CARD_GAP + CARD_HEIGHT * 2 + CARD_GAP;
     this.#root.setPosition(
-      width - totalWidth / 2 - 24,
-      height - totalHeight / 2 - 94,
+      width - CONSOLE_WIDTH / 2 - 24,
+      height - CONSOLE_HEIGHT / 2 - 94,
     );
   }
 
@@ -241,6 +291,18 @@ export class SurveillanceConsole {
       fontSize: "11px",
       wordWrap: { width: 170 },
     });
+    const propShadows = Array.from({ length: MAX_FEED_PROP_SPRITES }, () =>
+      this.#scene.add
+        .image(0, 0, "room-shadow")
+        .setDisplaySize(24, 12)
+        .setAlpha(0.12),
+    );
+    const props = Array.from({ length: MAX_FEED_PROP_SPRITES }, () =>
+      this.#scene.add
+        .image(0, 0, "prop-crate-stack")
+        .setDisplaySize(22, 18)
+        .setAlpha(0.72),
+    );
 
     const occupants = Array.from({ length: MAX_OCCUPANT_PIPS }, () =>
       this.#scene.add
@@ -266,6 +328,8 @@ export class SurveillanceConsole {
         frame,
         floor,
         accent,
+        ...propShadows,
+        ...props,
         cutaway,
         dust,
         specular,
@@ -285,6 +349,8 @@ export class SurveillanceConsole {
       dust,
       specular,
       marker,
+      propShadows,
+      props,
       occupants,
       occupantLabel,
       hitArea,
@@ -304,6 +370,7 @@ export class SurveillanceConsole {
     const markerStyle = markerColor(feed);
     const room = getRoomRenderData(feed.roomId);
     const roomArt = getImportedRoomArt(feed.roomId);
+    const visibleProps = selectFeedProps(roomArt);
     const palette = createFeedPalette({
       room,
       lightLevel: feed.lightLevel,
@@ -353,6 +420,46 @@ export class SurveillanceConsole {
     const frameHeight = 62;
     const frameTop = 18 - frameHeight / 2;
     const frameLeft = -frameWidth / 2;
+    const widthScale = frameWidth / room.bounds.width;
+    const heightScale = frameHeight / room.bounds.height;
+
+    for (const [propIndex, propImage] of card.props.entries()) {
+      const prop = visibleProps[propIndex];
+      const shadow = card.propShadows[propIndex];
+
+      if (!prop || !shadow) {
+        propImage.setVisible(false);
+        shadow?.setVisible(false);
+        continue;
+      }
+
+      const normalizedX = (prop.x - room.bounds.x) / room.bounds.width;
+      const normalizedY = (prop.y - room.bounds.y) / room.bounds.height;
+      const displayWidth = Phaser.Math.Clamp(
+        prop.width * widthScale * 1.12,
+        18,
+        frameWidth * 0.42,
+      );
+      const displayHeight = Phaser.Math.Clamp(
+        prop.height * heightScale * 1.18,
+        12,
+        frameHeight * 0.62,
+      );
+      const x = frameLeft + normalizedX * frameWidth;
+      const y = frameTop + normalizedY * frameHeight + 3;
+
+      shadow
+        .setVisible(true)
+        .setPosition(x, y + displayHeight * 0.18)
+        .setDisplaySize(displayWidth * 1.08, Math.max(10, displayHeight * 0.38))
+        .setAlpha(feed.selected ? 0.18 : 0.12);
+      propImage
+        .setVisible(true)
+        .setTexture(prop.key)
+        .setPosition(x, y)
+        .setDisplaySize(displayWidth, displayHeight)
+        .setAlpha(Math.min(feed.selected ? 0.82 : 0.72, prop.alpha));
+    }
 
     for (const [pipIndex, pip] of card.occupants.entries()) {
       const player = visibleOccupants[pipIndex];
