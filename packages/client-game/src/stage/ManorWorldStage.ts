@@ -42,12 +42,12 @@ import {
   type StageDirectionVariant,
 } from "./cameraDirection";
 import {
+  type CorridorArtProfile,
+  getCorridorArtProfile,
   getCorridorFloorTextureKey,
   getDoorThresholdConfig,
   getImportedRoomArt,
-  isVerticalSliceCorridorSegment,
-  isVerticalSliceDoorNode,
-  isVerticalSliceRoomId,
+  isProductionArtDoorNode,
 } from "./importedArt";
 import { createRoomRenderPalette } from "./renderTheme";
 import {
@@ -123,6 +123,7 @@ type StageLayers = {
 
 type CorridorVisual = {
   segment: ManorCorridorSegment;
+  profile: CorridorArtProfile;
   shellShadow: Phaser.GameObjects.Image;
   shell: Phaser.GameObjects.Image;
   floor: Phaser.GameObjects.Image;
@@ -186,10 +187,11 @@ const taskChipStyle = {
   padding: { left: 10, right: 10, top: 5, bottom: 5 },
 } as const;
 
-const verticalSliceTextStyle = (roomId: RoomId) => {
+const roomDisplayStyle = (roomId: RoomId) => {
   switch (roomId) {
     case "grand-hall":
       return {
+        premium: true,
         titlePlateWidth: 290,
         titleFontSize: "30px",
         themeFontSize: "12px",
@@ -197,8 +199,19 @@ const verticalSliceTextStyle = (roomId: RoomId) => {
         statePlateWidth: 294,
         stateFontSize: "14px",
       } as const;
+    case "kitchen":
+      return {
+        premium: true,
+        titlePlateWidth: 244,
+        titleFontSize: "26px",
+        themeFontSize: "12px",
+        themeColor: "#efe1c9",
+        statePlateWidth: 248,
+        stateFontSize: "13px",
+      } as const;
     case "library":
       return {
+        premium: true,
         titlePlateWidth: 236,
         titleFontSize: "28px",
         themeFontSize: "12px",
@@ -206,14 +219,157 @@ const verticalSliceTextStyle = (roomId: RoomId) => {
         statePlateWidth: 240,
         stateFontSize: "13px",
       } as const;
+    case "study":
+      return {
+        premium: true,
+        titlePlateWidth: 232,
+        titleFontSize: "26px",
+        themeFontSize: "12px",
+        themeColor: "#d8cfae",
+        statePlateWidth: 238,
+        stateFontSize: "13px",
+      } as const;
+    case "ballroom":
+      return {
+        premium: true,
+        titlePlateWidth: 266,
+        titleFontSize: "29px",
+        themeFontSize: "12px",
+        themeColor: "#ead1b0",
+        statePlateWidth: 276,
+        stateFontSize: "14px",
+      } as const;
+    case "greenhouse":
+      return {
+        premium: true,
+        titlePlateWidth: 246,
+        titleFontSize: "26px",
+        themeFontSize: "12px",
+        themeColor: "#dff0de",
+        statePlateWidth: 250,
+        stateFontSize: "13px",
+      } as const;
+    case "surveillance-hall":
+      return {
+        premium: true,
+        titlePlateWidth: 258,
+        titleFontSize: "24px",
+        themeFontSize: "12px",
+        themeColor: "#c6e4ef",
+        statePlateWidth: 266,
+        stateFontSize: "13px",
+      } as const;
+    case "generator-room":
+      return {
+        premium: true,
+        titlePlateWidth: 260,
+        titleFontSize: "24px",
+        themeFontSize: "12px",
+        themeColor: "#e5d5b1",
+        statePlateWidth: 270,
+        stateFontSize: "13px",
+      } as const;
+    case "cellar":
+      return {
+        premium: true,
+        titlePlateWidth: 232,
+        titleFontSize: "24px",
+        themeFontSize: "12px",
+        themeColor: "#d8cdbd",
+        statePlateWidth: 238,
+        stateFontSize: "13px",
+      } as const;
+    case "servants-corridor":
+      return {
+        premium: true,
+        titlePlateWidth: 252,
+        titleFontSize: "22px",
+        themeFontSize: "12px",
+        themeColor: "#d7d0c2",
+        statePlateWidth: 258,
+        stateFontSize: "12px",
+      } as const;
     default:
       return {
+        premium: false,
         titlePlateWidth: 244,
         titleFontSize: "24px",
         themeFontSize: "13px",
         themeColor: "#d8e1eb",
         statePlateWidth: 258,
         stateFontSize: "13px",
+      } as const;
+  }
+};
+
+const corridorDisplayStyle = (
+  profile: CorridorArtProfile,
+  segment: ManorCorridorSegment,
+) => {
+  switch (profile) {
+    case "service":
+      return {
+        shellTint: 0x2c2a28,
+        accentTint: 0xc8b28e,
+        floorTint: 0xf2ece1,
+        specularTint: 0xd9c7ab,
+        specularAlpha: 0.14,
+        glowTint: 0xc7b18d,
+        glowAlpha: 0.09,
+        vignetteAlpha: 0.24,
+        trimHeight: 8,
+        trimAlpha: 0.2,
+        runnerFill: null,
+        runnerBorderTint: null,
+        runnerGlowTint: null,
+      } as const;
+    case "intelligence":
+      return {
+        shellTint: 0x2a353d,
+        accentTint: 0x8fd0e6,
+        floorTint: 0xeef7fb,
+        specularTint: 0x9cdcf0,
+        specularAlpha: 0.2,
+        glowTint: 0x79bfd8,
+        glowAlpha: 0.14,
+        vignetteAlpha: 0.22,
+        trimHeight: 10,
+        trimAlpha: 0.24,
+        runnerFill: segment.width >= segment.height ? 0x183340 : 0x17313c,
+        runnerBorderTint: 0x97ddf0,
+        runnerGlowTint: 0x79bfd8,
+      } as const;
+    case "gallery":
+      return {
+        shellTint: 0x403128,
+        accentTint: 0xdcbc8b,
+        floorTint: 0xfdf0e0,
+        specularTint: 0xf2cfa1,
+        specularAlpha: 0.2,
+        glowTint: 0xe0ba88,
+        glowAlpha: 0.12,
+        vignetteAlpha: 0.18,
+        trimHeight: 10,
+        trimAlpha: 0.28,
+        runnerFill: 0x6d2430,
+        runnerBorderTint: 0xeccf9d,
+        runnerGlowTint: 0xe3bf8a,
+      } as const;
+    default:
+      return {
+        shellTint: segment.className === "meeting-wing" ? 0x453228 : 0x4a3429,
+        accentTint: 0xe1c08b,
+        floorTint: 0xfff2e4,
+        specularTint: 0xf0cfa0,
+        specularAlpha: 0.2,
+        glowTint: 0xe0b27a,
+        glowAlpha: 0.14,
+        vignetteAlpha: 0.18,
+        trimHeight: 10,
+        trimAlpha: 0.28,
+        runnerFill: 0x58171f,
+        runnerBorderTint: 0xe6c68f,
+        runnerGlowTint: 0xe0b27a,
       } as const;
   }
 };
@@ -552,23 +708,8 @@ export class ManorWorldStage {
     for (const segment of MANOR_RENDER_MAP.corridors) {
       const centerX = segment.x + segment.width / 2;
       const centerY = segment.y + segment.height / 2;
-      const isTechnical =
-        segment.className === "service-band" ||
-        segment.className === "service-link";
-      const isMeetingWing = segment.className === "meeting-wing";
-      const isVerticalSliceCorridor = isVerticalSliceCorridorSegment(segment);
-      const shellTint = isTechnical
-        ? 0x243039
-        : isVerticalSliceCorridor
-          ? 0x4b3429
-          : isMeetingWing
-            ? 0x433127
-            : 0x2f2823;
-      const accentTint = isTechnical
-        ? 0x7fb7cf
-        : isVerticalSliceCorridor
-          ? 0xe1c08b
-          : 0xd5b183;
+      const profile = getCorridorArtProfile(segment);
+      const style = corridorDisplayStyle(profile, segment);
       const shellShadow = this.#scene.add
         .image(centerX, centerY + 10, "room-shadow")
         .setDisplaySize(segment.width + 28, segment.height + 24)
@@ -576,14 +717,14 @@ export class ManorWorldStage {
       const shell = this.#scene.add
         .image(centerX, centerY + 4, "room-shell")
         .setDisplaySize(segment.width + 12, segment.height + 12)
-        .setTint(shellTint)
+        .setTint(style.shellTint)
         .setAlpha(0.95);
       const floor = this.#scene.add
         .image(centerX, centerY + 4, getCorridorFloorTextureKey(segment))
         .setDisplaySize(segment.width, segment.height)
-        .setTint(isVerticalSliceCorridor ? 0xfff2e4 : 0xf6f0e2)
+        .setTint(style.floorTint)
         .setAlpha(0.96);
-      const runner = isVerticalSliceCorridor
+      const runner = style.runnerFill
         ? this.#scene.add
             .rectangle(
               centerX,
@@ -594,28 +735,29 @@ export class ManorWorldStage {
               segment.width >= segment.height
                 ? Math.max(26, segment.height * 0.38)
                 : segment.height * 0.74,
-              0x58171f,
+              style.runnerFill,
               0.76,
             )
             .setOrigin(0.5)
         : null;
-      const runnerBorder = isVerticalSliceCorridor
-        ? this.#scene.add
-            .rectangle(
-              centerX,
-              centerY + 4,
-              segment.width >= segment.height
-                ? segment.width * 0.72
-                : Math.max(26, segment.width * 0.48),
-              segment.width >= segment.height
-                ? Math.max(26, segment.height * 0.38)
-                : segment.height * 0.74,
-              0xffffff,
-              0,
-            )
-            .setStrokeStyle(2, 0xe6c68f, 0.46)
-            .setOrigin(0.5)
-        : null;
+      const runnerBorder =
+        style.runnerFill && style.runnerBorderTint
+          ? this.#scene.add
+              .rectangle(
+                centerX,
+                centerY + 4,
+                segment.width >= segment.height
+                  ? segment.width * 0.72
+                  : Math.max(26, segment.width * 0.48),
+                segment.width >= segment.height
+                  ? Math.max(26, segment.height * 0.38)
+                  : segment.height * 0.74,
+                0xffffff,
+                0,
+              )
+              .setStrokeStyle(2, style.runnerBorderTint, 0.46)
+              .setOrigin(0.5)
+          : null;
       const specular = this.#scene.add
         .image(centerX, centerY + 4, "room-specular")
         .setDisplaySize(
@@ -623,54 +765,43 @@ export class ManorWorldStage {
           Math.max(32, segment.height - 10),
         )
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setTint(
-          isTechnical
-            ? 0x96daf0
-            : isVerticalSliceCorridor
-              ? 0xf0cfa0
-              : 0xf0d39a,
-        )
-        .setAlpha(isVerticalSliceCorridor ? 0.2 : 0.16);
+        .setTint(style.specularTint)
+        .setAlpha(style.specularAlpha);
       const vignette = this.#scene.add
         .image(centerX, centerY + 4, "room-vignette")
         .setDisplaySize(segment.width * 1.02, segment.height * 0.98)
         .setBlendMode(Phaser.BlendModes.MULTIPLY)
-        .setAlpha(isTechnical ? 0.24 : 0.18);
+        .setAlpha(style.vignetteAlpha);
       const glow = this.#scene.add
         .image(centerX, centerY, "room-glow")
         .setDisplaySize(segment.width * 1.18, segment.height * 0.82)
         .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setTint(
-          isTechnical
-            ? 0x79bfd8
-            : isVerticalSliceCorridor
-              ? 0xe0b27a
-              : 0xd9ac72,
-        )
-        .setAlpha(isTechnical ? 0.15 : isVerticalSliceCorridor ? 0.14 : 0.11);
-      const runnerGlow = isVerticalSliceCorridor
-        ? this.#scene.add
-            .image(centerX, centerY + 4, "room-glow")
-            .setDisplaySize(
-              segment.width >= segment.height
-                ? segment.width * 0.78
-                : Math.max(48, segment.width * 1.8),
-              segment.width >= segment.height
-                ? Math.max(42, segment.height * 0.62)
-                : segment.height * 0.88,
-            )
-            .setBlendMode(Phaser.BlendModes.SCREEN)
-            .setTint(0xe0b27a)
-            .setAlpha(0.08)
-        : null;
+        .setTint(style.glowTint)
+        .setAlpha(style.glowAlpha);
+      const runnerGlow =
+        style.runnerFill && style.runnerGlowTint
+          ? this.#scene.add
+              .image(centerX, centerY + 4, "room-glow")
+              .setDisplaySize(
+                segment.width >= segment.height
+                  ? segment.width * 0.78
+                  : Math.max(48, segment.width * 1.8),
+                segment.width >= segment.height
+                  ? Math.max(42, segment.height * 0.62)
+                  : segment.height * 0.88,
+              )
+              .setBlendMode(Phaser.BlendModes.SCREEN)
+              .setTint(style.runnerGlowTint)
+              .setAlpha(0.08)
+          : null;
       const trim = this.#scene.add
         .rectangle(
           centerX,
           centerY - segment.height / 2 + 6,
           segment.width - 10,
-          isVerticalSliceCorridor ? 10 : 8,
-          accentTint,
-          isVerticalSliceCorridor ? 0.28 : 0.22,
+          style.trimHeight,
+          style.accentTint,
+          style.trimAlpha,
         )
         .setOrigin(0.5);
 
@@ -702,6 +833,7 @@ export class ManorWorldStage {
 
       this.#corridorVisuals.push({
         segment,
+        profile,
         shellShadow,
         shell,
         floor,
@@ -719,7 +851,7 @@ export class ManorWorldStage {
     for (const roomId of MANOR_RENDER_MAP.roomOrder) {
       const room = getRoomRenderData(roomId);
       const importedArt = getImportedRoomArt(room.roomId);
-      const textStyle = verticalSliceTextStyle(room.roomId);
+      const textStyle = roomDisplayStyle(room.roomId);
       const containers = {
         floor: this.#scene.add.container(room.x, room.y),
         props: this.#scene.add.container(room.x, room.y),
@@ -1237,11 +1369,11 @@ export class ManorWorldStage {
       roomState.doorState !== "open";
     const occupied = roomState.occupantIds.length > 0;
     const crowded = roomState.occupantIds.length >= 3;
-    const premiumSlice = isVerticalSliceRoomId(room.roomId);
-    const showTheme = premiumSlice
+    const premiumRoom = roomDisplayStyle(room.roomId).premium;
+    const showTheme = premiumRoom
       ? focused || attentionActive
       : focused || attentionActive || crowded;
-    const showState = premiumSlice
+    const showState = premiumRoom
       ? focused || attentionActive || roomState.occupantIds.length >= 4
       : focused || attentionActive || crowded;
 
@@ -1249,15 +1381,15 @@ export class ManorWorldStage {
     visual.shell.setAlpha(0.97);
     visual.shellShadow.setAlpha(focused ? 0.28 : 0.34);
     visual.floor.setTint(
-      mixColor(0xffffff, palette.floorTint, premiumSlice ? 0.12 : 0.2),
+      mixColor(0xffffff, palette.floorTint, premiumRoom ? 0.12 : 0.2),
     );
     visual.floorSpecular.setTint(palette.floorSpecularTint);
     visual.floorSpecular.setAlpha(
-      (premiumSlice ? 0.24 : 0.18) + lightFactor * 0.16,
+      (premiumRoom ? 0.24 : 0.18) + lightFactor * 0.16,
     );
     visual.accent.setTint(palette.accentTint);
     visual.accent.setAlpha(
-      (premiumSlice ? 0.2 : 0.16) + lightFactor * 0.1 + (focused ? 0.04 : 0),
+      (premiumRoom ? 0.2 : 0.16) + lightFactor * 0.1 + (focused ? 0.04 : 0),
     );
     visual.dust.setTint(palette.dustTint);
     visual.dust.setAlpha(0.1 + roomState.occupantIds.length * 0.014);
@@ -1266,7 +1398,7 @@ export class ManorWorldStage {
     );
     visual.ambientGlow.setTint(palette.ambienceTint);
     visual.ambientGlow.setAlpha(
-      (premiumSlice ? 0.24 : 0.2) +
+      (premiumRoom ? 0.24 : 0.2) +
         lightFactor * 0.24 +
         roomState.occupantIds.length * 0.016,
     );
@@ -1280,11 +1412,11 @@ export class ManorWorldStage {
     visual.cutawayShadow.setAlpha(palette.cutawayShadowAlpha);
     visual.cutawayTrim.setFillStyle(
       room.accentColor,
-      focused ? (premiumSlice ? 0.36 : 0.42) : premiumSlice ? 0.18 : 0.24,
+      focused ? (premiumRoom ? 0.36 : 0.42) : premiumRoom ? 0.18 : 0.24,
     );
     visual.titlePlate.setFillStyle(
       room.surfaces.titlePlateColor,
-      focused ? (premiumSlice ? 0.2 : 0.28) : premiumSlice ? 0.12 : 0.2,
+      focused ? (premiumRoom ? 0.2 : 0.28) : premiumRoom ? 0.12 : 0.2,
     );
     visual.titlePlate.setStrokeStyle(
       1,
@@ -1293,7 +1425,7 @@ export class ManorWorldStage {
     );
     visual.statePlate.setFillStyle(
       palette.statePlateTint,
-      focused ? (premiumSlice ? 0.3 : 0.38) : premiumSlice ? 0.22 : 0.3,
+      focused ? (premiumRoom ? 0.3 : 0.38) : premiumRoom ? 0.22 : 0.3,
     );
     visual.statePlate.setStrokeStyle(
       1,
@@ -1316,7 +1448,7 @@ export class ManorWorldStage {
     visual.theme.setVisible(showTheme);
     visual.theme.setAlpha(
       showTheme
-        ? (premiumSlice ? 0.62 : 0.72) +
+        ? (premiumRoom ? 0.62 : 0.72) +
             lightFactor * 0.16 +
             (focused ? 0.06 : 0)
         : 0,
@@ -1377,13 +1509,13 @@ export class ManorWorldStage {
 
     for (const heroPropShadow of visual.heroPropShadows) {
       heroPropShadow.setAlpha(
-        (premiumSlice ? 0.2 : 0.16) + lightFactor * 0.08 + (focused ? 0.04 : 0),
+        (premiumRoom ? 0.2 : 0.16) + lightFactor * 0.08 + (focused ? 0.04 : 0),
       );
     }
 
     for (const heroProp of visual.heroProps) {
       heroProp.setAlpha(
-        (premiumSlice ? 0.66 : 0.6) + lightFactor * 0.3 + (focused ? 0.06 : 0),
+        (premiumRoom ? 0.66 : 0.6) + lightFactor * 0.3 + (focused ? 0.06 : 0),
       );
       heroProp.setTint(
         mixColor(0xffffff, palette.floorSpecularTint, focused ? 0.04 : 0.02),
@@ -1576,11 +1708,11 @@ export class ManorWorldStage {
       const inspected = this.#inspectedRoomId === roomId;
       const hovered = this.#hoveredRoomId === roomId;
       const room = getRoomRenderData(roomId);
-      const premiumSlice = isVerticalSliceRoomId(roomId);
+      const premiumRoom = roomDisplayStyle(roomId).premium;
       const scale = inspected
-        ? 1 + roomScaleBoost + (premiumSlice ? 0.008 : 0)
+        ? 1 + roomScaleBoost + (premiumRoom ? 0.008 : 0)
         : focused
-          ? 1 + roomScaleBoost * 0.72 + (premiumSlice ? 0.006 : 0)
+          ? 1 + roomScaleBoost * 0.72 + (premiumRoom ? 0.006 : 0)
           : active
             ? 1 + roomScaleBoost * 0.34
             : hovered
@@ -1672,21 +1804,21 @@ export class ManorWorldStage {
       visual.titlePlate.setFillStyle(
         room.surfaces.titlePlateColor,
         inspected
-          ? (premiumSlice ? 0.28 : 0.38) + emphasis * 0.04
+          ? (premiumRoom ? 0.28 : 0.38) + emphasis * 0.04
           : focused
-            ? (premiumSlice ? 0.22 : 0.31) + emphasis * 0.05
-            : premiumSlice
+            ? (premiumRoom ? 0.22 : 0.31) + emphasis * 0.05
+            : premiumRoom
               ? 0.14
               : 0.22,
       );
       visual.statePlate.setScale(inspected ? 1.02 : focused ? 1.01 : 1);
       visual.title.setScale(
         inspected
-          ? premiumSlice
+          ? premiumRoom
             ? 1.08
             : 1.06
           : focused
-            ? premiumSlice
+            ? premiumRoom
               ? 1.05
               : 1.03
             : active
@@ -1695,11 +1827,11 @@ export class ManorWorldStage {
       );
       visual.theme.setScale(
         inspected
-          ? premiumSlice
+          ? premiumRoom
             ? 1.05
             : 1.04
           : focused
-            ? premiumSlice
+            ? premiumRoom
               ? 1.03
               : 1.02
             : 1,
@@ -1726,7 +1858,8 @@ export class ManorWorldStage {
             1,
           )
         : 0;
-      const highlight = proximity * corridorEmphasis;
+      const profileBias = visual.profile === "service" ? 0.9 : 1;
+      const highlight = proximity * corridorEmphasis * profileBias;
 
       visual.shellShadow.setAlpha(0.18 + highlight * 0.16);
       visual.shell.setAlpha(
@@ -1752,7 +1885,7 @@ export class ManorWorldStage {
     }
 
     for (const visual of this.#doorNodeVisuals) {
-      const verticalSliceDoorway = isVerticalSliceDoorNode(visual.node);
+      const productionDoorway = isProductionArtDoorNode(visual.node);
       const emphasized =
         visual.node.roomId === focusRoomId ||
         visual.node.roomId === this.#hoveredRoomId ||
@@ -1772,7 +1905,7 @@ export class ManorWorldStage {
           : emphasized
             ? visual.node.alpha * (0.82 + doorwayEmphasis * 0.2)
             : visual.node.alpha *
-              ((verticalSliceDoorway ? 0.64 : 0.56) + doorwayEmphasis * 0.08),
+              ((productionDoorway ? 0.64 : 0.56) + doorwayEmphasis * 0.08),
       );
       visual.thresholdArt.setAlpha(
         inspected
@@ -1780,7 +1913,7 @@ export class ManorWorldStage {
           : emphasized
             ? visual.node.alpha * (0.58 + doorwayEmphasis * 0.18)
             : visual.node.alpha *
-              ((verticalSliceDoorway ? 0.24 : 0.18) + doorwayEmphasis * 0.08),
+              ((productionDoorway ? 0.24 : 0.18) + doorwayEmphasis * 0.08),
       );
       visual.frame.setStrokeStyle(
         2,

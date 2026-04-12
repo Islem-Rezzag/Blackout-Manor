@@ -121,9 +121,30 @@ const resolveHeroProp = (
 };
 
 const VERTICAL_SLICE_ROOM_IDS = new Set<RoomId>(["grand-hall", "library"]);
+const PRODUCTION_ART_ROOM_IDS = new Set<RoomId>([
+  "grand-hall",
+  "kitchen",
+  "library",
+  "study",
+  "ballroom",
+  "greenhouse",
+  "surveillance-hall",
+  "generator-room",
+  "cellar",
+  "servants-corridor",
+]);
 
 export const isVerticalSliceRoomId = (roomId: RoomId) =>
   VERTICAL_SLICE_ROOM_IDS.has(roomId);
+
+export const isProductionArtRoomId = (roomId: RoomId) =>
+  PRODUCTION_ART_ROOM_IDS.has(roomId);
+
+export type CorridorArtProfile =
+  | "front-house"
+  | "gallery"
+  | "intelligence"
+  | "service";
 
 export const isVerticalSliceCorridorSegment = (
   corridor:
@@ -145,6 +166,59 @@ export const isVerticalSliceCorridorSegment = (
 
 export const isVerticalSliceDoorNode = (node: ManorDoorNode) =>
   [node.roomId, ...node.targetRoomIds].some(isVerticalSliceRoomId);
+
+export const isProductionArtDoorNode = (node: ManorDoorNode) =>
+  [node.roomId, ...node.targetRoomIds].some(isProductionArtRoomId);
+
+export const getCorridorArtProfile = (
+  corridor:
+    | Pick<ManorCorridorSegment, "className" | "x" | "y" | "width" | "height">
+    | string,
+): CorridorArtProfile => {
+  if (typeof corridor === "string") {
+    if (corridor === "meeting-wing") {
+      return "front-house";
+    }
+
+    if (corridor === "gallery") {
+      return "gallery";
+    }
+
+    if (corridor === "service-band" || corridor === "service-link") {
+      return "service";
+    }
+
+    return "front-house";
+  }
+
+  if (
+    corridor.className === "service-band" ||
+    corridor.className === "service-link" ||
+    (corridor.className === "corridor" &&
+      corridor.x <= 560 &&
+      corridor.y >= 320)
+  ) {
+    return "service";
+  }
+
+  if (corridor.className === "meeting-wing") {
+    return "front-house";
+  }
+
+  if (corridor.className === "gallery") {
+    return "gallery";
+  }
+
+  if (
+    corridor.className === "corridor" &&
+    corridor.x >= 940 &&
+    corridor.y <= 240
+  ) {
+    return "intelligence";
+  }
+
+  return "front-house";
+};
 
 const ROOM_ART: Record<
   RoomId,
@@ -198,14 +272,14 @@ const ROOM_ART: Record<
     ],
   },
   kitchen: {
-    floorKey: "floor-kitchen",
-    wallKey: "wall-kitchen",
+    floorKey: "floor-kitchen-premium",
+    wallKey: "wall-kitchen-premium",
     heroProps: [
       {
-        key: "prop-kitchen-range",
+        key: "prop-kitchen-range-premium",
         taskId: "balance-hot-water-pressure",
-        width: 98,
-        height: 70,
+        width: 116,
+        height: 82,
         alpha: 0.96,
         offsetX: -6,
         offsetY: 2,
@@ -220,11 +294,25 @@ const ROOM_ART: Record<
         offsetY: 8,
       },
       {
+        key: "prop-kitchen-utensil-rack",
+        roomPosition: { x: 0.24, y: 0.28 },
+        width: 88,
+        height: 48,
+        alpha: 0.86,
+      },
+      {
         key: "prop-kitchen-pantry",
         roomPosition: { x: 0.82, y: 0.31 },
         width: 84,
         height: 108,
         alpha: 0.88,
+      },
+      {
+        key: "prop-kitchen-tea-cart",
+        roomPosition: { x: 0.78, y: 0.64 },
+        width: 90,
+        height: 68,
+        alpha: 0.9,
       },
     ],
   },
@@ -272,17 +360,24 @@ const ROOM_ART: Record<
     ],
   },
   study: {
-    floorKey: "floor-study",
-    wallKey: "wall-study",
+    floorKey: "floor-study-premium",
+    wallKey: "wall-study-premium",
     heroProps: [
       {
-        key: "prop-study-desk",
+        key: "prop-study-desk-premium",
         taskId: "file-guest-ledger",
-        width: 104,
-        height: 76,
+        width: 128,
+        height: 92,
         alpha: 0.97,
-        offsetX: 10,
-        offsetY: 2,
+        offsetX: 4,
+        offsetY: 6,
+      },
+      {
+        key: "prop-study-evidence-board",
+        roomPosition: { x: 0.3, y: 0.29 },
+        width: 102,
+        height: 76,
+        alpha: 0.9,
       },
       {
         key: "prop-study-safe",
@@ -291,113 +386,162 @@ const ROOM_ART: Record<
         height: 92,
         alpha: 0.9,
       },
+      {
+        key: "prop-study-filing-cabinet",
+        roomPosition: { x: 0.74, y: 0.58 },
+        width: 78,
+        height: 98,
+        alpha: 0.88,
+      },
     ],
   },
   ballroom: {
-    floorKey: "floor-ballroom",
-    wallKey: "wall-ballroom",
+    floorKey: "floor-ballroom-premium",
+    wallKey: "wall-ballroom-premium",
     heroProps: [
       {
         key: "prop-ballroom-organ",
         taskId: "synchronize-organ-pipes",
-        width: 134,
-        height: 94,
+        width: 142,
+        height: 98,
         alpha: 0.96,
         offsetY: -4,
       },
       {
         key: "prop-ballroom-stage",
         taskId: "sort-masque-inventory",
-        width: 146,
-        height: 98,
+        width: 156,
+        height: 104,
         alpha: 0.92,
         offsetX: 10,
         offsetY: -10,
       },
+      {
+        key: "prop-ballroom-mask-wall",
+        roomPosition: { x: 0.78, y: 0.29 },
+        width: 110,
+        height: 82,
+        alpha: 0.9,
+      },
+      {
+        key: "prop-ballroom-candelabra",
+        roomPosition: { x: 0.28, y: 0.34 },
+        width: 64,
+        height: 108,
+        alpha: 0.84,
+      },
     ],
   },
   greenhouse: {
-    floorKey: "floor-greenhouse",
-    wallKey: "wall-greenhouse",
+    floorKey: "floor-greenhouse-premium",
+    wallKey: "wall-greenhouse-premium",
     heroProps: [
       {
-        key: "prop-greenhouse-bench",
-        roomPosition: { x: 0.31, y: 0.31 },
-        width: 112,
-        height: 82,
+        key: "prop-greenhouse-planter-bed",
+        roomPosition: { x: 0.26, y: 0.47 },
+        width: 126,
+        height: 88,
         alpha: 0.88,
       },
       {
-        key: "prop-planter",
+        key: "prop-greenhouse-planter-bed",
+        roomPosition: { x: 0.74, y: 0.47 },
+        width: 126,
+        height: 88,
+        alpha: 0.88,
+      },
+      {
+        key: "prop-greenhouse-bench",
+        roomPosition: { x: 0.5, y: 0.31 },
+        width: 122,
+        height: 84,
+        alpha: 0.9,
+      },
+      {
+        key: "prop-greenhouse-valve-bank",
         taskId: "rebalance-greenhouse-valves",
-        width: 90,
-        height: 90,
+        width: 104,
+        height: 76,
         alpha: 0.95,
-        offsetX: 6,
-        offsetY: 8,
+        offsetX: 10,
+        offsetY: 6,
       },
     ],
   },
   "surveillance-hall": {
-    floorKey: "floor-surveillance-hall",
-    wallKey: "wall-surveillance-hall",
+    floorKey: "floor-surveillance-hall-premium",
+    wallKey: "wall-surveillance-hall-premium",
     heroProps: [
       {
         key: "prop-surveillance-screenwall",
         roomPosition: { x: 0.48, y: 0.28 },
-        width: 148,
-        height: 94,
+        width: 154,
+        height: 98,
         alpha: 0.9,
       },
       {
-        key: "prop-console-bank",
+        key: "prop-surveillance-switchboard",
+        roomPosition: { x: 0.22, y: 0.35 },
+        width: 92,
+        height: 74,
+        alpha: 0.86,
+      },
+      {
+        key: "prop-surveillance-desk",
         taskId: "rewind-corridor-film",
-        width: 96,
-        height: 68,
+        width: 118,
+        height: 86,
         alpha: 0.95,
         offsetY: 4,
       },
       {
         key: "prop-surveillance-archive",
         roomPosition: { x: 0.81, y: 0.34 },
-        width: 88,
-        height: 84,
+        width: 92,
+        height: 88,
         alpha: 0.88,
       },
     ],
   },
   "generator-room": {
-    floorKey: "floor-generator-room",
-    wallKey: "wall-generator-room",
+    floorKey: "floor-generator-room-premium",
+    wallKey: "wall-generator-room-premium",
     heroProps: [
       {
         key: "prop-generator-core",
         roomPosition: { x: 0.29, y: 0.42 },
-        width: 128,
-        height: 98,
+        width: 136,
+        height: 106,
         alpha: 0.92,
       },
       {
-        key: "prop-console-bank",
+        key: "prop-generator-breaker-wall",
         taskId: "reset-breaker-lattice",
-        width: 84,
-        height: 66,
+        width: 112,
+        height: 90,
         alpha: 0.96,
-        offsetX: 6,
-        offsetY: 4,
+        offsetX: 10,
+        offsetY: 6,
       },
       {
         key: "prop-generator-pipes",
         roomPosition: { x: 0.74, y: 0.27 },
-        width: 110,
-        height: 84,
+        width: 118,
+        height: 88,
         alpha: 0.84,
+      },
+      {
+        key: "prop-generator-tool-cart",
+        roomPosition: { x: 0.73, y: 0.63 },
+        width: 92,
+        height: 70,
+        alpha: 0.88,
       },
     ],
   },
   cellar: {
-    floorKey: "floor-cellar",
-    wallKey: "wall-cellar",
+    floorKey: "floor-cellar-premium",
+    wallKey: "wall-cellar-premium",
     heroProps: [
       {
         key: "prop-cellar-coal",
@@ -408,25 +552,60 @@ const ROOM_ART: Record<
         offsetY: 6,
       },
       {
-        key: "prop-boiler",
+        key: "prop-cellar-boiler-premium",
         taskId: "restore-boiler-pressure",
-        width: 106,
-        height: 118,
+        width: 128,
+        height: 136,
         alpha: 0.97,
         offsetX: 10,
         offsetY: 8,
       },
+      {
+        key: "prop-cellar-valve-bank",
+        roomPosition: { x: 0.28, y: 0.32 },
+        width: 108,
+        height: 86,
+        alpha: 0.86,
+      },
+      {
+        key: "prop-crate-stack",
+        roomPosition: { x: 0.8, y: 0.37 },
+        width: 84,
+        height: 72,
+        alpha: 0.86,
+      },
     ],
   },
   "servants-corridor": {
-    floorKey: "floor-service-corridor",
-    wallKey: "wall-service-corridor",
+    floorKey: "floor-service-corridor-premium",
+    wallKey: "wall-service-corridor-premium",
     heroProps: [
+      {
+        key: "prop-service-hooks",
+        roomPosition: { x: 0.24, y: 0.28 },
+        width: 94,
+        height: 62,
+        alpha: 0.84,
+      },
+      {
+        key: "prop-service-linen-shelf",
+        roomPosition: { x: 0.76, y: 0.28 },
+        width: 94,
+        height: 88,
+        alpha: 0.86,
+      },
+      {
+        key: "prop-service-trolley",
+        roomPosition: { x: 0.38, y: 0.49 },
+        width: 106,
+        height: 70,
+        alpha: 0.88,
+      },
       {
         key: "prop-crate-stack",
         taskId: "move-portrait-crate-into-storage",
-        width: 82,
-        height: 68,
+        width: 88,
+        height: 72,
         alpha: 0.92,
       },
     ],
@@ -449,22 +628,26 @@ export const getCorridorFloorTextureKey = (
     | Pick<ManorCorridorSegment, "className" | "x" | "y" | "width" | "height">
     | string,
 ) => {
-  const className =
-    typeof corridor === "string" ? corridor : corridor.className;
+  const profile = getCorridorArtProfile(corridor);
 
-  if (className === "service-band" || className === "service-link") {
-    return "floor-service-corridor";
+  switch (profile) {
+    case "service":
+      return "floor-service-link-premium";
+    case "intelligence":
+      return "floor-intelligence-spine";
+    case "gallery":
+      return "floor-cross-gallery-premium";
+    case "front-house":
+      return typeof corridor === "string"
+        ? corridor === "meeting-wing"
+          ? "floor-meeting-wing"
+          : "floor-cross-gallery-premium"
+        : corridor.className === "meeting-wing"
+          ? "floor-meeting-wing"
+          : "floor-cross-gallery-premium";
+    default:
+      return "floor-cross-gallery-premium";
   }
-
-  if (isVerticalSliceCorridorSegment(corridor)) {
-    return "floor-meeting-wing";
-  }
-
-  if (className === "gallery") {
-    return "floor-gallery";
-  }
-
-  return "floor-gallery";
 };
 
 const isMechanicalRoom = (roomId: RoomId) =>

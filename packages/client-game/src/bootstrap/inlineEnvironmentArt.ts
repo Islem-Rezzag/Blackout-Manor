@@ -502,10 +502,373 @@ const SERVICE_ROOM_SURFACE_ASSETS = {
   ),
 } as const;
 
+const FRONT_OF_HOUSE_SURFACE_ASSETS = {
+  floorKitchenPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="kitchenPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#d8cab7"/>
+          <stop offset="100%" stop-color="#7a6654"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#kitchenPremiumFloor)"/>
+      <path d="M0 32h256M0 64h256M0 96h256M0 128h256M0 160h256M0 192h256M0 224h256" stroke="#f4eadb" stroke-opacity="0.24" stroke-width="2"/>
+      <path d="M32 0v256M64 0v256M96 0v256M128 0v256M160 0v256M192 0v256M224 0v256" stroke="#f7f1e8" stroke-opacity="0.18" stroke-width="2"/>
+      <rect x="22" y="22" width="212" height="212" fill="none" stroke="#f3e0c3" stroke-opacity="0.18" stroke-width="4"/>
+      <rect x="78" y="148" width="100" height="58" rx="14" fill="#efe1cf" fill-opacity="0.54" stroke="#c9a16d" stroke-opacity="0.3" stroke-width="4"/>
+      <path d="M94 44h68M182 44h32M182 66h32M182 88h32" stroke="#a16a3d" stroke-opacity="0.3" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  wallKitchenPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="kitchenPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#e7ddcf"/>
+          <stop offset="100%" stop-color="#8e7965"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#kitchenPremiumWall)"/>
+      <path d="M0 22h320M0 46h320M0 70h320" stroke="#fff8ed" stroke-opacity="0.24" stroke-width="2"/>
+      <rect x="18" y="18" width="88" height="56" fill="none" stroke="#f4ead8" stroke-opacity="0.16" stroke-width="3"/>
+      <rect x="118" y="18" width="84" height="56" fill="none" stroke="#f4ead8" stroke-opacity="0.12" stroke-width="3"/>
+      <rect x="214" y="18" width="88" height="56" fill="none" stroke="#f4ead8" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M30 82h260" stroke="#c28e5f" stroke-opacity="0.22" stroke-width="10" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#342b25" stroke-opacity="0.54" stroke-width="12"/>
+    `,
+  ),
+  floorStudyPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="studyPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#4b3529"/>
+          <stop offset="100%" stop-color="#18110d"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#studyPremiumFloor)"/>
+      <path d="M0 40h256M0 80h256M0 120h256M0 160h256M0 200h256" stroke="#7f5a3f" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M32 0v256M64 0v256M96 0v256M128 0v256M160 0v256M192 0v256M224 0v256" stroke="#c49c67" stroke-opacity="0.1" stroke-width="2"/>
+      <rect x="46" y="72" width="164" height="116" rx="14" fill="#2d3d29" fill-opacity="0.84" stroke="#d7b885" stroke-opacity="0.4" stroke-width="4"/>
+      <rect x="70" y="94" width="116" height="72" rx="10" fill="none" stroke="#efe0bf" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="18" y="18" width="220" height="220" fill="none" stroke="#ddc59b" stroke-opacity="0.14" stroke-width="4"/>
+    `,
+  ),
+  wallStudyPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="studyPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#536343"/>
+          <stop offset="100%" stop-color="#202618"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#studyPremiumWall)"/>
+      <rect x="0" y="0" width="320" height="12" fill="#0d0b08"/>
+      <path d="M18 18h284" stroke="#dfc58f" stroke-opacity="0.16" stroke-width="3"/>
+      <rect x="24" y="22" width="84" height="60" fill="none" stroke="#efe0bc" stroke-opacity="0.16" stroke-width="3"/>
+      <rect x="118" y="22" width="84" height="60" fill="none" stroke="#efe0bc" stroke-opacity="0.1" stroke-width="3"/>
+      <rect x="212" y="22" width="84" height="60" fill="none" stroke="#efe0bc" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M128 24h64v58" stroke="#2e1d14" stroke-opacity="0.4" stroke-width="10"/>
+      <path d="M0 100h320" stroke="#06080a" stroke-opacity="0.62" stroke-width="12"/>
+    `,
+  ),
+  floorBallroomPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="ballroomPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#6b4128"/>
+          <stop offset="100%" stop-color="#1d110d"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#ballroomPremiumFloor)"/>
+      <path d="M0 38h256M0 76h256M0 114h256M0 152h256M0 190h256M0 228h256" stroke="#8b5d39" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M38 0v256M76 0v256M114 0v256M152 0v256M190 0v256M228 0v256" stroke="#deb785" stroke-opacity="0.1" stroke-width="2"/>
+      <rect x="22" y="22" width="212" height="212" fill="none" stroke="#e8cea1" stroke-opacity="0.18" stroke-width="4"/>
+      <rect x="60" y="62" width="136" height="126" rx="16" fill="#261413" fill-opacity="0.46" stroke="#d8b28b" stroke-opacity="0.46" stroke-width="4"/>
+      <path d="M78 84l100 82M178 84L78 166" stroke="#f4e2c0" stroke-opacity="0.24" stroke-width="4"/>
+      <ellipse cx="128" cy="126" rx="76" ry="44" fill="#f1d3af" fill-opacity="0.08"/>
+    `,
+  ),
+  wallBallroomPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="ballroomPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#742f2b"/>
+          <stop offset="100%" stop-color="#270f10"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#ballroomPremiumWall)"/>
+      <rect x="0" y="0" width="320" height="12" fill="#11070a"/>
+      <path d="M22 14c18 24 18 68 0 92M86 14c18 24 18 68 0 92M150 14c18 24 18 68 0 92M214 14c18 24 18 68 0 92M278 14c18 24 18 68 0 92" stroke="#efbe84" stroke-opacity="0.14" stroke-width="18"/>
+      <path d="M106 18h108" stroke="#f4dbb5" stroke-opacity="0.12" stroke-width="8" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#09080c" stroke-opacity="0.7" stroke-width="12"/>
+    `,
+  ),
+} as const;
+
+const UTILITY_ROOM_SURFACE_ASSETS = {
+  floorGreenhousePremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="greenhousePremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#456452"/>
+          <stop offset="100%" stop-color="#16261d"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#greenhousePremiumFloor)"/>
+      <path d="M0 40h256M0 88h256M0 136h256M0 184h256" stroke="#d8eee3" stroke-opacity="0.14" stroke-width="3"/>
+      <path d="M40 0v256M88 0v256M136 0v256M184 0v256" stroke="#eef9f3" stroke-opacity="0.14" stroke-width="3"/>
+      <rect x="30" y="66" width="74" height="138" rx="16" fill="#3d6336" fill-opacity="0.72" stroke="#d4ebcc" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="152" y="66" width="74" height="138" rx="16" fill="#3d6336" fill-opacity="0.72" stroke="#d4ebcc" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="110" y="40" width="36" height="172" rx="10" fill="#7b8a80" fill-opacity="0.24"/>
+      <rect x="18" y="18" width="220" height="220" fill="none" stroke="#e0f2e8" stroke-opacity="0.12" stroke-width="4"/>
+    `,
+  ),
+  wallGreenhousePremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="greenhousePremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#678479"/>
+          <stop offset="100%" stop-color="#243a33"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#greenhousePremiumWall)"/>
+      <path d="M0 18h320M0 52h320M0 86h320" stroke="#effaf4" stroke-opacity="0.2" stroke-width="3"/>
+      <path d="M42 0v120M106 0v120M170 0v120M234 0v120M298 0v120" stroke="#effaf4" stroke-opacity="0.22" stroke-width="3"/>
+      <path d="M34 16c16 14 24 30 24 52M286 16c-16 14 -24 30 -24 52" stroke="#e6f6ee" stroke-opacity="0.18" stroke-width="8" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#08110d" stroke-opacity="0.54" stroke-width="12"/>
+    `,
+  ),
+  floorSurveillanceHallPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="surveillancePremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#313840"/>
+          <stop offset="100%" stop-color="#12171c"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#surveillancePremiumFloor)"/>
+      <path d="M0 40h256M0 80h256M0 120h256M0 160h256M0 200h256" stroke="#8db7c6" stroke-opacity="0.1" stroke-width="2"/>
+      <path d="M40 0v256M88 0v256M136 0v256M184 0v256" stroke="#b4e1f2" stroke-opacity="0.08" stroke-width="2"/>
+      <rect x="24" y="24" width="208" height="208" fill="none" stroke="#d7cba9" stroke-opacity="0.08" stroke-width="4"/>
+      <rect x="52" y="54" width="152" height="34" rx="12" fill="#151d25" stroke="#8dd4ea" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M42 198h172" stroke="#7ed3ec" stroke-opacity="0.22" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  wallSurveillanceHallPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="surveillancePremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#414850"/>
+          <stop offset="100%" stop-color="#171c21"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#surveillancePremiumWall)"/>
+      <rect x="18" y="16" width="284" height="54" rx="12" fill="#0d1318" stroke="#8ad2e9" stroke-opacity="0.16" stroke-width="3"/>
+      <rect x="34" y="28" width="48" height="22" rx="4" fill="#8bd2e8" fill-opacity="0.22"/>
+      <rect x="96" y="28" width="48" height="22" rx="4" fill="#8bd2e8" fill-opacity="0.16"/>
+      <rect x="158" y="28" width="48" height="22" rx="4" fill="#8bd2e8" fill-opacity="0.2"/>
+      <rect x="220" y="28" width="48" height="22" rx="4" fill="#8bd2e8" fill-opacity="0.16"/>
+      <path d="M34 80h252" stroke="#c8a473" stroke-opacity="0.18" stroke-width="8" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#06080b" stroke-opacity="0.62" stroke-width="12"/>
+    `,
+  ),
+  floorGeneratorRoomPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="generatorPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#4c4d52"/>
+          <stop offset="100%" stop-color="#17181d"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#generatorPremiumFloor)"/>
+      <path d="M0 52h256M0 104h256M0 156h256M0 208h256" stroke="#9496a0" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M52 0v256M104 0v256M156 0v256M208 0v256" stroke="#c8ccd2" stroke-opacity="0.08" stroke-width="3"/>
+      <path d="M34 212h188" stroke="#f1b26c" stroke-opacity="0.34" stroke-width="10" stroke-linecap="round"/>
+      <path d="M50 70h36l18-18h48l18 18h36" fill="none" stroke="#7be18f" stroke-opacity="0.24" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="22" y="22" width="212" height="212" fill="none" stroke="#f0d091" stroke-opacity="0.1" stroke-width="4"/>
+    `,
+  ),
+  wallGeneratorRoomPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="generatorPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#64676d"/>
+          <stop offset="100%" stop-color="#1d1f23"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#generatorPremiumWall)"/>
+      <path d="M0 18h320" stroke="#a1a5ac" stroke-opacity="0.28" stroke-width="3"/>
+      <path d="M40 0v100M104 0v100M168 0v100M232 0v100M296 0v100" stroke="#d7d9df" stroke-opacity="0.08" stroke-width="3"/>
+      <rect x="24" y="30" width="116" height="32" rx="8" fill="#242a31" stroke="#dde2ea" stroke-opacity="0.12" stroke-width="3"/>
+      <path d="M182 78h102" stroke="#f0b266" stroke-opacity="0.22" stroke-width="10" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#07090b" stroke-opacity="0.62" stroke-width="12"/>
+    `,
+  ),
+} as const;
+
+const WHOLE_HOUSE_CORRIDOR_SURFACE_ASSETS = {
+  floorCellarPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="cellarPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#5c544c"/>
+          <stop offset="100%" stop-color="#1e1a17"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#cellarPremiumFloor)"/>
+      <path d="M0 48h256M0 96h256M0 144h256M0 192h256" stroke="#a49988" stroke-opacity="0.14" stroke-width="3"/>
+      <path d="M38 0v256M86 0v256M134 0v256M182 0v256M230 0v256" stroke="#c3b6a0" stroke-opacity="0.08" stroke-width="2"/>
+      <rect x="40" y="154" width="176" height="34" rx="16" fill="#2a2420" fill-opacity="0.74" stroke="#7b6e60" stroke-opacity="0.22" stroke-width="4"/>
+      <path d="M56 170h144" stroke="#5a5148" stroke-opacity="0.6" stroke-width="8" stroke-linecap="round"/>
+      <rect x="18" y="18" width="220" height="220" fill="none" stroke="#d4c4ad" stroke-opacity="0.1" stroke-width="4"/>
+    `,
+  ),
+  wallCellarPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="cellarPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#72695f"/>
+          <stop offset="100%" stop-color="#2b2521"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#cellarPremiumWall)"/>
+      <path d="M0 24h320M0 48h320M0 72h320" stroke="#c1b59f" stroke-opacity="0.14" stroke-width="2"/>
+      <path d="M36 0v96M84 0v96M132 0v96M180 0v96M228 0v96M276 0v96" stroke="#d8c9b3" stroke-opacity="0.08" stroke-width="2"/>
+      <path d="M32 34h256" stroke="#382f29" stroke-opacity="0.64" stroke-width="12" stroke-linecap="round"/>
+      <path d="M104 22c14 12 20 28 20 46M216 22c-14 12 -20 28 -20 46" stroke="#a79d90" stroke-opacity="0.18" stroke-width="6" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#090a0b" stroke-opacity="0.62" stroke-width="12"/>
+    `,
+  ),
+  floorServiceCorridorPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="serviceCorridorPremiumFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#6b6055"/>
+          <stop offset="100%" stop-color="#1c1816"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#serviceCorridorPremiumFloor)"/>
+      <path d="M0 44h256M0 88h256M0 132h256M0 176h256M0 220h256" stroke="#bbb0a0" stroke-opacity="0.14" stroke-width="3"/>
+      <path d="M44 0v256M88 0v256M132 0v256M176 0v256M220 0v256" stroke="#ded3c2" stroke-opacity="0.08" stroke-width="2"/>
+      <rect x="82" y="24" width="92" height="208" rx="18" fill="#41352c" fill-opacity="0.56" stroke="#ccb191" stroke-opacity="0.26" stroke-width="4"/>
+      <path d="M98 58h60M98 198h60" stroke="#eee0c2" stroke-opacity="0.16" stroke-width="4"/>
+    `,
+  ),
+  wallServiceCorridorPremium: surfaceAsset(
+    320,
+    120,
+    `
+      <defs>
+        <linearGradient id="serviceCorridorPremiumWall" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#7c7266"/>
+          <stop offset="100%" stop-color="#2d2824"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="120" fill="url(#serviceCorridorPremiumWall)"/>
+      <rect x="20" y="20" width="84" height="56" fill="none" stroke="#e0d4c0" stroke-opacity="0.14" stroke-width="3"/>
+      <rect x="118" y="20" width="84" height="56" fill="none" stroke="#e0d4c0" stroke-opacity="0.12" stroke-width="3"/>
+      <rect x="216" y="20" width="84" height="56" fill="none" stroke="#e0d4c0" stroke-opacity="0.14" stroke-width="3"/>
+      <path d="M152 24v54" stroke="#4f4137" stroke-opacity="0.38" stroke-width="10" stroke-linecap="round"/>
+      <path d="M0 100h320" stroke="#08090a" stroke-opacity="0.56" stroke-width="12"/>
+    `,
+  ),
+  floorIntelligenceSpine: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="intelligenceSpineFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#34424a"/>
+          <stop offset="100%" stop-color="#11181c"/>
+        </linearGradient>
+        <linearGradient id="intelligenceRunner" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#1b3440"/>
+          <stop offset="100%" stop-color="#11252e"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#intelligenceSpineFloor)"/>
+      <path d="M0 40h256M0 80h256M0 120h256M0 160h256M0 200h256" stroke="#8cb4c1" stroke-opacity="0.1" stroke-width="2"/>
+      <path d="M40 0v256M88 0v256M136 0v256M184 0v256" stroke="#cae6ef" stroke-opacity="0.08" stroke-width="2"/>
+      <rect x="92" y="14" width="72" height="228" rx="18" fill="url(#intelligenceRunner)" stroke="#8fd5ea" stroke-opacity="0.28" stroke-width="4"/>
+      <path d="M104 48h48M104 208h48" stroke="#e1f5fc" stroke-opacity="0.18" stroke-width="3"/>
+    `,
+  ),
+  floorCrossGalleryPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="crossGalleryFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#573a28"/>
+          <stop offset="100%" stop-color="#1a110d"/>
+        </linearGradient>
+        <linearGradient id="crossGalleryRunner" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#69202c"/>
+          <stop offset="100%" stop-color="#3d1218"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#crossGalleryFloor)"/>
+      <path d="M0 42h256M0 84h256M0 126h256M0 168h256M0 210h256" stroke="#8b5f3f" stroke-opacity="0.16" stroke-width="3"/>
+      <path d="M42 0v256M84 0v256M126 0v256M168 0v256M210 0v256" stroke="#d9ae76" stroke-opacity="0.1" stroke-width="2"/>
+      <rect x="86" y="12" width="84" height="232" rx="18" fill="url(#crossGalleryRunner)" stroke="#eccb96" stroke-opacity="0.34" stroke-width="4"/>
+      <path d="M98 42h60M98 214h60" stroke="#f6e3c0" stroke-opacity="0.18" stroke-width="4"/>
+    `,
+  ),
+  floorServiceLinkPremium: surfaceAsset(
+    256,
+    256,
+    `
+      <defs>
+        <linearGradient id="serviceLinkFloor" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#655b51"/>
+          <stop offset="100%" stop-color="#1d1a17"/>
+        </linearGradient>
+      </defs>
+      <rect width="256" height="256" fill="url(#serviceLinkFloor)"/>
+      <path d="M0 48h256M0 96h256M0 144h256M0 192h256" stroke="#bbb0a1" stroke-opacity="0.14" stroke-width="3"/>
+      <path d="M48 0v256M96 0v256M144 0v256M192 0v256" stroke="#d9d0c1" stroke-opacity="0.08" stroke-width="2"/>
+      <rect x="102" y="20" width="52" height="216" rx="14" fill="#3e342c" fill-opacity="0.42" stroke="#c5ac8e" stroke-opacity="0.18" stroke-width="3"/>
+      <path d="M114 62h28M114 194h28" stroke="#ebdebe" stroke-opacity="0.16" stroke-width="3"/>
+    `,
+  ),
+} as const;
+
 export const INLINE_ROOM_SURFACE_ASSETS = {
   ...SOCIAL_ROOM_SURFACE_ASSETS,
   ...VERTICAL_SLICE_SURFACE_ASSETS,
   ...SERVICE_ROOM_SURFACE_ASSETS,
+  ...FRONT_OF_HOUSE_SURFACE_ASSETS,
+  ...UTILITY_ROOM_SURFACE_ASSETS,
+  ...WHOLE_HOUSE_CORRIDOR_SURFACE_ASSETS,
 } as const;
 
 const THRESHOLD_ASSETS = {
@@ -870,10 +1233,260 @@ const SERVICE_PROP_ASSETS = {
   ),
 } as const;
 
+const FRONT_OF_HOUSE_PROP_ASSETS = {
+  propKitchenRangePremium: surfaceAsset(
+    168,
+    122,
+    `
+      <rect x="18" y="104" width="132" height="12" rx="6" fill="#14100e"/>
+      <rect x="26" y="34" width="116" height="70" rx="12" fill="#51463d" stroke="#dbcab0" stroke-opacity="0.22" stroke-width="4"/>
+      <rect x="40" y="46" width="88" height="26" rx="8" fill="#2a3034"/>
+      <circle cx="54" cy="84" r="9" fill="#c99a66" fill-opacity="0.42"/>
+      <circle cx="82" cy="84" r="9" fill="#c99a66" fill-opacity="0.42"/>
+      <circle cx="110" cy="84" r="9" fill="#c99a66" fill-opacity="0.42"/>
+      <path d="M48 24h72" stroke="#c58751" stroke-opacity="0.42" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  propKitchenTeaCart: surfaceAsset(
+    144,
+    118,
+    `
+      <ellipse cx="72" cy="104" rx="50" ry="10" fill="#100d0c" fill-opacity="0.42"/>
+      <rect x="32" y="44" width="80" height="34" rx="10" fill="#72482d" stroke="#e6c593" stroke-opacity="0.24" stroke-width="4"/>
+      <path d="M44 42v-14M100 42v-14M44 78v16M100 78v16" stroke="#d8ba8c" stroke-opacity="0.32" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="44" cy="96" r="8" fill="#493830"/>
+      <circle cx="100" cy="96" r="8" fill="#493830"/>
+      <circle cx="62" cy="38" r="8" fill="#dad3c8"/>
+      <circle cx="82" cy="38" r="8" fill="#b98a59" fill-opacity="0.64"/>
+    `,
+  ),
+  propKitchenUtensilRack: surfaceAsset(
+    144,
+    96,
+    `
+      <rect x="22" y="22" width="100" height="12" rx="6" fill="#6c492f"/>
+      <path d="M34 34v36M58 34v28M82 34v34M106 34v30" stroke="#d8cab7" stroke-opacity="0.76" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="34" cy="74" r="10" fill="#b29f88" fill-opacity="0.42"/>
+      <rect x="52" y="58" width="12" height="22" rx="6" fill="#b29f88" fill-opacity="0.42"/>
+      <path d="M82 54c0 10 -4 18 -10 24h20c-6 -6 -10 -14 -10 -24z" fill="#b29f88" fill-opacity="0.42"/>
+      <path d="M106 54v26" stroke="#b29f88" stroke-opacity="0.42" stroke-width="8" stroke-linecap="round"/>
+    `,
+  ),
+  propStudyDeskPremium: surfaceAsset(
+    192,
+    138,
+    `
+      <ellipse cx="96" cy="114" rx="76" ry="16" fill="#100c0b" fill-opacity="0.52"/>
+      <rect x="34" y="52" width="124" height="34" rx="10" fill="#6f472d" stroke="#e3c391" stroke-opacity="0.24" stroke-width="4"/>
+      <path d="M48 86v18M76 86v18M116 86v18M144 86v18" stroke="#27160f" stroke-opacity="0.84" stroke-width="6" stroke-linecap="round"/>
+      <rect x="48" y="40" width="48" height="16" rx="5" fill="#2f3920" stroke="#d7d89a" stroke-opacity="0.22" stroke-width="3"/>
+      <rect x="108" y="36" width="28" height="20" rx="5" fill="#4f4036" stroke="#d9be8d" stroke-opacity="0.24" stroke-width="3"/>
+      <path d="M134 38c8-4 14-10 16-20" fill="none" stroke="#d5c08d" stroke-opacity="0.3" stroke-width="3" stroke-linecap="round"/>
+      <path d="M62 58h66" stroke="#f8e9c9" stroke-opacity="0.22" stroke-width="3" stroke-linecap="round"/>
+    `,
+  ),
+  propStudyEvidenceBoard: surfaceAsset(
+    152,
+    118,
+    `
+      <rect x="22" y="20" width="108" height="70" rx="10" fill="#6f563d" stroke="#e7d2ad" stroke-opacity="0.22" stroke-width="4"/>
+      <rect x="34" y="30" width="32" height="20" rx="4" fill="#efe2bf" fill-opacity="0.7"/>
+      <rect x="74" y="34" width="42" height="16" rx="4" fill="#f0dec4" fill-opacity="0.54"/>
+      <rect x="42" y="58" width="28" height="18" rx="4" fill="#c8d5ef" fill-opacity="0.44"/>
+      <rect x="86" y="58" width="24" height="18" rx="4" fill="#f1c2b3" fill-opacity="0.5"/>
+      <path d="M52 52l24 10M100 50L78 62M58 74l30-10" stroke="#8e2b33" stroke-opacity="0.7" stroke-width="2"/>
+      <path d="M40 90v14M112 90v14" stroke="#c8b18a" stroke-opacity="0.42" stroke-width="4" stroke-linecap="round"/>
+    `,
+  ),
+  propStudyFilingCabinet: surfaceAsset(
+    112,
+    144,
+    `
+      <rect x="24" y="126" width="64" height="10" rx="5" fill="#100f10"/>
+      <rect x="28" y="20" width="56" height="106" rx="10" fill="#5a5d63" stroke="#c3c8d2" stroke-opacity="0.22" stroke-width="4"/>
+      <rect x="36" y="34" width="40" height="24" rx="5" fill="#747b86"/>
+      <rect x="36" y="64" width="40" height="24" rx="5" fill="#747b86"/>
+      <rect x="36" y="94" width="40" height="24" rx="5" fill="#747b86"/>
+      <path d="M48 46h16M48 76h16M48 106h16" stroke="#d5c08d" stroke-opacity="0.42" stroke-width="3" stroke-linecap="round"/>
+    `,
+  ),
+  propBallroomMaskWall: surfaceAsset(
+    164,
+    116,
+    `
+      <rect x="18" y="20" width="128" height="70" rx="12" fill="#562029" stroke="#e9c690" stroke-opacity="0.2" stroke-width="4"/>
+      <path d="M40 36h84" stroke="#f0ddbd" stroke-opacity="0.14" stroke-width="4" stroke-linecap="round"/>
+      <path d="M44 58c6-10 12-16 18-16s12 6 18 16c6-10 12-16 18-16s12 6 18 16" fill="none" stroke="#f3ddbc" stroke-opacity="0.52" stroke-width="6" stroke-linecap="round"/>
+      <path d="M54 70c4 8 10 12 16 12s12-4 16-12M94 70c4 8 10 12 16 12s12-4 16-12" fill="none" stroke="#c88d67" stroke-opacity="0.56" stroke-width="4" stroke-linecap="round"/>
+      <path d="M34 90h96" stroke="#170f10" stroke-opacity="0.62" stroke-width="10" stroke-linecap="round"/>
+    `,
+  ),
+  propBallroomCandelabra: surfaceAsset(
+    96,
+    164,
+    `
+      <path d="M48 134V58" stroke="#d2b686" stroke-opacity="0.78" stroke-width="6" stroke-linecap="round"/>
+      <path d="M32 78h32M26 98h44" stroke="#d2b686" stroke-opacity="0.7" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="48" cy="44" r="12" fill="#d6b27f" fill-opacity="0.3"/>
+      <circle cx="32" cy="64" r="8" fill="#f2cb84" fill-opacity="0.36"/>
+      <circle cx="48" cy="54" r="8" fill="#f2cb84" fill-opacity="0.42"/>
+      <circle cx="64" cy="64" r="8" fill="#f2cb84" fill-opacity="0.36"/>
+      <path d="M48 134h18l8 12H22l8-12z" fill="#261615"/>
+    `,
+  ),
+} as const;
+
+const UTILITY_PROP_ASSETS = {
+  propGreenhousePlanterBed: surfaceAsset(
+    188,
+    128,
+    `
+      <ellipse cx="94" cy="110" rx="72" ry="12" fill="#0f140f" fill-opacity="0.46"/>
+      <rect x="30" y="54" width="128" height="38" rx="12" fill="#6d5941" stroke="#d8c8aa" stroke-opacity="0.16" stroke-width="4"/>
+      <path d="M42 52v-20M66 52v-24M90 52v-16M114 52v-22M138 52v-18" stroke="#dff4e7" stroke-opacity="0.22" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="48" cy="28" r="16" fill="#5b8a47" fill-opacity="0.86"/>
+      <circle cx="74" cy="22" r="14" fill="#6a9d53" fill-opacity="0.86"/>
+      <circle cx="102" cy="30" r="15" fill="#7ab35c" fill-opacity="0.82"/>
+      <circle cx="130" cy="24" r="14" fill="#8abc66" fill-opacity="0.82"/>
+    `,
+  ),
+  propGreenhouseValveBank: surfaceAsset(
+    148,
+    112,
+    `
+      <rect x="26" y="56" width="96" height="24" rx="8" fill="#66716c" stroke="#d4e9e1" stroke-opacity="0.16" stroke-width="4"/>
+      <circle cx="52" cy="46" r="12" fill="#b48b57" fill-opacity="0.56"/>
+      <circle cx="96" cy="46" r="12" fill="#b48b57" fill-opacity="0.56"/>
+      <path d="M52 34v24M40 46h24M96 34v24M84 46h24" stroke="#efe3cd" stroke-opacity="0.3" stroke-width="3"/>
+      <path d="M42 80v16M106 80v16" stroke="#7d8d86" stroke-opacity="0.42" stroke-width="5" stroke-linecap="round"/>
+    `,
+  ),
+  propSurveillanceDesk: surfaceAsset(
+    176,
+    126,
+    `
+      <ellipse cx="88" cy="104" rx="70" ry="14" fill="#0d1114" fill-opacity="0.46"/>
+      <rect x="34" y="46" width="108" height="28" rx="10" fill="#3a4249" stroke="#d8b07d" stroke-opacity="0.16" stroke-width="4"/>
+      <rect x="48" y="28" width="44" height="20" rx="6" fill="#86cee5" fill-opacity="0.22"/>
+      <rect x="98" y="24" width="30" height="24" rx="6" fill="#86cee5" fill-opacity="0.18"/>
+      <path d="M48 74v18M70 74v18M106 74v18M128 74v18" stroke="#1b2126" stroke-opacity="0.84" stroke-width="6" stroke-linecap="round"/>
+      <path d="M58 56h60" stroke="#e4eef2" stroke-opacity="0.18" stroke-width="3" stroke-linecap="round"/>
+    `,
+  ),
+  propSurveillanceSwitchboard: surfaceAsset(
+    152,
+    118,
+    `
+      <rect x="22" y="20" width="108" height="76" rx="10" fill="#49505a" stroke="#d8dce3" stroke-opacity="0.14" stroke-width="4"/>
+      <rect x="34" y="34" width="28" height="16" rx="4" fill="#8fd3ea" fill-opacity="0.22"/>
+      <rect x="68" y="34" width="28" height="16" rx="4" fill="#8fd3ea" fill-opacity="0.18"/>
+      <rect x="34" y="56" width="28" height="16" rx="4" fill="#f0c483" fill-opacity="0.18"/>
+      <rect x="68" y="56" width="28" height="16" rx="4" fill="#f0c483" fill-opacity="0.18"/>
+      <circle cx="108" cy="42" r="6" fill="#c7a26b"/>
+      <circle cx="108" cy="64" r="6" fill="#c7a26b"/>
+      <path d="M40 96v12M112 96v12" stroke="#252a30" stroke-opacity="0.8" stroke-width="5" stroke-linecap="round"/>
+    `,
+  ),
+  propGeneratorBreakerWall: surfaceAsset(
+    152,
+    122,
+    `
+      <rect x="20" y="22" width="112" height="76" rx="12" fill="#50535a" stroke="#d8dce3" stroke-opacity="0.18" stroke-width="4"/>
+      <rect x="34" y="36" width="24" height="18" rx="4" fill="#767c86"/>
+      <rect x="64" y="36" width="24" height="18" rx="4" fill="#767c86"/>
+      <rect x="94" y="36" width="24" height="18" rx="4" fill="#767c86"/>
+      <path d="M38 70h76" stroke="#efb164" stroke-opacity="0.3" stroke-width="8" stroke-linecap="round"/>
+      <path d="M46 84v18M74 84v18M102 84v18" stroke="#1c2024" stroke-opacity="0.82" stroke-width="5" stroke-linecap="round"/>
+      <path d="M32 106h88" stroke="#131517" stroke-opacity="0.52" stroke-width="10" stroke-linecap="round"/>
+    `,
+  ),
+  propGeneratorToolCart: surfaceAsset(
+    152,
+    112,
+    `
+      <ellipse cx="76" cy="98" rx="54" ry="10" fill="#0f1012" fill-opacity="0.4"/>
+      <rect x="34" y="48" width="84" height="26" rx="8" fill="#61656d" stroke="#dbdfe6" stroke-opacity="0.16" stroke-width="4"/>
+      <path d="M46 48v-14M106 48v-14M46 74v12M106 74v12" stroke="#cfd5dd" stroke-opacity="0.28" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="48" cy="88" r="8" fill="#403b39"/>
+      <circle cx="104" cy="88" r="8" fill="#403b39"/>
+      <rect x="54" y="34" width="18" height="10" rx="3" fill="#f0b266" fill-opacity="0.54"/>
+      <rect x="80" y="34" width="18" height="10" rx="3" fill="#7de08e" fill-opacity="0.42"/>
+    `,
+  ),
+} as const;
+
+const WHOLE_HOUSE_PROP_ASSETS = {
+  propCellarBoilerPremium: surfaceAsset(
+    168,
+    188,
+    `
+      <ellipse cx="84" cy="162" rx="56" ry="14" fill="#0f0f10" fill-opacity="0.44"/>
+      <rect x="46" y="34" width="76" height="110" rx="28" fill="#5a4e43" stroke="#d6bc8f" stroke-opacity="0.22" stroke-width="4"/>
+      <circle cx="84" cy="76" r="22" fill="#2b3134" stroke="#d8c08f" stroke-opacity="0.5" stroke-width="4"/>
+      <path d="M84 62v28M70 76h28" stroke="#d8c08f" stroke-opacity="0.4" stroke-width="3"/>
+      <path d="M54 48V22M114 48V18" stroke="#868178" stroke-opacity="0.7" stroke-width="6" stroke-linecap="round"/>
+      <path d="M62 146h44" stroke="#1d1715" stroke-opacity="0.72" stroke-width="10" stroke-linecap="round"/>
+      <path d="M122 104c14 8 24 18 30 34" fill="none" stroke="#efb36d" stroke-opacity="0.42" stroke-width="6" stroke-linecap="round"/>
+    `,
+  ),
+  propCellarValveBank: surfaceAsset(
+    156,
+    118,
+    `
+      <path d="M28 72h100" stroke="#5d5b58" stroke-width="14" stroke-linecap="round"/>
+      <path d="M42 40h72" stroke="#81847f" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="54" cy="58" r="12" fill="#c29a64" fill-opacity="0.54"/>
+      <circle cx="104" cy="58" r="12" fill="#c29a64" fill-opacity="0.54"/>
+      <path d="M54 46v24M42 58h24M104 46v24M92 58h24" stroke="#f0e2ca" stroke-opacity="0.28" stroke-width="3"/>
+      <path d="M48 80v16M110 80v16" stroke="#2c2825" stroke-opacity="0.76" stroke-width="5" stroke-linecap="round"/>
+    `,
+  ),
+  propServiceTrolley: surfaceAsset(
+    160,
+    118,
+    `
+      <ellipse cx="80" cy="102" rx="56" ry="10" fill="#100d0c" fill-opacity="0.42"/>
+      <rect x="38" y="46" width="84" height="26" rx="8" fill="#71553e" stroke="#e1c18f" stroke-opacity="0.2" stroke-width="4"/>
+      <path d="M50 46v-14M110 46v-14M50 72v14M110 72v14" stroke="#d8c6a7" stroke-opacity="0.3" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="50" cy="90" r="8" fill="#4b3d34"/>
+      <circle cx="110" cy="90" r="8" fill="#4b3d34"/>
+      <rect x="56" y="34" width="18" height="10" rx="3" fill="#d7d7d9"/>
+      <rect x="82" y="34" width="18" height="10" rx="3" fill="#c9b496" fill-opacity="0.72"/>
+    `,
+  ),
+  propServiceHooks: surfaceAsset(
+    148,
+    98,
+    `
+      <path d="M24 24h100" stroke="#7a6552" stroke-opacity="0.72" stroke-width="8" stroke-linecap="round"/>
+      <path d="M40 24v30M66 24v22M92 24v30M118 24v22" stroke="#d8c8b1" stroke-opacity="0.52" stroke-width="4" stroke-linecap="round"/>
+      <path d="M40 54c0 8 6 14 14 14M92 54c0 8 6 14 14 14" fill="none" stroke="#d8c8b1" stroke-opacity="0.44" stroke-width="4" stroke-linecap="round"/>
+      <rect x="58" y="44" width="14" height="28" rx="7" fill="#5d4d42" fill-opacity="0.82"/>
+      <rect x="108" y="40" width="14" height="32" rx="7" fill="#4d4038" fill-opacity="0.82"/>
+    `,
+  ),
+  propServiceLinenShelf: surfaceAsset(
+    144,
+    142,
+    `
+      <rect x="24" y="18" width="96" height="108" rx="10" fill="#6d5a48" stroke="#dcc8aa" stroke-opacity="0.2" stroke-width="4"/>
+      <path d="M34 48h76M34 78h76M34 108h76" stroke="#2d2119" stroke-opacity="0.76" stroke-width="8"/>
+      <rect x="42" y="34" width="22" height="10" rx="3" fill="#d7d7d9"/>
+      <rect x="68" y="34" width="22" height="10" rx="3" fill="#ece3d0"/>
+      <rect x="42" y="64" width="22" height="10" rx="3" fill="#c7b8a2"/>
+      <rect x="70" y="64" width="18" height="10" rx="3" fill="#d7d7d9"/>
+      <rect x="44" y="94" width="42" height="10" rx="3" fill="#ece3d0"/>
+    `,
+  ),
+} as const;
+
 export const INLINE_HERO_PROP_ASSETS = {
   ...SOCIAL_PROP_ASSETS,
   ...VERTICAL_SLICE_PROP_ASSETS,
   ...SERVICE_PROP_ASSETS,
+  ...FRONT_OF_HOUSE_PROP_ASSETS,
+  ...UTILITY_PROP_ASSETS,
+  ...WHOLE_HOUSE_PROP_ASSETS,
 } as const;
 
 export const MANOR_INLINE_ENVIRONMENT_ASSETS = {

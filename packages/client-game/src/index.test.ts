@@ -12,9 +12,12 @@ import { PhaseDirector } from "./directors/PhaseDirector";
 import { MockMatchConnection } from "./network/mockMatchConnection";
 import { ReplayMatchConnection } from "./network/replayMatchConnection";
 import {
+  getCorridorArtProfile,
   getCorridorFloorTextureKey,
   getDoorThresholdConfig,
   getImportedRoomArt,
+  isProductionArtDoorNode,
+  isProductionArtRoomId,
   isVerticalSliceCorridorSegment,
   isVerticalSliceRoomId,
 } from "./stage/importedArt";
@@ -106,12 +109,39 @@ describe("client-game package", () => {
     expect(assetKeys).toContain("floor-grand-hall-premium");
     expect(assetKeys).toContain("floor-library-premium");
     expect(assetKeys).toContain("floor-meeting-wing");
+    expect(assetKeys).toContain("floor-kitchen-premium");
+    expect(assetKeys).toContain("floor-study-premium");
+    expect(assetKeys).toContain("floor-ballroom-premium");
+    expect(assetKeys).toContain("floor-greenhouse-premium");
+    expect(assetKeys).toContain("floor-surveillance-hall-premium");
+    expect(assetKeys).toContain("floor-generator-room-premium");
+    expect(assetKeys).toContain("floor-cellar-premium");
+    expect(assetKeys).toContain("floor-service-corridor-premium");
+    expect(assetKeys).toContain("floor-intelligence-spine");
+    expect(assetKeys).toContain("floor-cross-gallery-premium");
+    expect(assetKeys).toContain("floor-service-link-premium");
     expect(assetKeys).toContain("wall-greenhouse");
     expect(assetKeys).toContain("wall-grand-hall-premium");
+    expect(assetKeys).toContain("wall-kitchen-premium");
+    expect(assetKeys).toContain("wall-study-premium");
+    expect(assetKeys).toContain("wall-ballroom-premium");
+    expect(assetKeys).toContain("wall-greenhouse-premium");
+    expect(assetKeys).toContain("wall-surveillance-hall-premium");
+    expect(assetKeys).toContain("wall-generator-room-premium");
+    expect(assetKeys).toContain("wall-cellar-premium");
+    expect(assetKeys).toContain("wall-service-corridor-premium");
     expect(assetKeys).toContain("door-threshold-social");
     expect(assetKeys).toContain("prop-ballroom-stage");
     expect(assetKeys).toContain("prop-grand-tribunal-table");
     expect(assetKeys).toContain("prop-library-desk");
+    expect(assetKeys).toContain("prop-kitchen-range-premium");
+    expect(assetKeys).toContain("prop-study-desk-premium");
+    expect(assetKeys).toContain("prop-ballroom-mask-wall");
+    expect(assetKeys).toContain("prop-greenhouse-planter-bed");
+    expect(assetKeys).toContain("prop-surveillance-desk");
+    expect(assetKeys).toContain("prop-generator-breaker-wall");
+    expect(assetKeys).toContain("prop-cellar-boiler-premium");
+    expect(assetKeys).toContain("prop-service-trolley");
     expect(derivedAssetKeys).toContain("floor-parquet");
     expect(derivedAssetKeys).toContain("wall-stone");
     expect(derivedAssetKeys).toContain("prop-kitchen-range");
@@ -122,9 +152,17 @@ describe("client-game package", () => {
 
   it("maps bespoke manor surfaces and thresholds to the environment pass", () => {
     const grandHallArt = getImportedRoomArt("grand-hall");
+    const kitchenArt = getImportedRoomArt("kitchen");
     const libraryArt = getImportedRoomArt("library");
+    const studyArt = getImportedRoomArt("study");
     const ballroomArt = getImportedRoomArt("ballroom");
+    const greenhouseArt = getImportedRoomArt("greenhouse");
+    const surveillanceArt = getImportedRoomArt("surveillance-hall");
+    const generatorArt = getImportedRoomArt("generator-room");
+    const cellarArt = getImportedRoomArt("cellar");
+    const servantsCorridorArt = getImportedRoomArt("servants-corridor");
     const greenhouseDoor = getDoorNodesForRoom("greenhouse")[0];
+    const serviceDoor = getDoorNodesForRoom("kitchen")[0];
     const mechanicalDoor = {
       roomId: "generator-room",
       targetRoomIds: ["cellar"],
@@ -140,31 +178,88 @@ describe("client-game package", () => {
     const eastSliceCorridor = MANOR_RENDER_MAP.corridors.find(
       (segment) => segment.x === 960 && segment.y === 220,
     );
+    const galleryCorridor = MANOR_RENDER_MAP.corridors.find(
+      (segment) => segment.className === "gallery",
+    );
+    const serviceCorridor = MANOR_RENDER_MAP.corridors.find(
+      (segment) => segment.className === "service-link",
+    );
 
     expect(grandHallArt.floorKey).toBe("floor-grand-hall-premium");
     expect(grandHallArt.wallKey).toBe("wall-grand-hall-premium");
     expect(grandHallArt.heroProps).toHaveLength(5);
+    expect(kitchenArt.floorKey).toBe("floor-kitchen-premium");
+    expect(kitchenArt.wallKey).toBe("wall-kitchen-premium");
+    expect(kitchenArt.heroProps).toHaveLength(5);
     expect(libraryArt.floorKey).toBe("floor-library-premium");
     expect(libraryArt.wallKey).toBe("wall-library-premium");
     expect(libraryArt.heroProps).toHaveLength(5);
-    expect(ballroomArt.heroProps).toHaveLength(2);
+    expect(studyArt.floorKey).toBe("floor-study-premium");
+    expect(studyArt.wallKey).toBe("wall-study-premium");
+    expect(studyArt.heroProps).toHaveLength(4);
+    expect(ballroomArt.floorKey).toBe("floor-ballroom-premium");
+    expect(ballroomArt.wallKey).toBe("wall-ballroom-premium");
+    expect(ballroomArt.heroProps).toHaveLength(4);
+    expect(greenhouseArt.floorKey).toBe("floor-greenhouse-premium");
+    expect(greenhouseArt.wallKey).toBe("wall-greenhouse-premium");
+    expect(greenhouseArt.heroProps).toHaveLength(4);
+    expect(surveillanceArt.floorKey).toBe("floor-surveillance-hall-premium");
+    expect(surveillanceArt.wallKey).toBe("wall-surveillance-hall-premium");
+    expect(surveillanceArt.heroProps).toHaveLength(4);
+    expect(generatorArt.floorKey).toBe("floor-generator-room-premium");
+    expect(generatorArt.wallKey).toBe("wall-generator-room-premium");
+    expect(generatorArt.heroProps).toHaveLength(4);
+    expect(cellarArt.floorKey).toBe("floor-cellar-premium");
+    expect(cellarArt.wallKey).toBe("wall-cellar-premium");
+    expect(cellarArt.heroProps).toHaveLength(4);
+    expect(servantsCorridorArt.floorKey).toBe("floor-service-corridor-premium");
+    expect(servantsCorridorArt.wallKey).toBe("wall-service-corridor-premium");
+    expect(servantsCorridorArt.heroProps).toHaveLength(4);
     expect(isVerticalSliceRoomId("grand-hall")).toBe(true);
     expect(isVerticalSliceRoomId("study")).toBe(false);
+    expect(isProductionArtRoomId("study")).toBe(true);
+    expect(isProductionArtRoomId("library")).toBe(true);
     expect(getCorridorFloorTextureKey("meeting-wing")).toBe(
       "floor-meeting-wing",
     );
+    expect(getCorridorArtProfile("meeting-wing")).toBe("front-house");
     expect(isVerticalSliceCorridorSegment("meeting-wing")).toBe(true);
     expect(eastSliceCorridor).toBeDefined();
     if (!eastSliceCorridor) {
       throw new Error("Expected the hall-library corridor segment.");
     }
+    expect(getCorridorArtProfile(eastSliceCorridor)).toBe("intelligence");
     expect(isVerticalSliceCorridorSegment(eastSliceCorridor)).toBe(true);
     expect(getCorridorFloorTextureKey(eastSliceCorridor)).toBe(
-      "floor-meeting-wing",
+      "floor-intelligence-spine",
+    );
+    expect(galleryCorridor).toBeDefined();
+    if (!galleryCorridor) {
+      throw new Error("Expected a gallery corridor segment.");
+    }
+    expect(getCorridorArtProfile(galleryCorridor)).toBe("gallery");
+    expect(getCorridorFloorTextureKey(galleryCorridor)).toBe(
+      "floor-cross-gallery-premium",
+    );
+    expect(serviceCorridor).toBeDefined();
+    if (!serviceCorridor) {
+      throw new Error("Expected a service corridor segment.");
+    }
+    expect(getCorridorArtProfile(serviceCorridor)).toBe("service");
+    expect(getCorridorFloorTextureKey(serviceCorridor)).toBe(
+      "floor-service-link-premium",
     );
     expect(getDoorThresholdConfig(greenhouseDoor).key).toBe(
       "door-threshold-greenhouse",
     );
+    expect(serviceDoor).toBeDefined();
+    if (!serviceDoor) {
+      throw new Error("Expected a kitchen door node.");
+    }
+    expect(getDoorThresholdConfig(serviceDoor).key).toBe(
+      "door-threshold-service",
+    );
+    expect(isProductionArtDoorNode(serviceDoor)).toBe(true);
     expect(getDoorThresholdConfig(mechanicalDoor).key).toBe(
       "door-threshold-mechanical",
     );
