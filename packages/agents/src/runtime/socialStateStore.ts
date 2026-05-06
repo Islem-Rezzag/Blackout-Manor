@@ -8,6 +8,7 @@ import {
   type SocialReasoningSnapshot,
   type SocialReasoningState,
 } from "../heart/social";
+import { projectSocialEventsForAgent } from "./AgentObservationProjector";
 
 type StoredSocialState = {
   state: SocialReasoningState;
@@ -57,11 +58,17 @@ export class AgentSocialStateStore {
     const lastProcessedSequence = shouldReplayFromStart
       ? 0
       : existing.lastProcessedSequence;
-    const nextEvents = engineState.eventLog.filter(
+    const rawNextEvents = engineState.eventLog.filter(
       (event) => event.sequence > lastProcessedSequence,
     );
+    const nextEvents = projectSocialEventsForAgent(
+      engineState,
+      actorId,
+      rawNextEvents,
+    );
     const nextState = applySocialReasoningEvents(baseState, nextEvents);
-    const nextSequence = nextEvents.at(-1)?.sequence ?? lastProcessedSequence;
+    const nextSequence =
+      rawNextEvents.at(-1)?.sequence ?? lastProcessedSequence;
 
     this.#states.set(actorId, {
       state: nextState,
