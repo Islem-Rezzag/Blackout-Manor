@@ -4,6 +4,7 @@ import type {
   PlayerId,
   PlayerState,
   RoomId,
+  TaskState,
 } from "@blackout-manor/shared";
 
 export const AGENT_EVENT_VISIBILITY_CATEGORIES = [
@@ -30,6 +31,8 @@ export type ProjectedAgentObservationEvent = {
 type EventFrameContext = {
   playersBefore: PlayerState[];
   playersAfter: PlayerState[];
+  tasksBefore: TaskState[];
+  tasksAfter: TaskState[];
 };
 
 const MAX_SUMMARY_LENGTH = 180;
@@ -41,6 +44,9 @@ const truncateSummary = (summary: string) =>
 
 const findPlayer = (players: readonly PlayerState[], playerId: PlayerId) =>
   players.find((player) => player.id === playerId) ?? null;
+
+const findTask = (tasks: readonly TaskState[], taskId: string) =>
+  tasks.find((task) => task.taskId === taskId) ?? null;
 
 const eventFrameContext = (
   state: EngineState,
@@ -56,6 +62,8 @@ const eventFrameContext = (
   return {
     playersBefore: previousFrame?.players ?? frame?.players ?? state.players,
     playersAfter: frame?.players ?? state.players,
+    tasksBefore: previousFrame?.tasks ?? frame?.tasks ?? state.tasks,
+    tasksAfter: frame?.tasks ?? state.tasks,
   };
 };
 
@@ -192,7 +200,7 @@ const publicActionSummary = (
     case "continue-task":
       return `${proposal.actorId} worked on ${proposal.taskId}.`;
     case "report-body":
-      return `${proposal.actorId} reported ${proposal.discoveredPlayerId}'s body.`;
+      return `${proposal.actorId} reported ${proposal.discoveredPlayerId}'s body in ${actorRoom ?? "the room"}.`;
     case "call-meeting":
       return `${proposal.actorId} called a meeting.`;
     case "comfort":
@@ -206,6 +214,28 @@ const publicActionSummary = (
       return `${proposal.actorId} escorted ${proposal.targetPlayerId}.`;
     case "unlock-service-passage":
       return `${proposal.actorId} unlocked the service passage.`;
+    case "jam-door":
+      return `${proposal.actorId} jammed the door to ${proposal.targetRoomId}.`;
+    case "loop-cameras":
+      return `${proposal.actorId} looped cameras in ${proposal.targetRoomId}.`;
+    case "forge-ledger-entry":
+      return `${proposal.actorId} forged evidence around ${proposal.taskId}.`;
+    case "plant-false-clue":
+      return `${proposal.actorId} planted a false clue in ${proposal.targetRoomId}.`;
+    case "mimic-task-audio":
+      return `${proposal.actorId} mimicked task audio near ${proposal.taskId}.`;
+    case "delay-two-person-task":
+      return `${proposal.actorId} disrupted ${proposal.taskId}.`;
+    case "seal-room":
+      return `${proposal.actorId} sealed ${proposal.targetRoomId}.`;
+    case "recover-clue":
+      return `${proposal.actorId} recovered a clue in ${proposal.targetRoomId}.`;
+    case "dust-room":
+      return `${proposal.actorId} dusted ${proposal.targetRoomId} for clues.`;
+    case "ask-forensic-question":
+      return `${proposal.actorId} asked: ${proposal.question}`;
+    case "compare-clue-fragments":
+      return `${proposal.actorId} compared clue fragments.`;
     case "vote-player":
       return `${proposal.actorId} voted for ${proposal.targetPlayerId}.`;
     case "skip-vote":
@@ -251,6 +281,27 @@ const actionEffectRoom = (
   }
 
   return playerRoomBefore(context, proposal.actorId);
+};
+
+const taskProgressBecamePublic = (
+  proposal: AgentActionProposal,
+  context: EventFrameContext,
+) => {
+  if (proposal.actionId !== "continue-task") {
+    return false;
+  }
+
+  const before = findTask(context.tasksBefore, proposal.taskId);
+  const after = findTask(context.tasksAfter, proposal.taskId);
+
+  if (!after) {
+    return false;
+  }
+
+  return (
+    after.status === "completed" ||
+    (after.progress ?? 0) > (before?.progress ?? 0)
+  );
 };
 
 const projectSpeechAction = (
@@ -396,7 +447,21 @@ const projectActionEvent = (
     proposal.actionId === "vote-player" ||
     proposal.actionId === "skip-vote"
   ) {
-    return null;
+    return createProjectedEvent(
+      event,
+      targetPlayerId === actorId ? "target-only" : "public-to-all",
+      publicActionSummary(proposal, context),
+      { includeSocialEvent: true },
+    );
+  }
+
+  if (taskProgressBecamePublic(proposal, context)) {
+    return createProjectedEvent(
+      event,
+      "public-to-all",
+      publicActionSummary(proposal, context),
+      { includeSocialEvent: true },
+    );
   }
 
   if (
@@ -410,7 +475,21 @@ const projectActionEvent = (
     proposal.actionId === "seal-room"
   ) {
     const effectRoom = actionEffectRoom(proposal, context);
+    const actorRoom = playerRoomBefore(context, proposal.actorId);
     const isPublic = proposal.actionId === "trigger-blackout";
+
+    if (
+      !isPublic &&
+      actorRoom !== null &&
+      viewerWasInRoom(context, actorId, actorRoom)
+    ) {
+      return createProjectedEvent(
+        event,
+        "witnesses",
+        publicActionSummary(proposal, context),
+        { includeSocialEvent: true },
+      );
+    }
 
     if (isPublic || viewerWasInRoom(context, actorId, effectRoom)) {
       return createProjectedEvent(
@@ -421,6 +500,18 @@ const projectActionEvent = (
     }
 
     return null;
+  }
+
+  if (
+    proposal.phaseId === "report" &&
+    (proposal.actionId === "dust-room" || proposal.actionId === "recover-clue")
+  ) {
+    return createProjectedEvent(
+      event,
+      "public-to-all",
+      publicActionSummary(proposal, context),
+      { includeSocialEvent: true },
+    );
   }
 
   if (

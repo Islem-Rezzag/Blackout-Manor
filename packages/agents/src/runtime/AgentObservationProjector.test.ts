@@ -86,6 +86,7 @@ const syncReplayBaseline = (state: EngineState) => {
 
   latestFrame.players = structuredClone(state.players);
   latestFrame.rooms = structuredClone(state.rooms);
+  latestFrame.tasks = structuredClone(state.tasks);
 };
 
 const movePlayer = (
@@ -255,7 +256,83 @@ describe("AgentObservationProjector", () => {
     ).toContain(`${speakerId} said: I saw a broken alibi near the cellar.`);
   });
 
-  it("keeps individual votes private until the public vote resolution", () => {
+  it("keeps investigator report evidence visible to meeting agents", () => {
+    let state = createRoamState(108);
+    const investigatorId = requireValue(
+      state.players.find((player) => player.role === "investigator")?.id,
+      "investigator",
+    );
+    const observerId = requireValue(
+      state.players.find(
+        (player) => player.status === "alive" && player.id !== investigatorId,
+      )?.id,
+      "observer",
+    );
+
+    state = dispatchAction(state, {
+      ...actionBase(state, observerId),
+      actionId: "call-meeting",
+      reason: "Need a report window.",
+    }).state;
+    const reportState = structuredClone(state);
+    reportState.phaseId = "report";
+    reportState.phaseStartedAtTick = state.tick;
+    reportState.phaseEndsAtTick = state.tick + 5;
+    state = dispatchAction(reportState, {
+      ...actionBase(reportState, investigatorId),
+      actionId: "recover-clue",
+      targetRoomId: requireValue(
+        reportState.players.find((player) => player.id === investigatorId)
+          ?.roomId,
+        "investigator room",
+      ),
+    }).state;
+
+    expect(
+      projectVisibleEventSummariesForAgent(state, observerId).join(" "),
+    ).toContain(`${investigatorId} recovered a clue`);
+  });
+
+  it("projects replay-public task progress to all agents", () => {
+    let state = createRoamState(110);
+    const workerId = requireValue(getHouseholdIds(state)[0], "worker");
+    const observerId = requireValue(
+      getHouseholdIds(state).find((playerId) => playerId !== workerId),
+      "observer",
+    );
+    const task = requireValue(
+      state.tasks.find((candidate) => candidate.kind === "solo"),
+      "solo task",
+    );
+    const observerRoomId =
+      state.rooms.find((room) => room.roomId !== task.roomId)?.roomId ?? null;
+
+    movePlayer(state, workerId, task.roomId);
+    movePlayer(state, observerId, observerRoomId);
+    syncOccupants(state);
+    syncReplayBaseline(state);
+    state = dispatchAction(state, {
+      ...actionBase(state, workerId),
+      actionId: "continue-task",
+      taskId: task.taskId,
+    }).state;
+
+    expect(
+      projectVisibleEventSummariesForAgent(state, observerId).join(" "),
+    ).toContain(`${workerId} worked on ${task.taskId}.`);
+    expect(projectSocialEventsForAgent(state, observerId)).toContainEqual(
+      expect.objectContaining({
+        type: "action-recorded",
+        proposal: expect.objectContaining({
+          actionId: "continue-task",
+          actorId: workerId,
+          taskId: task.taskId,
+        }),
+      }),
+    );
+  });
+
+  it("projects public vote casts and public vote resolution", () => {
     let state = createRoamState(109);
     const voterId = requireValue(getHouseholdIds(state)[0], "voter");
     const observerId = requireValue(
@@ -281,7 +358,17 @@ describe("AgentObservationProjector", () => {
     ).toContain(`You voted for ${targetId}.`);
     expect(
       projectVisibleEventSummariesForAgent(state, observerId).join(" "),
-    ).not.toContain(`${voterId} voted for ${targetId}`);
+    ).toContain(`${voterId} voted for ${targetId}.`);
+    expect(projectSocialEventsForAgent(state, observerId)).toContainEqual(
+      expect.objectContaining({
+        type: "action-recorded",
+        proposal: expect.objectContaining({
+          actionId: "vote-player",
+          actorId: voterId,
+          targetPlayerId: targetId,
+        }),
+      }),
+    );
 
     for (const playerId of state.players
       .filter(
@@ -309,7 +396,7 @@ describe("AgentObservationProjector", () => {
 
     expect(resolvedText).toContain("Vote resolved:");
     expect(resolvedText).toContain(`${targetId}: 1`);
-    expect(resolvedText).not.toContain(`${voterId} voted for ${targetId}`);
+    expect(resolvedText).toContain(`${voterId} voted for ${targetId}.`);
   });
 
   it("does not expose sabotage actor identity unless the actor sees their own action", () => {
@@ -340,5 +427,35 @@ describe("AgentObservationProjector", () => {
       }),
     );
     expect(actorText).toContain("You triggered a blackout.");
+  });
+
+  it("shows an actor-room sabotage witness the identified action", () => {
+    let state = createRoamState(114);
+    const shadowId = requireValue(getShadowIds(state)[0], "shadow");
+    const observerId = requireValue(getHouseholdIds(state)[0], "observer");
+    const staged = structuredClone(state);
+
+    movePlayer(staged, shadowId, "cellar");
+    movePlayer(staged, observerId, "cellar");
+    syncOccupants(staged);
+    syncReplayBaseline(staged);
+    state = dispatchAction(staged, {
+      ...actionBase(staged, shadowId),
+      actionId: "jam-door",
+      targetRoomId: "cellar",
+    }).state;
+
+    expect(
+      projectVisibleEventSummariesForAgent(state, observerId).join(" "),
+    ).toContain(`${shadowId} jammed the door to cellar.`);
+    expect(projectSocialEventsForAgent(state, observerId)).toContainEqual(
+      expect.objectContaining({
+        type: "action-recorded",
+        proposal: expect.objectContaining({
+          actionId: "jam-door",
+          actorId: shadowId,
+        }),
+      }),
+    );
   });
 });
