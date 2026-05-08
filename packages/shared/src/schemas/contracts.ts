@@ -63,7 +63,73 @@ export const PlayerIdSchema = createIdentifierSchema("Player ID");
 export const EventInstanceIdSchema = createIdentifierSchema("Event ID");
 export const MemoryIdSchema = createIdentifierSchema("Memory ID");
 export const ClueIdSchema = createIdentifierSchema("Clue ID");
+export const EvidenceIdSchema = createIdentifierSchema("Evidence ID");
+export const ClaimIdSchema = createIdentifierSchema("Claim ID");
 export const SeedSchema = z.number().int().nonnegative();
+
+export const ClaimSupportLevelSchema = z.enum([
+  "observed",
+  "inferred",
+  "reported-by-other",
+  "deceptive",
+  "unsupported",
+]);
+
+export const EvidenceRefSchema = z
+  .object({
+    id: EvidenceIdSchema,
+    kind: z.enum([
+      "visible-event",
+      "visible-player",
+      "meeting-speech",
+      "body",
+      "vote",
+      "clue",
+      "memory",
+    ]),
+    summary: z.string().min(1).max(180),
+    tick: tickSchema.optional(),
+    sequence: z.number().int().nonnegative().optional(),
+    playerIds: z.array(PlayerIdSchema).max(10).default([]),
+    roomId: RoomIdSchema.optional(),
+  })
+  .strict();
+
+export const ClaimRefSchema = z
+  .object({
+    id: ClaimIdSchema,
+    speakerId: PlayerIdSchema,
+    summary: z.string().min(1).max(180),
+    tick: tickSchema.optional(),
+    claimKey: z.string().min(1).max(96).optional(),
+    value: z.string().min(1).max(120).optional(),
+    supportLevel: ClaimSupportLevelSchema.optional(),
+    evidenceIds: z.array(EvidenceIdSchema).max(8).default([]),
+  })
+  .strict();
+
+export const PublicClaimSchema = z
+  .object({
+    id: ClaimIdSchema,
+    speakerId: PlayerIdSchema,
+    text: z.string().min(1).max(180),
+    kind: z.enum([
+      "alibi",
+      "accusation",
+      "clue",
+      "timeline",
+      "support",
+      "unknown",
+    ]),
+    supportLevel: ClaimSupportLevelSchema,
+    evidenceRefs: z.array(EvidenceRefSchema).max(8).default([]),
+    relatedPlayerIds: z.array(PlayerIdSchema).max(10).default([]),
+    roomId: RoomIdSchema.optional(),
+    claimKey: z.string().min(1).max(96).optional(),
+    value: z.string().min(1).max(120).optional(),
+    contradicts: z.array(ClaimRefSchema).max(8).default([]),
+  })
+  .strict();
 
 export const PublicImageSchema = z
   .object({
@@ -246,6 +312,7 @@ export const SpeechPayloadSchema = z
     channel: SpeechChannelIdSchema,
     text: z.string().min(1).max(180),
     tone: EmotionalIntentIdSchema,
+    publicClaims: z.array(PublicClaimSchema).max(8).optional(),
   })
   .strict();
 
@@ -507,6 +574,8 @@ export const PrivateObservationSchema = z
     visiblePlayers: z.array(VisiblePlayerSchema).max(9),
     visibleEvents: z.array(z.string().min(1).max(180)).max(12),
     recentClaims: z.array(z.string().min(1).max(180)).max(12),
+    allowedFacts: z.array(EvidenceRefSchema).max(24),
+    allowedClaims: z.array(ClaimRefSchema).max(12),
     topMemories: z.array(MemoryEventSchema).max(12),
     relationships: z.record(PlayerIdSchema, RelationshipStateSchema),
     legalActions: z.array(ActionIdSchema).min(1),
@@ -749,6 +818,10 @@ export type MatchId = z.infer<typeof MatchIdSchema>;
 export type ReplayId = z.infer<typeof ReplayIdSchema>;
 export type PlayerId = z.infer<typeof PlayerIdSchema>;
 export type ClueId = z.infer<typeof ClueIdSchema>;
+export type EvidenceRef = z.infer<typeof EvidenceRefSchema>;
+export type ClaimRef = z.infer<typeof ClaimRefSchema>;
+export type PublicClaim = z.infer<typeof PublicClaimSchema>;
+export type ClaimSupportLevel = z.infer<typeof ClaimSupportLevelSchema>;
 export type PublicImage = z.infer<typeof PublicImageSchema>;
 export type EmotionState = z.infer<typeof EmotionStateSchema>;
 export type RelationshipState = z.infer<typeof RelationshipStateSchema>;

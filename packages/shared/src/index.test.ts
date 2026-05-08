@@ -3,9 +3,12 @@ import { z } from "zod";
 
 import {
   AgentActionProposalSchema,
+  ClaimRefSchema,
+  ClaimSupportLevelSchema,
   ClientMessageSchema,
   DEFAULT_TIMINGS,
   deserializeReplayEnvelope,
+  EvidenceRefSchema,
   HealthcheckResponseSchema,
   LobbySnapshotSchema,
   MatchConfigSchema,
@@ -17,6 +20,7 @@ import {
   OFFICIAL_V1_CAST,
   PlayerStateSchema,
   PrivateObservationSchema,
+  PublicClaimSchema,
   PublicPlayerStateSchema,
   parseEnv,
   RelationshipStateSchema,
@@ -59,6 +63,41 @@ const memoryEvent = {
   emotionTag: "shaken",
   salience: 0.92,
   evidenceStrength: 0.72,
+} as const;
+
+const evidenceRef = {
+  id: "ev-1",
+  kind: "visible-event",
+  summary: "Agent B was visible in the generator room.",
+  tick: 12,
+  sequence: 4,
+  playerIds: ["agent-b"],
+  roomId: "generator-room",
+} as const;
+
+const claimRef = {
+  id: "claim-1",
+  speakerId: "agent-b",
+  summary: "agent-b said they were in the generator room.",
+  tick: 12,
+  claimKey: "self-room",
+  value: "generator-room",
+  supportLevel: "observed",
+  evidenceIds: ["ev-1"],
+} as const;
+
+const publicClaim = {
+  id: "claim-2",
+  speakerId: "agent-a",
+  text: "I was with agent-b in the generator room.",
+  kind: "alibi",
+  supportLevel: "observed",
+  evidenceRefs: [evidenceRef],
+  relatedPlayerIds: ["agent-b"],
+  roomId: "generator-room",
+  claimKey: "self-with",
+  value: "agent-b",
+  contradicts: [],
 } as const;
 
 const taskDefinition = {
@@ -222,6 +261,8 @@ const privateObservation = {
   ],
   visibleEvents: ["The breaker lattice sparked twice."],
   recentClaims: ["Agent B said they were alone in the cellar."],
+  allowedFacts: [evidenceRef],
+  allowedClaims: [claimRef],
   topMemories: [memoryEvent],
   relationships: {
     "agent-b": relationshipState,
@@ -589,6 +630,9 @@ describe("shared package", () => {
       [RoomStateSchema, roomState],
       [RelationshipStateSchema, relationshipState],
       [MemoryEventSchema, memoryEvent],
+      [EvidenceRefSchema, evidenceRef],
+      [ClaimRefSchema, claimRef],
+      [PublicClaimSchema, publicClaim],
       [PublicPlayerStateSchema, publicPlayerState],
       [PlayerStateSchema, playerState],
       [MatchConfigSchema, matchConfig],
@@ -621,6 +665,16 @@ describe("shared package", () => {
 
       expect(roundTripped).toEqual(sample);
     }
+  });
+
+  it("keeps claim support levels stable", () => {
+    expect(ClaimSupportLevelSchema.options).toEqual([
+      "observed",
+      "inferred",
+      "reported-by-other",
+      "deceptive",
+      "unsupported",
+    ]);
   });
 
   it("round-trips all action proposal variants", () => {

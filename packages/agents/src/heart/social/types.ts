@@ -1,4 +1,6 @@
 import type {
+  ClaimSupportLevel,
+  EvidenceRef,
   PlayerId,
   RelationshipState,
   RoleId,
@@ -45,6 +47,9 @@ export type SocialClaim = {
   tick: number;
   summary: string;
   sourceText: string;
+  publicClaimId?: string;
+  supportLevel?: ClaimSupportLevel;
+  evidenceRefs?: EvidenceRef[];
 };
 
 export type ContradictionRecord = {

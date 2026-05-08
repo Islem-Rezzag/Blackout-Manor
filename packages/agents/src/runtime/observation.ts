@@ -10,6 +10,7 @@ import {
 import type { PhaseActionBudget } from "../config/actionBudgets";
 import type { AgentDecisionCandidate } from "../model/types";
 import {
+  projectAllowedKnowledgeForAgent,
   projectVisibleEventSummariesForAgent,
   projectVisibleSpeechClaimsForAgent,
 } from "./AgentObservationProjector";
@@ -65,6 +66,7 @@ export const createPrivateObservation = (
     0,
     budget.maxRecentClaims,
   );
+  const allowedKnowledge = projectAllowedKnowledgeForAgent(state, actorId);
 
   return PrivateObservationSchema.parse({
     phaseId: state.phaseId,
@@ -96,6 +98,8 @@ export const createPrivateObservation = (
       })),
     visibleEvents: recentEvents,
     recentClaims,
+    allowedFacts: allowedKnowledge.allowedFacts,
+    allowedClaims: allowedKnowledge.allowedClaims,
     topMemories: sortedMemories(actor.memories).slice(0, budget.maxMemories),
     relationships: actor.relationships,
     legalActions: [
