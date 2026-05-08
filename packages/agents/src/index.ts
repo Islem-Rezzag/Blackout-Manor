@@ -20,6 +20,17 @@ export {
   AGENT_SELECTION_JSON_SCHEMA,
   AgentDecisionGateway,
 } from "./runtime/AgentDecisionGateway";
+export type {
+  AgentEventVisibilityCategory,
+  ProjectedAgentObservationEvent,
+} from "./runtime/AgentObservationProjector";
+export {
+  AGENT_EVENT_VISIBILITY_CATEGORIES,
+  projectAgentObservationEvents,
+  projectSocialEventsForAgent,
+  projectVisibleEventSummariesForAgent,
+  projectVisibleSpeechClaimsForAgent,
+} from "./runtime/AgentObservationProjector";
 export { createDecisionCandidates } from "./runtime/candidates";
 export { createPrivateObservation } from "./runtime/observation";
 export { AgentSocialStateStore } from "./runtime/socialStateStore";

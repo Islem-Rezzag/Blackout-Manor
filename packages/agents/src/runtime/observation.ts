@@ -1,4 +1,4 @@
-import type { EngineEvent, EngineState } from "@blackout-manor/engine";
+import type { EngineState } from "@blackout-manor/engine";
 import {
   type BodyLanguageId,
   type MemoryEvent,
@@ -9,6 +9,10 @@ import {
 
 import type { PhaseActionBudget } from "../config/actionBudgets";
 import type { AgentDecisionCandidate } from "../model/types";
+import {
+  projectVisibleEventSummariesForAgent,
+  projectVisibleSpeechClaimsForAgent,
+} from "./AgentObservationProjector";
 
 const toBodyLanguage = (
   pleasure: number,
@@ -36,43 +40,6 @@ const toBodyLanguage = (
   return "calm";
 };
 
-const stringifyEngineEvent = (event: EngineEvent) => {
-  switch (event.type) {
-    case "phase-changed":
-      return `Phase shifted from ${event.fromPhaseId} to ${event.toPhaseId}.`;
-    case "vote-resolved":
-      return event.exiledPlayerId
-        ? `${event.exiledPlayerId} was exiled after the vote.`
-        : "The vote resolved without an exile.";
-    case "win-declared":
-      return `${event.winner.team} won by ${event.winner.reason}.`;
-    case "action-recorded":
-      return `${event.proposal.actorId} chose ${event.proposal.actionId}.`;
-    case "roles-assigned":
-      return "Roles were assigned.";
-    case "tick-advanced":
-      return `Tick advanced to ${event.nextTick}.`;
-    case "match-bootstrapped":
-      return "The match was bootstrapped.";
-    default:
-      return "Engine event recorded.";
-  }
-};
-
-const speechClaimsFromEvents = (events: readonly EngineEvent[]) =>
-  events
-    .flatMap((event) =>
-      event.type === "action-recorded" && event.proposal.speech
-        ? [
-            `${event.proposal.actorId}: ${event.proposal.speech.text}`.slice(
-              0,
-              180,
-            ),
-          ]
-        : [],
-    )
-    .reverse();
-
 const sortedMemories = (memories: readonly MemoryEvent[]) =>
   [...memories].sort((left, right) => right.salience - left.salience);
 
@@ -90,8 +57,11 @@ export const createPrivateObservation = (
     );
   }
 
-  const recentEvents = state.eventLog.slice(-budget.maxVisibleEvents);
-  const recentClaims = speechClaimsFromEvents(state.eventLog).slice(
+  const recentEvents = projectVisibleEventSummariesForAgent(
+    state,
+    actorId,
+  ).slice(-budget.maxVisibleEvents);
+  const recentClaims = projectVisibleSpeechClaimsForAgent(state, actorId).slice(
     0,
     budget.maxRecentClaims,
   );
@@ -124,7 +94,7 @@ export const createPrivateObservation = (
           player.emotion.label,
         ),
       })),
-    visibleEvents: recentEvents.map(stringifyEngineEvent),
+    visibleEvents: recentEvents,
     recentClaims,
     topMemories: sortedMemories(actor.memories).slice(0, budget.maxMemories),
     relationships: actor.relationships,

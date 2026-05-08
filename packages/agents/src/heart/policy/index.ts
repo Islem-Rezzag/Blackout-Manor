@@ -323,14 +323,26 @@ const phaseModifier = (
         case "report-body":
           return 18;
         case "continue-task":
-          return actor.role === "shadow" ? -4 : 24;
+          return actor.role === "shadow" ? -4 : 28;
         case "start-task":
-          return actor.role === "shadow" ? -2 : 20;
-        case "move":
-          return candidate.template.targetRoomId === "generator-room" ||
-            candidate.template.targetRoomId === "cellar"
+          return actor.role === "shadow" ? -2 : 24;
+        case "move": {
+          const targetRoomId = candidate.template.targetRoomId;
+          const targetRoomHasOpenTask =
+            actor.role !== "shadow" &&
+            input.state.tasks.some(
+              (task) =>
+                task.roomId === targetRoomId && task.status !== "completed",
+            );
+
+          if (targetRoomHasOpenTask) {
+            return 18;
+          }
+
+          return targetRoomId === "generator-room" || targetRoomId === "cellar"
             ? 10
             : 4;
+        }
         case "call-meeting":
           return suspicion > 0.88 || contradictionCount > 1 ? 4 : -12;
         case "eliminate":
