@@ -1,6 +1,8 @@
 import type { EngineEvent, EngineState } from "@blackout-manor/engine";
 import type {
   AgentActionProposal,
+  ClaimRef,
+  EvidenceRef,
   PlayerId,
   PlayerState,
   RoomId,
@@ -26,6 +28,11 @@ export type ProjectedAgentObservationEvent = {
   summary: string;
   speechClaim?: string | undefined;
   socialEvent?: EngineEvent | undefined;
+};
+
+export type ProjectedAllowedKnowledge = {
+  allowedFacts: EvidenceRef[];
+  allowedClaims: ClaimRef[];
 };
 
 type EventFrameContext = {
@@ -553,6 +560,128 @@ const formatVoteTotals = (voteTotals: Record<string, number>) => {
   return entries.map(([playerId, count]) => `${playerId}: ${count}`).join(", ");
 };
 
+const evidenceKindForProjectedEvent = (
+  event: ProjectedAgentObservationEvent,
+): EvidenceRef["kind"] => {
+  if (event.speechClaim) {
+    return "meeting-speech";
+  }
+
+  if (event.summary.includes("body") || event.summary.includes("eliminated")) {
+    return "body";
+  }
+
+  if (event.summary.includes("voted") || event.summary.includes("Vote")) {
+    return "vote";
+  }
+
+  if (event.summary.includes("clue")) {
+    return "clue";
+  }
+
+  return "visible-event";
+};
+
+const extractPlayerIdsFromText = (
+  text: string,
+  players: readonly PlayerState[],
+) =>
+  players
+    .filter(
+      (player) =>
+        text.includes(player.id) ||
+        (player.displayName.length > 0 && text.includes(player.displayName)),
+    )
+    .map((player) => player.id);
+
+const roomIdFromText = (text: string, state: EngineState) =>
+  state.rooms.find((room) => text.includes(room.roomId))?.roomId;
+
+const projectedEventToEvidenceRef = (
+  state: EngineState,
+  event: ProjectedAgentObservationEvent,
+): EvidenceRef => ({
+  id: `ev:${event.sequence}`,
+  kind: evidenceKindForProjectedEvent(event),
+  summary: event.summary,
+  tick: event.tick,
+  sequence: event.sequence,
+  playerIds: extractPlayerIdsFromText(event.summary, state.players),
+  ...(roomIdFromText(event.summary, state)
+    ? { roomId: roomIdFromText(event.summary, state) }
+    : {}),
+});
+
+const projectedSpeechToClaimRef = (
+  state: EngineState,
+  event: ProjectedAgentObservationEvent,
+): ClaimRef | null => {
+  if (!event.speechClaim) {
+    return null;
+  }
+
+  const separatorIndex = event.speechClaim.indexOf(":");
+  const speakerId =
+    separatorIndex > 0 ? event.speechClaim.slice(0, separatorIndex) : "";
+  const speaker = state.players.find((player) => player.id === speakerId);
+
+  if (!speaker) {
+    return null;
+  }
+
+  return {
+    id: `claim:${event.sequence}`,
+    speakerId: speaker.id,
+    summary: event.speechClaim,
+    tick: event.tick,
+    supportLevel: "reported-by-other",
+    evidenceIds: [`ev:${event.sequence}`],
+  };
+};
+
+const currentVisibleFactsForAgent = (
+  state: EngineState,
+  actorId: PlayerId,
+): EvidenceRef[] => {
+  const actor = findPlayer(state.players, actorId);
+
+  if (!actor?.roomId) {
+    return [];
+  }
+
+  const actorRoomId = actor.roomId;
+  const sameRoomPlayers = state.players
+    .filter(
+      (player) =>
+        player.status === "alive" &&
+        player.id !== actorId &&
+        player.roomId === actorRoomId,
+    )
+    .map((player) => player.id);
+
+  return [
+    {
+      id: `current-room:${actorId}`,
+      kind: "visible-player",
+      summary:
+        sameRoomPlayers.length > 0
+          ? `You are in ${actorRoomId} with ${sameRoomPlayers.join(", ")}.`
+          : `You are in ${actorRoomId}.`,
+      tick: state.tick,
+      playerIds: [actorId, ...sameRoomPlayers],
+      roomId: actorRoomId,
+    },
+    ...sameRoomPlayers.map((playerId) => ({
+      id: `visible-player:${actorId}:${playerId}`,
+      kind: "visible-player" as const,
+      summary: `${playerId} is visible with you in ${actorRoomId}.`,
+      tick: state.tick,
+      playerIds: [playerId],
+      roomId: actorRoomId,
+    })),
+  ];
+};
+
 const projectEventForAgent = (
   state: EngineState,
   actorId: PlayerId,
@@ -634,3 +763,27 @@ export const projectSocialEventsForAgent = (
   projectAgentObservationEvents(state, actorId, events).flatMap((event) =>
     event.socialEvent ? [event.socialEvent] : [],
   );
+
+export const projectAllowedKnowledgeForAgent = (
+  state: EngineState,
+  actorId: PlayerId,
+  events: readonly EngineEvent[] = state.eventLog,
+): ProjectedAllowedKnowledge => {
+  const projectedEvents = projectAgentObservationEvents(state, actorId, events);
+  const eventFacts = projectedEvents.map((event) =>
+    projectedEventToEvidenceRef(state, event),
+  );
+  const allowedClaims = projectedEvents.flatMap((event) => {
+    const claim = projectedSpeechToClaimRef(state, event);
+
+    return claim ? [claim] : [];
+  });
+
+  return {
+    allowedFacts: [
+      ...currentVisibleFactsForAgent(state, actorId),
+      ...eventFacts,
+    ].slice(-24),
+    allowedClaims: allowedClaims.slice(-12),
+  };
+};

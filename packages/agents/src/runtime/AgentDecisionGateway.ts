@@ -21,6 +21,7 @@ import type {
   AgentSelection,
 } from "../model/types";
 import { createDecisionCandidates } from "./candidates";
+import { verifyPublicSpeechClaims } from "./claimVerifier";
 import { createPrivateObservation } from "./observation";
 import { AgentPrivateSummaryStore } from "./privateSummaryStore";
 import { AgentSocialStateStore } from "./socialStateStore";
@@ -98,6 +99,8 @@ const serializePrompt = (
           0,
           budget.maxRecentClaims,
         ),
+        allowedFacts: prepared.observation.allowedFacts,
+        allowedClaims: prepared.observation.allowedClaims,
         topMemories: prepared.observation.topMemories.slice(
           0,
           budget.maxMemories,
@@ -163,7 +166,9 @@ const buildPrompt = (prepared: AgentPreparedDecision) => {
     "Select exactly one candidate index from the provided list.",
     "Do not reveal chain-of-thought.",
     "If you include speech, use at most 2 short sentences.",
-    "Public speech must be grounded in visible evidence or strategic deception.",
+    "Public speech must be grounded in observation.allowedFacts or observation.allowedClaims whenever possible.",
+    "Factual accusations, alibis, and clue claims should reference visible facts; unsupported factual certainty will be softened.",
+    "If you intentionally lie or mislead, mark the claim as deceptive in publicClaims and keep it spectator-readable.",
     "If you include a privateSummary, keep it compact and tactical.",
   ].join(" ");
 
@@ -278,12 +283,17 @@ const materializeProposal = (
     throw new Error("Confide may only use meeting or private speech.");
   }
 
-  return AgentActionProposalSchema.parse({
+  const proposal = AgentActionProposalSchema.parse({
     ...candidate.template,
     confidence: selection.confidence,
     emotionalIntent: selection.emotionalIntent,
     ...(speech ? { speech } : {}),
     ...(privateSummary ? { privateSummary } : {}),
+  });
+
+  return verifyPublicSpeechClaims({
+    proposal,
+    observation: prepared.observation,
   });
 };
 

@@ -21,7 +21,8 @@ const PUBLIC_SPEECH_RULES = [
   "Use at most 2 sentences.",
   "Stay concise, socially believable, and tactical.",
   "Do not reveal chain-of-thought.",
-  "Ground public claims in visible evidence or strategic deception.",
+  "Ground factual accusations, alibis, and clue claims in allowed facts or allowed claims.",
+  "Mark intentional deception as deceptive; do not present unsupported claims as certain.",
 ];
 
 const clamp = (value: number, min = 0, max = 100) =>
@@ -127,11 +128,18 @@ const createEvidenceBank = (
       )
       .map((player) => player.id),
   }));
+  const allowedFactEvidence = input.observation.allowedFacts.map((fact) => ({
+    kind: "event" as const,
+    summary: fact.summary,
+    salience: fact.kind === "visible-player" ? 48 : 40,
+    playerIds: fact.playerIds,
+  }));
 
   return [
     ...contradictionEvidence,
     ...betrayalEvidence,
     ...memoryEvidence,
+    ...allowedFactEvidence,
     ...claimEvidence,
     ...eventEvidence,
   ]

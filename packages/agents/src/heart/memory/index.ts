@@ -1,4 +1,8 @@
-import { type PlayerId, ROOM_IDS } from "@blackout-manor/shared";
+import {
+  type PlayerId,
+  type PublicClaim,
+  ROOM_IDS,
+} from "@blackout-manor/shared";
 
 import type {
   BetrayalRecord,
@@ -90,6 +94,10 @@ const createClaim = (
   value: string,
   tick: number,
   sourceText: string,
+  metadata?: Pick<
+    SocialClaim,
+    "publicClaimId" | "supportLevel" | "evidenceRefs"
+  >,
 ): SocialClaim => ({
   id,
   playerId,
@@ -98,6 +106,9 @@ const createClaim = (
   tick,
   summary: compactText(`${playerId} claimed ${key} = ${value}.`, 120),
   sourceText: compactText(sourceText, 180),
+  ...(metadata?.publicClaimId ? { publicClaimId: metadata.publicClaimId } : {}),
+  ...(metadata?.supportLevel ? { supportLevel: metadata.supportLevel } : {}),
+  ...(metadata?.evidenceRefs ? { evidenceRefs: metadata.evidenceRefs } : {}),
 });
 
 const addUniquePlayerIds = (
@@ -115,17 +126,35 @@ export const interpretSpeech = ({
   tick,
   playerIds,
   displayNames,
+  publicClaims = [],
 }: {
   speakerId: PlayerId;
   text: string;
   tick: number;
   playerIds: readonly PlayerId[];
   displayNames: Record<PlayerId, string>;
+  publicClaims?: readonly PublicClaim[];
 }): SpeechInterpretation => {
   const claims: SocialClaim[] = [];
   const accusationTargetIds = new Set<PlayerId>();
   const supportTargetIds = new Set<PlayerId>();
   const sourceText = compactText(text, 180);
+  const metadataFor = (claimKey: string, value: string) => {
+    const publicClaim = publicClaims.find(
+      (candidate) =>
+        candidate.claimKey === claimKey &&
+        (candidate.value === value ||
+          candidate.relatedPlayerIds.includes(value)),
+    );
+
+    return publicClaim
+      ? {
+          publicClaimId: publicClaim.id,
+          supportLevel: publicClaim.supportLevel,
+          evidenceRefs: publicClaim.evidenceRefs,
+        }
+      : undefined;
+  };
 
   for (const match of sourceText.matchAll(
     /\bi was in the ([a-z][a-z -]+?)(?= with |[.!?,]|$)/gi,
@@ -144,6 +173,7 @@ export const interpretSpeech = ({
         normalizeRoomReference(roomCapture),
         tick,
         sourceText,
+        metadataFor("self-room", normalizeRoomReference(roomCapture)),
       ),
     );
   }
@@ -175,6 +205,7 @@ export const interpretSpeech = ({
         references[0],
         tick,
         sourceText,
+        metadataFor("self-with", references[0]),
       ),
     );
     addUniquePlayerIds(supportTargetIds, references);
@@ -220,6 +251,10 @@ export const interpretSpeech = ({
           normalizeRoomReference(roomCapture),
           tick,
           sourceText,
+          metadataFor(
+            `saw:${playerId}:room`,
+            normalizeRoomReference(roomCapture),
+          ),
         ),
       );
       accusationTargetIds.add(playerId);

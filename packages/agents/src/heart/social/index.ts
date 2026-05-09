@@ -293,6 +293,9 @@ const applyProposalObservation = (
         tick,
         playerIds: state.playerIds,
         displayNames: state.displayNames,
+        ...(proposal.speech.publicClaims
+          ? { publicClaims: proposal.speech.publicClaims }
+          : {}),
       })
     : undefined;
 

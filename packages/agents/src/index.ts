@@ -23,15 +23,18 @@ export {
 export type {
   AgentEventVisibilityCategory,
   ProjectedAgentObservationEvent,
+  ProjectedAllowedKnowledge,
 } from "./runtime/AgentObservationProjector";
 export {
   AGENT_EVENT_VISIBILITY_CATEGORIES,
   projectAgentObservationEvents,
+  projectAllowedKnowledgeForAgent,
   projectSocialEventsForAgent,
   projectVisibleEventSummariesForAgent,
   projectVisibleSpeechClaimsForAgent,
 } from "./runtime/AgentObservationProjector";
 export { createDecisionCandidates } from "./runtime/candidates";
+export { verifyPublicSpeechClaims } from "./runtime/claimVerifier";
 export { createPrivateObservation } from "./runtime/observation";
 export { AgentSocialStateStore } from "./runtime/socialStateStore";
 
