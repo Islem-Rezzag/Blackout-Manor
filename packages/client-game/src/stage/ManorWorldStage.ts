@@ -1,11 +1,9 @@
-import { MANOR_V1_MAP } from "@blackout-manor/content";
 import type {
   MatchSnapshot,
   PhaseId,
   RoomId,
   TaskId,
 } from "@blackout-manor/shared";
-import { DEFAULT_ROOM_LABELS } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import {
@@ -30,10 +28,7 @@ import {
 } from "../tasking/taskReadability";
 import {
   getRoomRenderData,
-  MANOR_RENDER_MAP,
   MANOR_WORLD_BOUNDS,
-  type ManorCorridorSegment,
-  type ManorDoorNode,
   type ManorRenderRoom,
 } from "../tiled/manorLayout";
 import {
@@ -42,10 +37,14 @@ import {
   type StageDirectionVariant,
 } from "./cameraDirection";
 import {
-  getCorridorFloorTextureKey,
-  getDoorThresholdConfig,
-  getImportedRoomArt,
-} from "./importedArt";
+  createEnvironmentFocusContext,
+  EnvironmentRenderer,
+} from "./environment/EnvironmentRenderer";
+import type {
+  EnvironmentRoomVisual,
+  EnvironmentStageLayers,
+} from "./environment/EnvironmentRenderTypes";
+import { configureEnvironmentStormLayer } from "./environment/LightingWeatherRenderer";
 import { createRoomRenderPalette } from "./renderTheme";
 import {
   blackoutStrengthFromSnapshot,
@@ -58,84 +57,6 @@ import {
   readableTaskLabel,
 } from "./signals";
 import { TaskReadabilityLayer } from "./TaskReadabilityLayer";
-
-type RoomLayerContainers = {
-  floor: Phaser.GameObjects.Container;
-  props: Phaser.GameObjects.Container;
-  lights: Phaser.GameObjects.Container;
-  walls: Phaser.GameObjects.Container;
-  interaction: Phaser.GameObjects.Container;
-  focus: Phaser.GameObjects.Container;
-};
-
-type RoomVisual = {
-  roomId: RoomId;
-  containers: RoomLayerContainers;
-  allContainers: Phaser.GameObjects.Container[];
-  shellShadow: Phaser.GameObjects.Image;
-  shell: Phaser.GameObjects.Image;
-  floor: Phaser.GameObjects.Image;
-  floorSpecular: Phaser.GameObjects.Image;
-  accent: Phaser.GameObjects.Image;
-  dust: Phaser.GameObjects.Image;
-  interiorVignette: Phaser.GameObjects.Image;
-  ambientGlow: Phaser.GameObjects.Image;
-  blackoutShade: Phaser.GameObjects.Rectangle;
-  emergencyWash: Phaser.GameObjects.Image;
-  decorShadows: Phaser.GameObjects.Image[];
-  decorObjects: Phaser.GameObjects.Shape[];
-  decorHighlights: Phaser.GameObjects.Image[];
-  heroPropShadows: Phaser.GameObjects.Image[];
-  heroProps: Phaser.GameObjects.Image[];
-  lightGlows: Phaser.GameObjects.Image[];
-  windowOverlays: Phaser.GameObjects.Image[];
-  cutawayShadow: Phaser.GameObjects.Image;
-  cutawayBacking: Phaser.GameObjects.Image;
-  cutawayWall: Phaser.GameObjects.Image;
-  cutawayTrim: Phaser.GameObjects.Rectangle;
-  titlePlate: Phaser.GameObjects.Rectangle;
-  title: Phaser.GameObjects.Text;
-  theme: Phaser.GameObjects.Text;
-  statePlate: Phaser.GameObjects.Rectangle;
-  state: Phaser.GameObjects.Text;
-  clueMarker: Phaser.GameObjects.Image;
-  sabotagePulse: Phaser.GameObjects.Image;
-  sabotageBanner: Phaser.GameObjects.Image;
-  sabotageLabel: Phaser.GameObjects.Text;
-  focusBeam: Phaser.GameObjects.Image;
-  focusFrame: Phaser.GameObjects.Rectangle;
-  taskChips: Phaser.GameObjects.Text[];
-  hitTarget: Phaser.GameObjects.Rectangle;
-};
-
-type StageLayers = {
-  backdrop: Phaser.GameObjects.Container;
-  floor: Phaser.GameObjects.Container;
-  props: Phaser.GameObjects.Container;
-  lights: Phaser.GameObjects.Container;
-  walls: Phaser.GameObjects.Container;
-  interaction: Phaser.GameObjects.Container;
-  focus: Phaser.GameObjects.Container;
-};
-
-type CorridorVisual = {
-  segment: ManorCorridorSegment;
-  shellShadow: Phaser.GameObjects.Image;
-  shell: Phaser.GameObjects.Image;
-  floor: Phaser.GameObjects.Image;
-  specular: Phaser.GameObjects.Image;
-  glow: Phaser.GameObjects.Image;
-  trim: Phaser.GameObjects.Rectangle;
-};
-
-type DoorNodeVisual = {
-  node: ManorDoorNode;
-  threshold: Phaser.GameObjects.Rectangle;
-  thresholdArt: Phaser.GameObjects.Image;
-  frame: Phaser.GameObjects.Rectangle;
-  glow: Phaser.GameObjects.Image;
-  marker: Phaser.GameObjects.Rectangle;
-};
 
 export type SeatResolver = (
   roomId: RoomId,
@@ -172,59 +93,15 @@ const STAGE_DEPTH = {
   focus: 190,
 } as const;
 
-const taskChipStyle = {
-  color: "#091018",
-  backgroundColor: "#ead08c",
-  fontFamily: "Segoe UI, sans-serif",
-  fontSize: "12px",
-  padding: { left: 10, right: 10, top: 5, bottom: 5 },
-} as const;
-
-const createDecorShape = (
-  scene: Phaser.Scene,
-  room: ManorRenderRoom,
-  decor: ManorRenderRoom["decor"][number],
-) => {
-  const x = decor.x - room.x;
-  const y = decor.y - room.y + room.framing.floorInsetY;
-
-  if (decor.ellipse) {
-    return scene.add.ellipse(
-      x,
-      y,
-      decor.width,
-      decor.height,
-      decor.fill,
-      decor.alpha,
-    );
-  }
-
-  return scene.add.rectangle(
-    x,
-    y,
-    decor.width,
-    decor.height,
-    decor.fill,
-    decor.alpha,
-  );
-};
-
-const distanceBetween = (
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-) => Math.hypot(to.x - from.x, to.y - from.y);
-
 export class ManorWorldStage {
   readonly #scene: Phaser.Scene;
   readonly #soundBus = new SoundBus();
-  readonly #roomVisuals = new Map<RoomId, RoomVisual>();
-  readonly #corridorVisuals: CorridorVisual[] = [];
-  readonly #doorNodeVisuals: DoorNodeVisual[] = [];
+  readonly #environmentRenderer: EnvironmentRenderer;
   readonly #playerLayer: PlayerAvatarLayer;
   readonly #taskReadabilityLayer: TaskReadabilityLayer;
   readonly #stormLayer: StormLayer;
   readonly #atmosphereVeil: AtmosphereVeil;
-  readonly #layers: StageLayers;
+  readonly #layers: EnvironmentStageLayers;
   readonly #onInspectRoom: ((roomId: RoomId) => void) | null;
   readonly #onStartTask: ((taskId: TaskId) => void) | null;
   #activeRoomId: RoomId | null = null;
@@ -260,16 +137,29 @@ export class ManorWorldStage {
     });
     this.#stormLayer = new StormLayer(this.#scene);
     this.#atmosphereVeil = new AtmosphereVeil(this.#scene);
+    this.#environmentRenderer = new EnvironmentRenderer({
+      scene: this.#scene,
+      layers: this.#layers,
+      onHoverRoomChange: (roomId) => {
+        this.#hoveredRoomId = roomId;
+        this.#refreshRoomFocus();
+      },
+      onInspectRoom: (roomId) => {
+        this.#onInspectRoom?.(roomId);
+      },
+      onSelectRoom: (roomId) => {
+        this.#soundBus.play("hover");
+        this.#onInspectRoom?.(roomId);
+      },
+      onStartTask: (taskId) => {
+        this.#onStartTask?.(taskId);
+      },
+    });
 
-    this.#drawBackdrop();
-    this.#drawCirculation();
-    this.#drawRooms();
-    this.#drawDoorNodes();
-    this.#stormLayer.setBackdropBands(MANOR_RENDER_MAP.backdropRects);
-    this.#stormLayer.setWindows(
-      MANOR_RENDER_MAP.roomOrder.flatMap(
-        (roomId) => MANOR_RENDER_MAP.rooms[roomId].windows,
-      ),
+    this.#environmentRenderer.draw();
+    configureEnvironmentStormLayer(
+      this.#stormLayer,
+      this.#environmentRenderer.plan,
     );
 
     this.#baseZoom = this.#calculateZoom();
@@ -378,7 +268,9 @@ export class ManorWorldStage {
     this.#stormLayer.setStormIntensity(0.72 + stormPressure * 0.28);
 
     for (const roomState of options.snapshot.rooms) {
-      const visual = this.#roomVisuals.get(roomState.roomId);
+      const visual = this.#environmentRenderer.roomVisuals.get(
+        roomState.roomId,
+      );
       const signal = signals.get(roomState.roomId);
 
       if (!visual || !signal) {
@@ -451,641 +343,17 @@ export class ManorWorldStage {
     this.#taskReadabilityLayer.destroy();
     this.#stormLayer.destroy();
     this.#atmosphereVeil.destroy();
+    this.#environmentRenderer.destroy();
 
     for (const layer of Object.values(this.#layers)) {
       layer.destroy(true);
     }
 
-    this.#roomVisuals.clear();
     this.#lastNavigationStates.clear();
   }
 
-  #drawBackdrop() {
-    const graphics = this.#scene.add.graphics();
-    this.#layers.backdrop.add(graphics);
-
-    for (const rect of MANOR_RENDER_MAP.backdropRects) {
-      if (rect.className === "weather-band") {
-        continue;
-      }
-
-      if (rect.stroke !== null) {
-        graphics.lineStyle(2, rect.stroke, rect.alpha * 0.4);
-      } else {
-        graphics.lineStyle(0, 0, 0);
-      }
-
-      graphics.fillStyle(rect.fill, rect.alpha);
-      graphics.fillRoundedRect(rect.x, rect.y, rect.width, rect.height, 32);
-    }
-
-    const manorShadow = this.#scene.add
-      .image(
-        MANOR_WORLD_BOUNDS.width / 2,
-        MANOR_WORLD_BOUNDS.height / 2 + 24,
-        "room-shadow",
-      )
-      .setDisplaySize(
-        MANOR_WORLD_BOUNDS.width * 1.02,
-        MANOR_WORLD_BOUNDS.height * 0.86,
-      )
-      .setAlpha(0.4);
-    const coldRim = this.#scene.add
-      .image(MANOR_WORLD_BOUNDS.width / 2, 110, "storm-cloud")
-      .setDisplaySize(MANOR_WORLD_BOUNDS.width * 0.92, 180)
-      .setTint(0x79abd3)
-      .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.22);
-    const emberFloorGlow = this.#scene.add
-      .image(
-        MANOR_WORLD_BOUNDS.width / 2,
-        MANOR_WORLD_BOUNDS.height - 144,
-        "storm-cloud",
-      )
-      .setDisplaySize(MANOR_WORLD_BOUNDS.width * 0.72, 196)
-      .setTint(0xe0bc88)
-      .setBlendMode(Phaser.BlendModes.SCREEN)
-      .setAlpha(0.1);
-
-    this.#layers.backdrop.add([manorShadow, coldRim, emberFloorGlow]);
-  }
-
-  #drawCirculation() {
-    for (const segment of MANOR_RENDER_MAP.corridors) {
-      const centerX = segment.x + segment.width / 2;
-      const centerY = segment.y + segment.height / 2;
-      const isTechnical =
-        segment.className === "service-band" ||
-        segment.className === "service-link";
-      const isMeetingWing = segment.className === "meeting-wing";
-      const shellTint = isTechnical
-        ? 0x243039
-        : isMeetingWing
-          ? 0x433127
-          : 0x2f2823;
-      const accentTint = isTechnical ? 0x7fb7cf : 0xd5b183;
-      const shellShadow = this.#scene.add
-        .image(centerX, centerY + 10, "room-shadow")
-        .setDisplaySize(segment.width + 28, segment.height + 24)
-        .setAlpha(0.22);
-      const shell = this.#scene.add
-        .image(centerX, centerY + 4, "room-shell")
-        .setDisplaySize(segment.width + 12, segment.height + 12)
-        .setTint(shellTint)
-        .setAlpha(0.95);
-      const floor = this.#scene.add
-        .image(
-          centerX,
-          centerY + 4,
-          getCorridorFloorTextureKey(segment.className),
-        )
-        .setDisplaySize(segment.width, segment.height)
-        .setTint(0xf6f0e2)
-        .setAlpha(0.96);
-      const specular = this.#scene.add
-        .image(centerX, centerY + 4, "room-specular")
-        .setDisplaySize(
-          Math.max(42, segment.width - 10),
-          Math.max(32, segment.height - 10),
-        )
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setTint(isTechnical ? 0x96daf0 : 0xf0d39a)
-        .setAlpha(0.16);
-      const vignette = this.#scene.add
-        .image(centerX, centerY + 4, "room-vignette")
-        .setDisplaySize(segment.width * 1.02, segment.height * 0.98)
-        .setBlendMode(Phaser.BlendModes.MULTIPLY)
-        .setAlpha(isTechnical ? 0.24 : 0.18);
-      const glow = this.#scene.add
-        .image(centerX, centerY, "room-glow")
-        .setDisplaySize(segment.width * 1.18, segment.height * 0.82)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setTint(isTechnical ? 0x79bfd8 : 0xd9ac72)
-        .setAlpha(isTechnical ? 0.15 : 0.11);
-      const trim = this.#scene.add
-        .rectangle(
-          centerX,
-          centerY - segment.height / 2 + 6,
-          segment.width - 10,
-          8,
-          accentTint,
-          0.22,
-        )
-        .setOrigin(0.5);
-
-      this.#layers.floor.add([shellShadow, shell, floor, specular]);
-      this.#layers.props.add(vignette);
-      this.#layers.lights.add(glow);
-      this.#layers.walls.add(trim);
-
-      this.#corridorVisuals.push({
-        segment,
-        shellShadow,
-        shell,
-        floor,
-        specular,
-        glow,
-        trim,
-      });
-    }
-  }
-
-  #drawRooms() {
-    for (const roomId of MANOR_RENDER_MAP.roomOrder) {
-      const room = getRoomRenderData(roomId);
-      const importedArt = getImportedRoomArt(room.roomId);
-      const containers = {
-        floor: this.#scene.add.container(room.x, room.y),
-        props: this.#scene.add.container(room.x, room.y),
-        lights: this.#scene.add.container(room.x, room.y),
-        walls: this.#scene.add.container(room.x, room.y),
-        interaction: this.#scene.add.container(room.x, room.y),
-        focus: this.#scene.add.container(room.x, room.y),
-      } satisfies RoomLayerContainers;
-      const allContainers = Object.values(containers);
-
-      this.#layers.floor.add(containers.floor);
-      this.#layers.props.add(containers.props);
-      this.#layers.lights.add(containers.lights);
-      this.#layers.walls.add(containers.walls);
-      this.#layers.interaction.add(containers.interaction);
-      this.#layers.focus.add(containers.focus);
-
-      const shellShadow = this.#scene.add
-        .image(0, 18, "room-shadow")
-        .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 2.6,
-          room.height + room.framing.shellPaddingY * 1.9,
-        )
-        .setAlpha(0.38);
-      const shell = this.#scene.add
-        .image(0, 6, "room-shell")
-        .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 1.7,
-          room.height + room.framing.shellPaddingY * 1.7,
-        )
-        .setAlpha(0.98);
-      const floor = this.#scene.add
-        .image(0, room.framing.floorInsetY, importedArt.floorKey)
-        .setDisplaySize(room.width, room.height)
-        .setAlpha(0.97);
-      const floorSpecular = this.#scene.add
-        .image(0, room.framing.floorInsetY, "room-specular")
-        .setDisplaySize(room.width * 0.98, room.height * 0.98)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.26);
-      const accent = this.#scene.add
-        .image(0, room.framing.floorInsetY + 14, "room-glow")
-        .setDisplaySize(room.width * 0.9, room.height * 0.68)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.18);
-      const dust = this.#scene.add
-        .image(0, room.framing.floorInsetY, "room-dust")
-        .setDisplaySize(room.width * 0.96, room.height * 0.9)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.12);
-      const interiorVignette = this.#scene.add
-        .image(0, room.framing.floorInsetY, "room-vignette")
-        .setDisplaySize(room.width * 1.02, room.height * 1.02)
-        .setBlendMode(Phaser.BlendModes.MULTIPLY)
-        .setAlpha(0.22);
-      const ambientGlow = this.#scene.add
-        .image(0, room.framing.floorInsetY, "room-glow")
-        .setDisplaySize(room.width * 1.22, room.height * 1.06)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.44);
-      const blackoutShade = this.#scene.add
-        .rectangle(
-          0,
-          room.framing.floorInsetY,
-          room.width * 0.98,
-          room.height * 0.96,
-          0x04070b,
-          0.16,
-        )
-        .setStrokeStyle(0, 0, 0);
-      const emergencyWash = this.#scene.add
-        .image(0, room.framing.floorInsetY, "focus-beam")
-        .setDisplaySize(room.width * 1.14, room.height * 0.98)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0.08);
-
-      const decorShadows = room.decor.map((decor) =>
-        this.#scene.add
-          .image(
-            decor.x - room.x,
-            decor.y - room.y + room.framing.floorInsetY + decor.height * 0.18,
-            "room-shadow",
-          )
-          .setDisplaySize(
-            Math.max(30, decor.width * 1.18),
-            Math.max(18, decor.height * 0.58),
-          )
-          .setAlpha(0.16),
-      );
-
-      const decorObjects = room.decor.map((decor) => {
-        const object = createDecorShape(this.#scene, room, decor);
-        object.setBlendMode(Phaser.BlendModes.NORMAL);
-        object.setStrokeStyle(2, room.accentColor, 0.12);
-        return object;
-      });
-      const decorHighlights = room.decor.map((decor) =>
-        this.#scene.add
-          .image(
-            decor.x - room.x,
-            decor.y - room.y + room.framing.floorInsetY,
-            "room-specular",
-          )
-          .setDisplaySize(decor.width * 1.08, decor.height * 1.08)
-          .setBlendMode(Phaser.BlendModes.SCREEN)
-          .setAlpha(0.1),
-      );
-      const heroPropShadows = importedArt.heroProps.map((prop) =>
-        this.#scene.add
-          .image(
-            prop.x - room.x,
-            prop.y - room.y + prop.height * 0.18,
-            "room-shadow",
-          )
-          .setDisplaySize(prop.width * 1.08, Math.max(26, prop.height * 0.42))
-          .setAlpha(0.22),
-      );
-      const heroProps = importedArt.heroProps.map((prop) =>
-        this.#scene.add
-          .image(prop.x - room.x, prop.y - room.y, prop.key)
-          .setDisplaySize(prop.width, prop.height)
-          .setAlpha(prop.alpha),
-      );
-
-      const lightGlows = room.lights.map((light) =>
-        this.#scene.add
-          .image(light.x - room.x, light.y - room.y - 6, "room-glow")
-          .setDisplaySize(light.radius * 1.65, light.radius * 1.04)
-          .setBlendMode(Phaser.BlendModes.ADD)
-          .setAlpha(light.intensity * 0.55),
-      );
-
-      const windowOverlays = room.windows.map((windowSlice) =>
-        this.#scene.add
-          .image(windowSlice.x - room.x, windowSlice.y - room.y, "rain-sheen")
-          .setDisplaySize(windowSlice.width, windowSlice.height)
-          .setBlendMode(Phaser.BlendModes.SCREEN)
-          .setAlpha(windowSlice.alpha * 0.7),
-      );
-
-      const cutawayShadow = this.#scene.add
-        .image(0, -room.height / 2 + room.cutawayHeight / 2 + 10, "room-shadow")
-        .setDisplaySize(
-          room.width + room.framing.shellPaddingX * 2.1,
-          room.cutawayHeight + 30,
-        )
-        .setAlpha(0.3);
-      const cutawayBacking = this.#scene.add
-        .image(
-          0,
-          -room.height / 2 + room.cutawayHeight / 2 + room.framing.wallInsetY,
-          "room-wall",
-        )
-        .setDisplaySize(
-          room.width + room.framing.wallInsetX * 2 + 6,
-          room.cutawayHeight + 18,
-        )
-        .setAlpha(0.4);
-      const cutawayWall = this.#scene.add
-        .image(
-          0,
-          -room.height / 2 + room.cutawayHeight / 2 + room.framing.wallInsetY,
-          importedArt.wallKey,
-        )
-        .setDisplaySize(
-          room.width + room.framing.wallInsetX * 2,
-          room.cutawayHeight + 12,
-        )
-        .setAlpha(0.94);
-      const cutawayTrim = this.#scene.add
-        .rectangle(
-          0,
-          -room.height / 2 + 12,
-          room.width - 16,
-          12,
-          room.accentColor,
-          0.32,
-        )
-        .setOrigin(0.5);
-      const titlePlate = this.#scene.add
-        .rectangle(
-          0,
-          room.anchors.titleY + 6,
-          Math.min(room.width - 26, 244),
-          38,
-          room.surfaces.titlePlateColor,
-          0.26,
-        )
-        .setStrokeStyle(1, room.accentColor, 0.14);
-      const title = this.#scene.add.text(
-        0,
-        room.anchors.titleY,
-        DEFAULT_ROOM_LABELS[room.roomId],
-        {
-          color: "#f5f0e4",
-          fontFamily: "Palatino Linotype, Georgia, serif",
-          fontSize: "24px",
-          fontStyle: "bold",
-        },
-      );
-      title.setOrigin(0.5);
-      const theme = this.#scene.add.text(0, room.anchors.themeY, room.theme, {
-        color: "#d8e1eb",
-        fontFamily: "Georgia, Times, serif",
-        fontSize: "13px",
-        fontStyle: "italic",
-      });
-      theme.setOrigin(0.5);
-      const statePlate = this.#scene.add
-        .rectangle(
-          0,
-          room.anchors.stateY,
-          Math.min(room.width - 22, 258),
-          30,
-          room.surfaces.statePlateColor,
-          0.22,
-        )
-        .setStrokeStyle(1, room.accentColor, 0.12);
-      const state = this.#scene.add.text(0, room.anchors.stateY - 8, "", {
-        color: "#dce4ed",
-        fontFamily: "Segoe UI, sans-serif",
-        fontSize: "13px",
-        letterSpacing: 1.1,
-      });
-      state.setOrigin(0.5);
-
-      const taskChips =
-        MANOR_V1_MAP.rooms
-          .find((candidate) => candidate.id === room.roomId)
-          ?.taskIds.map((taskId, index) => {
-            const chip = this.#scene.add.text(
-              room.anchors.taskStartX,
-              room.anchors.taskStartY + index * 24,
-              readableTaskLabel(taskId),
-              taskChipStyle,
-            );
-            chip.setOrigin(0, 0.5);
-            chip.setInteractive({ useHandCursor: true });
-            chip.on("pointerdown", () => {
-              this.#onInspectRoom?.(room.roomId);
-              this.#onStartTask?.(taskId);
-            });
-            return chip;
-          }) ?? [];
-
-      const clueMarker = this.#scene.add
-        .image(
-          room.cluePoint.x - room.x,
-          room.cluePoint.y - room.y,
-          "clue-marker",
-        )
-        .setDisplaySize(42, 42)
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0);
-      const sabotagePulse = this.#scene.add
-        .image(0, room.anchors.sabotageY + 14, "signal-pulse")
-        .setDisplaySize(room.width * 0.6, 92)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setAlpha(0);
-      this.#scene.tweens.add({
-        targets: sabotagePulse,
-        scaleX: 1.08,
-        scaleY: 1.08,
-        yoyo: true,
-        repeat: -1,
-        duration: 900,
-        ease: "Sine.easeInOut",
-      });
-      this.#scene.tweens.add({
-        targets: clueMarker,
-        scaleX: 1.16,
-        scaleY: 1.16,
-        yoyo: true,
-        repeat: -1,
-        duration: 820,
-        ease: "Sine.easeInOut",
-      });
-
-      const sabotageBanner = this.#scene.add
-        .image(0, room.anchors.sabotageY, "sabotage-stripe")
-        .setDisplaySize(room.width * 0.88, 48)
-        .setAlpha(0);
-      const sabotageLabel = this.#scene.add.text(
-        0,
-        room.anchors.sabotageY,
-        "",
-        {
-          color: "#fff6ed",
-          fontFamily: "Segoe UI, sans-serif",
-          fontSize: "14px",
-          fontStyle: "bold",
-          letterSpacing: 1.2,
-        },
-      );
-      sabotageLabel.setOrigin(0.5);
-      sabotageLabel.setAlpha(0);
-      const focusBeam = this.#scene.add
-        .image(0, room.framing.floorInsetY, "focus-beam")
-        .setDisplaySize(
-          room.width + room.framing.focusPaddingX * 2.2,
-          room.height + room.framing.focusPaddingY * 2.2,
-        )
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setAlpha(0);
-      const focusFrame = this.#scene.add
-        .rectangle(
-          0,
-          room.framing.floorInsetY,
-          room.width + room.framing.focusPaddingX * 2,
-          room.height + room.framing.focusPaddingY * 2,
-        )
-        .setStrokeStyle(2.4, room.accentColor, 0)
-        .setFillStyle(room.accentColor, 0)
-        .setOrigin(0.5);
-      const hitTarget = this.#scene.add
-        .rectangle(
-          0,
-          room.framing.floorInsetY,
-          room.width * 0.94,
-          room.height * 0.94,
-          0xffffff,
-          0.001,
-        )
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      hitTarget.on("pointerover", () => {
-        this.#hoveredRoomId = room.roomId;
-        this.#refreshRoomFocus();
-      });
-      hitTarget.on("pointerout", () => {
-        this.#hoveredRoomId = null;
-        this.#refreshRoomFocus();
-      });
-      hitTarget.on("pointerdown", () => {
-        this.#soundBus.play("hover");
-        this.#onInspectRoom?.(room.roomId);
-      });
-
-      containers.floor.add([
-        shellShadow,
-        shell,
-        floor,
-        floorSpecular,
-        accent,
-        dust,
-      ]);
-      containers.props.add([
-        interiorVignette,
-        ambientGlow,
-        blackoutShade,
-        emergencyWash,
-        ...decorShadows,
-        ...decorObjects,
-        ...decorHighlights,
-        ...heroPropShadows,
-        ...heroProps,
-      ]);
-      containers.lights.add([...lightGlows, ...windowOverlays]);
-      containers.walls.add([
-        cutawayShadow,
-        cutawayBacking,
-        cutawayWall,
-        cutawayTrim,
-        titlePlate,
-        title,
-        theme,
-        statePlate,
-        state,
-      ]);
-      containers.interaction.add([
-        ...taskChips,
-        clueMarker,
-        sabotagePulse,
-        sabotageBanner,
-        sabotageLabel,
-        hitTarget,
-      ]);
-      containers.focus.add([focusBeam, focusFrame]);
-
-      this.#roomVisuals.set(room.roomId, {
-        roomId: room.roomId,
-        containers,
-        allContainers,
-        shellShadow,
-        shell,
-        floor,
-        floorSpecular,
-        accent,
-        dust,
-        interiorVignette,
-        ambientGlow,
-        blackoutShade,
-        emergencyWash,
-        decorShadows,
-        decorObjects,
-        decorHighlights,
-        heroPropShadows,
-        heroProps,
-        lightGlows,
-        windowOverlays,
-        cutawayShadow,
-        cutawayBacking,
-        cutawayWall,
-        cutawayTrim,
-        titlePlate,
-        title,
-        theme,
-        statePlate,
-        state,
-        clueMarker,
-        sabotagePulse,
-        sabotageBanner,
-        sabotageLabel,
-        focusBeam,
-        focusFrame,
-        taskChips,
-        hitTarget,
-      });
-    }
-  }
-
-  #drawDoorNodes() {
-    for (const node of MANOR_RENDER_MAP.doorNodes) {
-      const thresholdConfig = getDoorThresholdConfig(node);
-      const threshold = this.#scene.add
-        .rectangle(
-          node.x,
-          node.y,
-          node.width,
-          node.height,
-          node.fill,
-          node.alpha,
-        )
-        .setOrigin(0.5);
-      const thresholdArt = this.#scene.add
-        .image(node.x, node.y, thresholdConfig.key)
-        .setDisplaySize(
-          Math.max(32, node.width + 18),
-          Math.max(52, node.height + 34),
-        )
-        .setAngle(thresholdConfig.angle)
-        .setTint(thresholdConfig.tint)
-        .setAlpha(node.alpha * 0.54);
-      const frame = this.#scene.add
-        .rectangle(
-          node.x,
-          node.y,
-          node.width + 10,
-          node.height + 10,
-          0xffffff,
-          0,
-        )
-        .setStrokeStyle(2, node.stroke ?? 0xe4c391, 0.28)
-        .setOrigin(0.5);
-      const glow = this.#scene.add
-        .image(node.x, node.y, "focus-beam")
-        .setDisplaySize(
-          Math.max(42, node.width * 2.1),
-          Math.max(42, node.height * 2.1),
-        )
-        .setBlendMode(Phaser.BlendModes.SCREEN)
-        .setTint(node.kind === "stair" ? 0xf1e3b6 : 0xdab37c)
-        .setAlpha(0.05);
-      const marker = this.#scene.add
-        .rectangle(
-          node.x,
-          node.y,
-          Math.max(8, Math.min(node.width, 14)),
-          Math.max(8, Math.min(node.height, 14)),
-          node.stroke ?? 0xe4c391,
-          0.72,
-        )
-        .setOrigin(0.5);
-
-      this.#layers.floor.add([threshold, thresholdArt]);
-      this.#layers.lights.add(glow);
-      this.#layers.walls.add(frame);
-      this.#layers.interaction.add(marker);
-
-      this.#doorNodeVisuals.push({
-        node,
-        threshold,
-        thresholdArt,
-        frame,
-        glow,
-        marker,
-      });
-    }
-  }
-
   #applyRoomState(
-    visual: RoomVisual,
+    visual: EnvironmentRoomVisual,
     room: ManorRenderRoom,
     roomState: MatchSnapshot["rooms"][number],
     signal: RoomSignal,
@@ -1317,7 +585,7 @@ export class ManorWorldStage {
   }
 
   #applyTaskStateLabels(
-    visual: RoomVisual,
+    visual: EnvironmentRoomVisual,
     roomId: RoomId,
     lightLevel: MatchSnapshot["rooms"][number]["lightLevel"],
     snapshot: MatchSnapshot,
@@ -1408,221 +676,14 @@ export class ManorWorldStage {
   }
 
   #refreshRoomFocus() {
-    const directedPlan = this.#directedCameraPlan;
-    const focusRoomId = directedPlan?.focusRoomId ?? this.#activeRoomId;
-    const emphasis = directedPlan?.emphasis ?? 0;
-    const roomScaleBoost = directedPlan?.roomScaleBoost ?? 0.014;
-    const dimStrength = directedPlan?.dimStrength ?? 0.12;
-    const doorwayEmphasis = directedPlan?.doorwayEmphasis ?? 0.18;
-    const corridorEmphasis = directedPlan?.corridorEmphasis ?? 0.08;
-    const focusedRoom = focusRoomId ? getRoomRenderData(focusRoomId) : null;
-    const inspectedRoom = this.#inspectedRoomId
-      ? getRoomRenderData(this.#inspectedRoomId)
-      : null;
-
-    for (const [roomId, visual] of this.#roomVisuals.entries()) {
-      const active = this.#activeRoomId === roomId;
-      const focused = focusRoomId === roomId;
-      const inspected = this.#inspectedRoomId === roomId;
-      const hovered = this.#hoveredRoomId === roomId;
-      const room = getRoomRenderData(roomId);
-      const scale = inspected
-        ? 1 + roomScaleBoost
-        : focused
-          ? 1 + roomScaleBoost * 0.72
-          : active
-            ? 1 + roomScaleBoost * 0.34
-            : hovered
-              ? 1.012
-              : 1;
-      const alpha =
-        this.#inspectedRoomId !== null
-          ? inspected
-            ? 1
-            : focused
-              ? Math.max(0.58, 1 - dimStrength * 0.52)
-              : Math.max(0.24, 1 - dimStrength)
-          : focused
-            ? 1
-            : active
-              ? 0.95
-              : hovered
-                ? 0.98
-                : 0.92 - emphasis * 0.16;
-
-      for (const container of visual.allContainers) {
-        container.setScale(scale);
-        container.setAlpha(alpha);
-      }
-
-      visual.focusBeam
-        .setTint(room.surfaces.focusColor)
-        .setAlpha(
-          inspected
-            ? 0.44 + emphasis * 0.18
-            : focused
-              ? 0.22 + emphasis * 0.18
-              : active
-                ? 0.12 + emphasis * 0.08
-                : hovered
-                  ? 0.1
-                  : 0,
-        );
-      visual.focusFrame.setStrokeStyle(
-        2.4,
-        room.surfaces.focusColor,
-        inspected
-          ? 1
-          : focused
-            ? 0.86 + emphasis * 0.1
-            : active
-              ? 0.56 + emphasis * 0.08
-              : hovered
-                ? 0.42
-                : 0,
-      );
-      visual.hitTarget.setFillStyle(
-        0xffffff,
-        hovered && !inspected ? 0.04 : 0.001,
-      );
-      visual.interiorVignette.setAlpha(
-        inspected
-          ? 0.36 + emphasis * 0.12
-          : focused
-            ? 0.28 + emphasis * 0.08
-            : hovered
-              ? 0.22
-              : 0.18,
-      );
-      visual.cutawayBacking.setAlpha(
-        inspected
-          ? 0.72 + emphasis * 0.08
-          : focused
-            ? 0.58 + emphasis * 0.08
-            : active
-              ? 0.48 + emphasis * 0.06
-              : hovered
-                ? 0.48
-                : 0.38,
-      );
-      visual.cutawayWall.setAlpha(
-        inspected ? 1 : focused ? 0.96 : active ? 0.9 : 0.84,
-      );
-      visual.cutawayTrim.setFillStyle(
-        room.accentColor,
-        inspected
-          ? 0.58 + emphasis * 0.06
-          : focused
-            ? 0.46 + emphasis * 0.08
-            : active
-              ? 0.32 + emphasis * 0.04
-              : 0.22,
-      );
-      visual.titlePlate.setFillStyle(
-        room.surfaces.titlePlateColor,
-        inspected
-          ? 0.38 + emphasis * 0.04
-          : focused
-            ? 0.31 + emphasis * 0.05
-            : 0.22,
-      );
-      visual.statePlate.setScale(inspected ? 1.02 : focused ? 1.01 : 1);
-      visual.title.setScale(
-        inspected ? 1.06 : focused ? 1.03 : active ? 1.01 : 1,
-      );
-      visual.theme.setScale(inspected ? 1.04 : focused ? 1.02 : 1);
-    }
-
-    for (const visual of this.#corridorVisuals) {
-      const center = {
-        x: visual.segment.x + visual.segment.width / 2,
-        y: visual.segment.y + visual.segment.height / 2,
-      };
-      const focusDistance = focusedRoom
-        ? distanceBetween(center, focusedRoom.cameraAnchor)
-        : Number.POSITIVE_INFINITY;
-      const inspectDistance = inspectedRoom
-        ? distanceBetween(center, inspectedRoom.cameraAnchor)
-        : Number.POSITIVE_INFINITY;
-      const proximity = focusedRoom
-        ? Phaser.Math.Clamp(
-            1 -
-              Math.min(focusDistance, inspectDistance) /
-                (this.#inspectedRoomId ? 360 : 430),
-            0,
-            1,
-          )
-        : 0;
-      const highlight = proximity * corridorEmphasis;
-
-      visual.shellShadow.setAlpha(0.18 + highlight * 0.16);
-      visual.shell.setAlpha(
-        this.#inspectedRoomId !== null
-          ? 0.76 - dimStrength * 0.14 + highlight * 0.12
-          : 0.9 + highlight * 0.06,
-      );
-      visual.floor.setAlpha(
-        this.#inspectedRoomId !== null
-          ? 0.84 - dimStrength * 0.12 + highlight * 0.12
-          : 0.94 + highlight * 0.04,
-      );
-      visual.specular.setAlpha(0.08 + highlight * 0.18);
-      visual.glow.setAlpha(0.08 + highlight * 0.28);
-      visual.trim.setAlpha(0.18 + highlight * 0.48);
-    }
-
-    for (const visual of this.#doorNodeVisuals) {
-      const emphasized =
-        visual.node.roomId === focusRoomId ||
-        visual.node.roomId === this.#hoveredRoomId ||
-        visual.node.targetRoomIds.includes(focusRoomId ?? visual.node.roomId) ||
-        visual.node.targetRoomIds.includes(
-          this.#hoveredRoomId ?? visual.node.roomId,
-        );
-      const inspected =
-        visual.node.roomId === this.#inspectedRoomId ||
-        visual.node.targetRoomIds.includes(
-          this.#inspectedRoomId ?? visual.node.roomId,
-        );
-
-      visual.threshold.setAlpha(
-        inspected
-          ? visual.node.alpha
-          : emphasized
-            ? visual.node.alpha * (0.82 + doorwayEmphasis * 0.2)
-            : visual.node.alpha * (0.56 + doorwayEmphasis * 0.08),
-      );
-      visual.thresholdArt.setAlpha(
-        inspected
-          ? visual.node.alpha * (0.82 + doorwayEmphasis * 0.12)
-          : emphasized
-            ? visual.node.alpha * (0.58 + doorwayEmphasis * 0.18)
-            : visual.node.alpha * (0.18 + doorwayEmphasis * 0.08),
-      );
-      visual.frame.setStrokeStyle(
-        2,
-        visual.node.stroke ?? 0xe4c391,
-        inspected
-          ? 0.7 + doorwayEmphasis * 0.14
-          : emphasized
-            ? 0.5 + doorwayEmphasis * 0.18
-            : 0.18 + doorwayEmphasis * 0.06,
-      );
-      visual.glow.setAlpha(
-        inspected
-          ? 0.16 + doorwayEmphasis * 0.16
-          : emphasized
-            ? 0.08 + doorwayEmphasis * 0.2
-            : 0.02 + doorwayEmphasis * 0.06,
-      );
-      visual.marker.setAlpha(
-        inspected
-          ? 1
-          : emphasized
-            ? 0.78 + doorwayEmphasis * 0.16
-            : 0.32 + doorwayEmphasis * 0.08,
-      );
-    }
+    this.#environmentRenderer.refreshFocus(
+      createEnvironmentFocusContext({
+        directedPlan: this.#directedCameraPlan,
+        activeRoomId: this.#activeRoomId,
+        inspectedRoomId: this.#inspectedRoomId,
+        hoveredRoomId: this.#hoveredRoomId,
+      }),
+    );
   }
 
   #calculateZoom() {
