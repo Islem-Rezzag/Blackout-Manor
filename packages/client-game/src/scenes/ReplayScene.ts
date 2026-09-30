@@ -65,7 +65,13 @@ export class ReplayScene extends Phaser.Scene {
         this.#director.selectObservationRoom(roomId);
       },
     });
-    this.#hud = new ObservationHud({ scene: this });
+    this.#hud = new ObservationHud({
+      scene: this,
+      onSelectRoom: (roomId) => this.#director.selectObservationRoom(roomId),
+      onOverview: () => this.#director.exitObservationFocus(),
+      onSurveillance: () => this.#director.toggleObservationMode(),
+      onSoundChange: (enabled) => this.#stage?.setSoundEnabled(enabled),
+    });
     this.#console = new SurveillanceConsole({
       scene: this,
       onSelectRoom: (roomId) => {
@@ -155,6 +161,7 @@ export class ReplayScene extends Phaser.Scene {
     const replayInspection = meetingDirection?.inspection ?? state.inspection;
 
     this.#hud?.setContent({
+      snapshot: state.replay.snapshot,
       camera: replayCamera,
       inspection: replayInspection,
       surveillance: state.surveillance,

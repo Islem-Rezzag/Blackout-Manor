@@ -10,6 +10,7 @@ import {
   resolveMeetingDirection,
 } from "../stage/meetingBlocking";
 import { RuntimeBanner } from "../ui/RuntimeBanner";
+import { createScreenSpaceCamera } from "../ui/ScreenSpaceCamera";
 import { SCENE_KEYS } from "./keys";
 
 type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
@@ -35,6 +36,7 @@ export class MeetingScene extends Phaser.Scene {
   #unsubscribe: (() => void) | null = null;
   #presentationState: GamePresentationState | null = null;
   #meetingSequence: MeetingSequenceState | null = null;
+  #uiCamera: Phaser.Cameras.Scene2D.Camera | null = null;
 
   constructor(director: GameDirector) {
     super(SCENE_KEYS.meeting);
@@ -55,8 +57,8 @@ export class MeetingScene extends Phaser.Scene {
     this.#portraitStrip = new MeetingPortraitStrip(this);
 
     const plate = this.add
-      .rectangle(0, 0, 796, 118, 0x081018, 0.84)
-      .setStrokeStyle(1, 0xa1c4d9, 0.18);
+      .rectangle(0, 0, 796, 96, 0x14251e, 0.94)
+      .setStrokeStyle(1, 0xc6ad74, 0.25);
     const header = this.add.text(-356, -26, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
@@ -65,7 +67,7 @@ export class MeetingScene extends Phaser.Scene {
       wordWrap: { width: 708 },
     });
     const detail = this.add.text(-356, 16, "", {
-      color: "#dfe6ee",
+      color: "#bcc6ae",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "14px",
       wordWrap: { width: 708 },
@@ -76,6 +78,12 @@ export class MeetingScene extends Phaser.Scene {
     this.#meetingPlate = this.add.container(0, 0, [plate, header, detail]);
     this.#meetingPlate.setDepth(322);
     this.#meetingPlate.setScrollFactor(0);
+    this.#uiCamera = createScreenSpaceCamera(this, [
+      this.#banner.screenSpaceRoot,
+      this.#portraitStrip.screenSpaceRoot,
+      this.#meetingPlate,
+      this.#meetingGlow,
+    ]);
     this.#resizePanels();
 
     this.scale.on("resize", this.#handleResize, this);
@@ -170,8 +178,9 @@ export class MeetingScene extends Phaser.Scene {
     this.#meetingPlate?.setAlpha(panelReveal);
     this.#meetingPlate?.setPosition(
       this.scale.width / 2,
-      this.scale.height - 96 + (1 - panelReveal) * 22,
+      203 + (1 - panelReveal) * 22,
     );
+    this.#meetingPlate?.setScale(Math.min(1, (this.scale.width - 32) / 796));
     this.#meetingGlow?.setAlpha(
       direction.phase === "alarm"
         ? 0.24
@@ -219,10 +228,9 @@ export class MeetingScene extends Phaser.Scene {
       this.scale.width / 2,
       this.scale.height - 192,
     );
-    this.#meetingPlate?.setPosition(
-      this.scale.width / 2,
-      this.scale.height - 96,
-    );
+    this.#meetingPlate?.setPosition(this.scale.width / 2, 203);
+    this.#uiCamera?.setSize(this.scale.width, this.scale.height);
+    this.#meetingPlate?.setScale(Math.min(1, (this.scale.width - 32) / 796));
   }
 
   #handleResize(gameSize?: Phaser.Structs.Size) {

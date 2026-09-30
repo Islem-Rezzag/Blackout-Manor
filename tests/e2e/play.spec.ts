@@ -1,17 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("presents the public root as a game-first launcher", async ({ page }) => {
+test("presents the public root as the live estate", async ({ page }) => {
   await page.goto("/");
 
-  await expect(
-    page.getByRole("heading", { level: 1, name: /blackout manor/i }),
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: /enter game/i })).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /watch demo room/i }),
-  ).toBeVisible();
-
-  await page.getByRole("link", { name: /enter game/i }).click();
   await expect(page).toHaveURL(/\/game\/demo$/);
   await expect(page.getByTestId("game-runtime-host")).toBeVisible();
 });

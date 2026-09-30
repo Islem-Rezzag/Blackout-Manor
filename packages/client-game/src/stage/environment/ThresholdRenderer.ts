@@ -18,17 +18,14 @@ export const drawThresholds = (options: {
   for (const thresholdPlan of thresholds) {
     const { art, node } = thresholdPlan;
     const threshold = scene.add
-      .rectangle(node.x, node.y, node.width, node.height, node.fill, node.alpha)
+      .rectangle(node.x, node.y, node.width, node.height, 0xa89c78, node.alpha)
       .setOrigin(0.5);
     const thresholdArt = scene.add
       .image(node.x, node.y, art.key)
-      .setDisplaySize(
-        Math.max(32, node.width + 18),
-        Math.max(52, node.height + 34),
-      )
+      .setDisplaySize(Math.max(24, node.width), Math.max(32, node.height))
       .setAngle(art.angle)
       .setTint(art.tint)
-      .setAlpha(node.alpha * 0.54);
+      .setAlpha(node.alpha * 0.3);
     const frame = scene.add
       .rectangle(node.x, node.y, node.width + 10, node.height + 10, 0xffffff, 0)
       .setStrokeStyle(2, node.stroke ?? 0xe4c391, 0.28)
@@ -53,6 +50,8 @@ export const drawThresholds = (options: {
       )
       .setOrigin(0.5);
 
+    frame.setVisible(false);
+    marker.setVisible(false);
     layers.floor.add([threshold, thresholdArt]);
     layers.lights.add(glow);
     layers.walls.add(frame);

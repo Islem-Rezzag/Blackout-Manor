@@ -14,6 +14,7 @@ import {
   type PublicMovementFeedbackState,
 } from "../audio/publicEventFeedback";
 import { SoundBus } from "../audio/SoundBus";
+import { setManorSoundEnabled } from "../audio/soundPreference";
 import type { CameraPlan, InspectionPresentation } from "../directors/types";
 import {
   type AvatarMovementOrigin,
@@ -22,10 +23,7 @@ import {
 } from "../entities/avatar/PlayerAvatarLayer";
 import { AtmosphereVeil } from "../fx/AtmosphereVeil";
 import { StormLayer } from "../fx/StormLayer";
-import {
-  buildTaskReadabilityPresentation,
-  type TaskReadabilityPresentation,
-} from "../tasking/taskReadability";
+import { buildTaskReadabilityPresentation } from "../tasking/taskReadability";
 import {
   getRoomRenderData,
   MANOR_WORLD_BOUNDS,
@@ -45,6 +43,10 @@ import type {
   EnvironmentStageLayers,
 } from "./environment/EnvironmentRenderTypes";
 import { configureEnvironmentStormLayer } from "./environment/LightingWeatherRenderer";
+import {
+  estateInspectionZoom,
+  estateOverviewZoom,
+} from "./estateCameraFraming";
 import { createRoomRenderPalette } from "./renderTheme";
 import {
   blackoutStrengthFromSnapshot,
@@ -164,11 +166,12 @@ export class ManorWorldStage {
 
     this.#baseZoom = this.#calculateZoom();
     this.#scene.cameras.main.setBounds(
-      0,
-      0,
-      MANOR_WORLD_BOUNDS.width,
-      MANOR_WORLD_BOUNDS.height,
+      -MANOR_WORLD_BOUNDS.width,
+      -MANOR_WORLD_BOUNDS.height,
+      MANOR_WORLD_BOUNDS.width * 3,
+      MANOR_WORLD_BOUNDS.height * 3,
     );
+    this.#scene.cameras.main.setBackgroundColor("#11221d");
     this.#scene.cameras.main.centerOn(
       MANOR_WORLD_BOUNDS.width / 2,
       MANOR_WORLD_BOUNDS.height / 2,
@@ -224,6 +227,10 @@ export class ManorWorldStage {
 
   resize(gameSize?: Phaser.Structs.Size) {
     this.#handleResize(gameSize);
+  }
+
+  setSoundEnabled(enabled: boolean) {
+    setManorSoundEnabled(enabled);
   }
 
   render(options: ManorWorldStageRenderOptions) {
@@ -284,7 +291,6 @@ export class ManorWorldStage {
         signal,
         options.showTaskChips ?? false,
         options.snapshot,
-        taskReadability,
       );
     }
 
@@ -359,7 +365,6 @@ export class ManorWorldStage {
     signal: RoomSignal,
     showTaskChips: boolean,
     snapshot: MatchSnapshot,
-    taskReadability: TaskReadabilityPresentation,
   ) {
     const focused =
       (this.#directedCameraPlan?.focusRoomId ?? this.#activeRoomId) ===
@@ -378,27 +383,23 @@ export class ManorWorldStage {
       roomState.lightLevel !== "lit" ||
       roomState.doorState !== "open";
     const occupied = roomState.occupantIds.length > 0;
-    const crowded = roomState.occupantIds.length >= 3;
-    const showTheme = focused || attentionActive || crowded;
-    const showState = focused || attentionActive || crowded;
+    const showState = attentionActive;
 
     visual.shell.setTint(palette.shellFill);
     visual.shell.setAlpha(0.97);
     visual.shellShadow.setAlpha(focused ? 0.28 : 0.34);
     visual.floor.setTint(mixColor(0xffffff, palette.floorTint, 0.2));
     visual.floorSpecular.setTint(palette.floorSpecularTint);
-    visual.floorSpecular.setAlpha(0.18 + lightFactor * 0.16);
+    visual.floorSpecular.setAlpha(0.03 + lightFactor * 0.04);
     visual.accent.setTint(palette.accentTint);
-    visual.accent.setAlpha(0.16 + lightFactor * 0.1 + (focused ? 0.04 : 0));
+    visual.accent.setAlpha(0.03 + lightFactor * 0.04);
     visual.dust.setTint(palette.dustTint);
     visual.dust.setAlpha(0.1 + roomState.occupantIds.length * 0.014);
     visual.interiorVignette.setAlpha(
       0.14 + (1 - lightFactor) * 0.18 + roomState.occupantIds.length * 0.008,
     );
     visual.ambientGlow.setTint(palette.ambienceTint);
-    visual.ambientGlow.setAlpha(
-      0.2 + lightFactor * 0.24 + roomState.occupantIds.length * 0.016,
-    );
+    visual.ambientGlow.setAlpha(0.03 + lightFactor * 0.07);
     visual.blackoutShade.setAlpha(palette.blackoutOverlayAlpha);
     visual.emergencyWash.setTint(palette.emergencyTint);
     visual.emergencyWash.setAlpha(palette.emergencyAlpha);
@@ -427,6 +428,7 @@ export class ManorWorldStage {
       focused ? 0.16 : 0.1,
     );
     visual.title.setColor(lightFactor < 0.2 ? "#f0f4f7" : "#f5f0e4");
+    visual.title.setVisible(this.#inspectedRoomId !== room.roomId);
     visual.title.setAlpha(
       signal.body || signal.sabotage
         ? 1
@@ -439,15 +441,12 @@ export class ManorWorldStage {
     visual.titlePlate.setAlpha(
       focused ? 1 : attentionActive || occupied ? 0.92 : 0.74,
     );
-    visual.theme.setVisible(showTheme);
-    visual.theme.setAlpha(
-      showTheme ? 0.72 + lightFactor * 0.16 + (focused ? 0.06 : 0) : 0,
-    );
+    visual.theme.setVisible(false);
     visual.state.setText(
       `${describeSignalLabel(roomState, signal)} | ${roomState.occupantIds.length} present`,
     );
     visual.state.setColor(focused ? "#eef4fb" : "#d8e2eb");
-    visual.statePlate.setVisible(showState);
+    visual.statePlate.setVisible(false);
     visual.state.setVisible(showState);
     visual.statePlate.setAlpha(
       showState ? (focused ? 1 : attentionActive ? 0.92 : 0.8) : 0,
@@ -473,9 +472,7 @@ export class ManorWorldStage {
 
       object.setFillStyle(
         mixColor(decor.fill, palette.accentTint, focused ? 0.16 : 0.08),
-        decor.alpha +
-          roomState.occupantIds.length * 0.014 +
-          (focused ? 0.04 : 0),
+        decor.alpha * 0.1,
       );
       object.setStrokeStyle(
         2,
@@ -580,7 +577,6 @@ export class ManorWorldStage {
       roomState.lightLevel,
       snapshot,
       showTaskChips,
-      taskReadability,
     );
   }
 
@@ -590,19 +586,10 @@ export class ManorWorldStage {
     lightLevel: MatchSnapshot["rooms"][number]["lightLevel"],
     snapshot: MatchSnapshot,
     showTaskChips: boolean,
-    taskReadability: TaskReadabilityPresentation,
   ) {
     const roomTasks = snapshot.tasks.filter((task) => task.roomId === roomId);
     const lightFactor = lightLevelToFactor(lightLevel);
-    const hasImportantTaskCue =
-      taskReadability.rooms
-        .get(roomId)
-        ?.some((task) => task.tone !== "available") ?? false;
-    const showRoomTaskChips =
-      showTaskChips &&
-      ((this.#directedCameraPlan?.focusRoomId ?? this.#activeRoomId) ===
-        roomId ||
-        hasImportantTaskCue);
+    const showRoomTaskChips = showTaskChips && this.#inspectedRoomId === roomId;
 
     for (const [index, chip] of visual.taskChips.entries()) {
       const task = roomTasks[index];
@@ -617,15 +604,15 @@ export class ManorWorldStage {
         `${readableTaskLabel(task.taskId)} ${Math.round(task.progress * 100)}%`,
       );
       chip.setStyle({
-        color: task.status === "completed" ? "#06250f" : "#091018",
+        color: "#eee2c3",
         backgroundColor:
           task.status === "completed"
-            ? "#8ee7ba"
+            ? "#284a39"
             : task.status === "blocked"
-              ? "#ff9a76"
+              ? "#6d3637"
               : task.status === "in-progress"
-                ? "#f2d998"
-                : "#ead08c",
+                ? "#5e5639"
+                : "#293d32",
       });
       chip.setAlpha(0.74 + lightFactor * 0.2);
     }
@@ -651,7 +638,7 @@ export class ManorWorldStage {
     if (plan.transitionMs === 0) {
       this.#cameraPlanSignature = signature;
       this.#scene.cameras.main.centerOn(plan.targetX, plan.targetY);
-      this.#scene.cameras.main.setZoom(this.#baseZoom * plan.zoomMultiplier);
+      this.#scene.cameras.main.setZoom(this.#zoomForPlan(plan));
       return;
     }
 
@@ -668,7 +655,7 @@ export class ManorWorldStage {
       true,
     );
     this.#scene.cameras.main.zoomTo(
-      this.#baseZoom * plan.zoomMultiplier,
+      this.#zoomForPlan(plan),
       plan.transitionMs,
       Phaser.Math.Easing.Cubic.Out,
       true,
@@ -687,10 +674,22 @@ export class ManorWorldStage {
   }
 
   #calculateZoom() {
-    return Math.min(
-      this.#scene.scale.width / (MANOR_WORLD_BOUNDS.width + 260),
-      this.#scene.scale.height / (MANOR_WORLD_BOUNDS.height + 220),
+    return estateOverviewZoom(
+      this.#scene.scale.width,
+      this.#scene.scale.height,
     );
+  }
+
+  #zoomForPlan(plan: DirectedCameraPlan) {
+    if (!plan.inspectionRoomId) return this.#baseZoom * plan.zoomMultiplier;
+    const room = getRoomRenderData(plan.inspectionRoomId);
+    return estateInspectionZoom({
+      width: this.#scene.scale.width,
+      height: this.#scene.scale.height,
+      roomWidth: room.width,
+      roomHeight: room.height,
+      overviewZoom: this.#baseZoom * plan.zoomMultiplier,
+    });
   }
 
   #handleResize(gameSize?: Phaser.Structs.Size) {
@@ -716,7 +715,7 @@ export class ManorWorldStage {
         this.#directedCameraPlan.targetY,
       );
       this.#scene.cameras.main.setZoom(
-        this.#baseZoom * this.#directedCameraPlan.zoomMultiplier,
+        this.#zoomForPlan(this.#directedCameraPlan),
       );
       return;
     }

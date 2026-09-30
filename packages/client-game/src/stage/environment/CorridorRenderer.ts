@@ -84,9 +84,11 @@ export const drawCorridors = (options: {
       .setOrigin(0.5);
 
     layers.floor.add([shellShadow, shell, floor, specular]);
+    shell.setVisible(false);
     layers.props.add(vignette);
     layers.lights.add(glow);
     layers.walls.add(trim);
+    trim.setVisible(false);
 
     visuals.push({
       segment,

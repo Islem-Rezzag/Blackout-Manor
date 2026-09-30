@@ -8,6 +8,19 @@ import type {
   TaskId,
 } from "@blackout-manor/shared";
 
+export const deriveWorldAvatarLabels = (
+  phaseId: PhaseId,
+  inspected: boolean,
+  emphasis: number,
+) => {
+  const inTribunal = ["report", "meeting", "vote", "reveal"].includes(phaseId);
+  return {
+    name: !inTribunal && (inspected || emphasis >= 0.4 || phaseId !== "roam"),
+    status: !inTribunal && (inspected || phaseId !== "roam"),
+    actionBadge: !inTribunal,
+  };
+};
+
 export type AvatarFacing =
   | "north"
   | "north-east"

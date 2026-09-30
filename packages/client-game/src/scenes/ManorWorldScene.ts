@@ -36,7 +36,13 @@ export class ManorWorldScene extends Phaser.Scene {
         void this.#runtime.proposeStartTask(taskId);
       },
     });
-    this.#hud = new ObservationHud({ scene: this });
+    this.#hud = new ObservationHud({
+      scene: this,
+      onSelectRoom: (roomId) => this.#director.selectObservationRoom(roomId),
+      onOverview: () => this.#director.exitObservationFocus(),
+      onSurveillance: () => this.#director.toggleObservationMode(),
+      onSoundChange: (enabled) => this.#stage?.setSoundEnabled(enabled),
+    });
     this.#console = new SurveillanceConsole({
       scene: this,
       onSelectRoom: (roomId) => {
@@ -56,6 +62,7 @@ export class ManorWorldScene extends Phaser.Scene {
       }
 
       this.#hud?.setContent({
+        snapshot: state.snapshot,
         camera: state.camera,
         inspection: state.inspection,
         surveillance: state.surveillance,

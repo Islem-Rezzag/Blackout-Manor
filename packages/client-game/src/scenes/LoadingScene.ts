@@ -2,6 +2,7 @@ import * as Phaser from "phaser";
 
 import { loadClientGameAssetManifest } from "../bootstrap/assetManifest";
 import { registerDerivedClientGameTextures } from "../bootstrap/derivedClientAssets";
+import { registerEstateTextures } from "../bootstrap/estateTextures";
 import type { GameDirector } from "../directors/GameDirector";
 import { SCENE_KEYS } from "./keys";
 
@@ -61,6 +62,7 @@ export class LoadingScene extends Phaser.Scene {
 
   create() {
     registerDerivedClientGameTextures(this.textures);
+    registerEstateTextures(this.textures);
     this.scene.launch(SCENE_KEYS.manorWorld);
     this.scene.launch(SCENE_KEYS.meeting);
     this.scene.launch(SCENE_KEYS.endgame);

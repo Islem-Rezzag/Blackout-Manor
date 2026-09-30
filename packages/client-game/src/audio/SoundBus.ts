@@ -7,6 +7,7 @@ import {
   type PublicMovementFeedbackState,
   type PublicSoundCueId,
 } from "./publicEventFeedback";
+import { subscribeManorSoundEnabled } from "./soundPreference";
 
 type AudioCtor = typeof AudioContext;
 
@@ -154,6 +155,9 @@ export class SoundBus {
   #roomOscillator: OscillatorNode | null = null;
   #tensionOscillator: OscillatorNode | null = null;
   readonly #movementTimers = new Map<PlayerId, number>();
+  readonly #unsubscribeSound = subscribeManorSoundEnabled((enabled) =>
+    this.setEnabled(enabled),
+  );
 
   setEnabled(enabled: boolean) {
     this.#enabled = enabled;
@@ -305,6 +309,7 @@ export class SoundBus {
   }
 
   destroy() {
+    this.#unsubscribeSound();
     this.#movementTimers.clear();
     this.#stormOscillator?.stop();
     this.#roomOscillator?.stop();

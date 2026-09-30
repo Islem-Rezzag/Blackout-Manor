@@ -21,7 +21,7 @@ export const createEnvironmentDecorShape = (
       decor.width,
       decor.height,
       decor.fill,
-      decor.alpha,
+      decor.alpha * 0.12,
     );
   }
 
@@ -31,7 +31,7 @@ export const createEnvironmentDecorShape = (
     decor.width,
     decor.height,
     decor.fill,
-    decor.alpha,
+    decor.alpha * 0.12,
   );
 };
 

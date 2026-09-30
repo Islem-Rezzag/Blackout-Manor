@@ -1,21 +1,33 @@
+import {
+  DEFAULT_ROOM_LABELS,
+  type MatchSnapshot,
+  type PublicPlayerState,
+  type RoomId,
+} from "@blackout-manor/shared";
+import {
+  Cctv,
+  House,
+  Map as MapIcon,
+  Maximize,
+  Minimize,
+  Moon,
+  Users,
+  VenetianMask,
+  Volume2,
+  VolumeX,
+  Wrench,
+} from "lucide";
 import type * as Phaser from "phaser";
+import { subscribeManorSoundEnabled } from "../audio/soundPreference";
 
 import type {
   CameraPlan,
   InspectionPresentation,
   SurveillancePresentation,
 } from "../directors/types";
-
-type ObservationHudOptions = {
-  scene: Phaser.Scene;
-};
-
-type StatusChip = {
-  container: Phaser.GameObjects.Container;
-  plate: Phaser.GameObjects.Rectangle;
-  label: Phaser.GameObjects.Text;
-  detail: Phaser.GameObjects.Text;
-};
+import { resolveAvatarAppearance } from "../entities/avatar/presentation";
+import { createControlIcon as createElement } from "./controlIcons";
+import { ESTATE_HUD_STYLES } from "./estateHudStyles";
 
 type ObservationHudContent = {
   camera: CameraPlan;
@@ -24,146 +36,7 @@ type ObservationHudContent = {
   phaseLabel: string;
   timerText?: string | null;
   contextText?: string | null;
-};
-
-const toneColors = {
-  speech: {
-    fill: 0x131c25,
-    stroke: 0xb7d6ec,
-    text: "#f5f0e4",
-  },
-  alert: {
-    fill: 0x281519,
-    stroke: 0xefad94,
-    text: "#fff1eb",
-  },
-  status: {
-    fill: 0x162219,
-    stroke: 0x9fd6ad,
-    text: "#eef8f1",
-  },
-} as const;
-
-const cameraPlateTone = {
-  default: {
-    fill: 0x051019,
-    stroke: 0xa1c4d9,
-    eyebrow: "#a5cadf",
-    hint: "#a8bfce",
-  },
-  actor: {
-    fill: 0x0a1318,
-    stroke: 0x8eb8da,
-    eyebrow: "#b7d6ec",
-    hint: "#a8bfce",
-  },
-  interaction: {
-    fill: 0x10141a,
-    stroke: 0xcbb78e,
-    eyebrow: "#dfcc9b",
-    hint: "#bdb59f",
-  },
-  sabotage: {
-    fill: 0x201418,
-    stroke: 0xf0ad8a,
-    eyebrow: "#ffd0be",
-    hint: "#dab5a8",
-  },
-  report: {
-    fill: 0x241418,
-    stroke: 0xf2a48a,
-    eyebrow: "#ffd3c5",
-    hint: "#ddb7aa",
-  },
-  surveillance: {
-    fill: 0x08141c,
-    stroke: 0x7cb9d9,
-    eyebrow: "#9fd7f0",
-    hint: "#9ebfd2",
-  },
-  meeting: {
-    fill: 0x120f18,
-    stroke: 0xd6b17e,
-    eyebrow: "#e4c790",
-    hint: "#c7b38d",
-  },
-  endgame: {
-    fill: 0x171018,
-    stroke: 0xd6bf89,
-    eyebrow: "#e2cca0",
-    hint: "#cbb994",
-  },
-} as const satisfies Record<
-  CameraPlan["reason"],
-  { fill: number; stroke: number; eyebrow: string; hint: string }
->;
-
-const hintLine = (
-  mode: SurveillancePresentation["mode"],
-  inspection: InspectionPresentation,
-) => {
-  if (mode === "surveillance") {
-    return "Esc whole manor | V roam | Q/E or Tab cycle | 1-4 lock feed";
-  }
-
-  if (inspection.mode === "inspect") {
-    return "Esc whole manor | click another room | V surveillance";
-  }
-
-  return "Click room inspect | Esc whole manor | V surveillance";
-};
-
-const cameraTitle = (
-  camera: CameraPlan,
-  inspection: InspectionPresentation,
-  surveillance: SurveillancePresentation,
-) => {
-  if (surveillance.mode === "surveillance" || inspection.mode === "inspect") {
-    return inspection.label;
-  }
-
-  switch (camera.reason) {
-    case "report":
-      return "Public event focus";
-    case "sabotage":
-      return "Sabotage focus";
-    case "meeting":
-      return "Hall convergence";
-    case "endgame":
-      return "Finale focus";
-    case "interaction":
-      return "Public interaction";
-    case "actor":
-      return "Cast movement";
-    default:
-      return inspection.label;
-  }
-};
-
-const lightLabel = (
-  lightLevel: SurveillancePresentation["statusIndicators"][number]["lightLevel"],
-) => {
-  switch (lightLevel) {
-    case "blackout":
-      return "blackout";
-    case "dim":
-      return "dim";
-    default:
-      return "lit";
-  }
-};
-
-const doorLabel = (
-  doorState: SurveillancePresentation["statusIndicators"][number]["doorState"],
-) => {
-  switch (doorState) {
-    case "jammed":
-      return "jammed";
-    case "sealed":
-      return "sealed";
-    default:
-      return "open";
-  }
+  snapshot?: MatchSnapshot;
 };
 
 export const deriveObservationHudLayout = (options: {
@@ -180,7 +53,6 @@ export const deriveObservationHudLayout = (options: {
   const flaggedIndicatorCount = surveillance.statusIndicators.filter(
     (indicator) => indicator.flagged,
   ).length;
-
   return {
     inspecting,
     strongFocus,
@@ -206,307 +78,368 @@ export const selectObservationStatusIndicators = (options: {
   maxStatusChips: number;
 }) => {
   const { maxStatusChips, strongFocus, surveillance } = options;
-
-  if (maxStatusChips <= 0) {
-    return [] as const;
-  }
-
-  if (surveillance.mode === "surveillance") {
+  if (maxStatusChips <= 0) return [];
+  if (surveillance.mode === "surveillance")
     return surveillance.statusIndicators.slice(0, maxStatusChips);
-  }
-
-  const flaggedIndicators = surveillance.statusIndicators.filter(
+  const flagged = surveillance.statusIndicators.filter(
     (indicator) => indicator.flagged,
   );
+  return (
+    strongFocus
+      ? [
+          ...flagged,
+          ...surveillance.statusIndicators.filter(
+            (indicator) => !indicator.flagged,
+          ),
+        ]
+      : flagged
+  ).slice(0, maxStatusChips);
+};
 
-  if (!strongFocus) {
-    return flaggedIndicators.slice(0, maxStatusChips);
-  }
+export const deriveEstatePublicSummary = (snapshot: MatchSnapshot) => ({
+  alive: snapshot.players.filter((player) => player.status === "alive").length,
+  guests: snapshot.players.length,
+  taskPercent: Math.round(
+    (snapshot.tasks.reduce((sum, task) => sum + task.progress, 0) /
+      Math.max(1, snapshot.tasks.length)) *
+      100,
+  ),
+});
 
-  return [
-    ...flaggedIndicators,
-    ...surveillance.statusIndicators.filter((indicator) => !indicator.flagged),
-  ].slice(0, maxStatusChips);
+const color = (value: number) => `#${value.toString(16).padStart(6, "0")}`;
+
+const paintGuestPortrait = (
+  canvas: HTMLCanvasElement,
+  player: PublicPlayerState,
+) => {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  const look = resolveAvatarAppearance(player);
+  ctx.clearRect(0, 0, 70, 80);
+  ctx.fillStyle = color(look.outfitColor);
+  ctx.beginPath();
+  ctx.moveTo(6, 78);
+  ctx.lineTo(14, 48);
+  ctx.quadraticCurveTo(34, 33, 56, 48);
+  ctx.lineTo(64, 78);
+  ctx.fill();
+  ctx.fillStyle = color(look.trimColor);
+  ctx.beginPath();
+  ctx.moveTo(24, 45);
+  ctx.lineTo(35, 65);
+  ctx.lineTo(47, 45);
+  ctx.lineTo(39, 77);
+  ctx.lineTo(30, 77);
+  ctx.fill();
+  ctx.fillStyle = color(look.bodyColor);
+  ctx.beginPath();
+  ctx.ellipse(35, 28, 15, 19, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color(look.secondaryColor);
+  ctx.beginPath();
+  ctx.ellipse(35, 15, 16, 10, -0.15, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color(look.maskColor);
+  ctx.beginPath();
+  ctx.moveTo(19, 24);
+  ctx.lineTo(51, 24);
+  ctx.lineTo(46, 35);
+  ctx.lineTo(35, 31);
+  ctx.lineTo(24, 35);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#18231d";
+  ctx.fillRect(24, 27, 7, 3);
+  ctx.fillRect(39, 27, 7, 3);
+  ctx.strokeStyle = color(look.maskAccentColor);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(20, 24, 30, 10);
+  ctx.fillStyle = color(look.accessoryColor);
+  ctx.beginPath();
+  ctx.arc(49, 52, 3, 0, Math.PI * 2);
+  ctx.fill();
 };
 
 export class ObservationHud {
-  readonly #statePlate: Phaser.GameObjects.Container;
-  readonly #stateBackplate: Phaser.GameObjects.Rectangle;
-  readonly #stateEyebrow: Phaser.GameObjects.Text;
-  readonly #stateTitle: Phaser.GameObjects.Text;
-  readonly #stateDetail: Phaser.GameObjects.Text;
-  readonly #stateHint: Phaser.GameObjects.Text;
-  readonly #subtitlePlate: Phaser.GameObjects.Rectangle;
-  readonly #subtitleContainer: Phaser.GameObjects.Container;
-  readonly #subtitleSpeaker: Phaser.GameObjects.Text;
-  readonly #subtitleText: Phaser.GameObjects.Text;
-  readonly #statusChips: StatusChip[];
+  readonly #root: HTMLDivElement;
+  readonly #scene: Phaser.Scene;
+  readonly #selectRoom: ((roomId: RoomId) => void) | undefined;
+  readonly #guests = new globalThis.Map<string, HTMLButtonElement>();
+  readonly #rooms = new globalThis.Map<RoomId, HTMLButtonElement>();
+  readonly #abort = new AbortController();
+  readonly #unsubscribeSound: () => void;
+  #soundEnabled = true;
 
-  constructor(options: ObservationHudOptions) {
-    this.#stateBackplate = options.scene.add
-      .rectangle(0, 0, 580, 124, 0x051019, 0.82)
-      .setStrokeStyle(1, 0xa1c4d9, 0.22);
-    this.#stateEyebrow = options.scene.add.text(-264, -40, "", {
-      color: "#a5cadf",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "11px",
-      letterSpacing: 2.1,
+  constructor(options: {
+    scene: Phaser.Scene;
+    onSelectRoom?: (roomId: RoomId) => void;
+    onOverview?: () => void;
+    onSurveillance?: () => void;
+    onSoundChange?: (enabled: boolean) => void;
+  }) {
+    this.#scene = options.scene;
+    this.#selectRoom = options.onSelectRoom;
+    const root = document.createElement("div");
+    root.className = "manor-hud";
+    root.innerHTML = `<style>${ESTATE_HUD_STYLES}</style>
+      <header class="estate-header">
+        <div class="estate-brand"><div class="estate-crest"></div><div><h1>Blackout Manor</h1><p>The masquerade after midnight</p></div></div>
+        <div class="estate-phase"><i></i><span data-field="phase">ROAM</span><span data-field="tick"></span></div>
+        <div class="estate-totals"><div class="estate-total" data-icon="guests" title="Guests remaining"><strong data-field="alive"></strong><small>Guests remaining</small></div><div class="estate-total" data-icon="tasks" title="House restored"><strong data-field="tasks"></strong><small>House restored</small></div></div>
+      </header>
+      <nav class="estate-nav" aria-label="Observation mode"></nav>
+      <div class="estate-location"></div>
+      <section class="estate-room-menu" hidden aria-label="Manor rooms"><h2>Inside the estate</h2></section>
+      <div class="estate-subtitle" hidden data-tone="speech"><small></small><p></p></div>
+      <footer class="estate-bottom"><div class="estate-cast-heading"><strong>The guests</strong><small>Masquerade night</small></div><div class="estate-cast" aria-label="Guest focus"></div><div class="estate-tools"></div></footer>
+      <p class="estate-tool-error" role="status" hidden></p>`;
+    this.#root = root;
+    options.scene.game.canvas.parentElement?.append(root);
+    root.querySelector(".estate-crest")?.append(createElement(VenetianMask));
+    root.querySelector('[data-icon="guests"]')?.prepend(createElement(Users));
+    root.querySelector('[data-icon="tasks"]')?.prepend(createElement(Wrench));
+    const nav = this.#element(".estate-nav");
+    const overview = this.#button(
+      "Estate overview",
+      House,
+      () => options.onOverview?.(),
+      "Estate",
+    );
+    overview.dataset.command = "overview";
+    overview.setAttribute("aria-pressed", "true");
+    const surveillance = this.#button(
+      "Surveillance cameras",
+      Cctv,
+      () => options.onSurveillance?.(),
+      "Cameras",
+    );
+    surveillance.dataset.command = "surveillance";
+    surveillance.setAttribute("aria-pressed", "false");
+    const rooms = this.#button("Choose a room", MapIcon, () => {
+      const menu = this.#element(".estate-room-menu");
+      menu.hidden = !menu.hidden;
+      rooms.setAttribute("aria-expanded", String(!menu.hidden));
     });
-    this.#stateTitle = options.scene.add.text(-264, -10, "", {
-      color: "#f5f0e4",
-      fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "28px",
-      fontStyle: "bold",
-      wordWrap: { width: 520 },
+    rooms.dataset.command = "rooms";
+    rooms.setAttribute("aria-expanded", "false");
+    nav.append(overview, surveillance, rooms);
+    const tools = this.#element(".estate-tools");
+    const sound = this.#button("Mute manor sound", Volume2, () => {
+      this.#soundEnabled = !this.#soundEnabled;
+      options.onSoundChange?.(this.#soundEnabled);
+      sound.replaceChildren(
+        createElement(this.#soundEnabled ? Volume2 : VolumeX),
+      );
+      sound.title = this.#soundEnabled
+        ? "Mute manor sound"
+        : "Enable manor sound";
+      sound.setAttribute("aria-label", sound.title);
+      sound.setAttribute("aria-pressed", String(!this.#soundEnabled));
     });
-    this.#stateDetail = options.scene.add.text(-264, 28, "", {
-      color: "#dfe6ee",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "14px",
-      wordWrap: { width: 520 },
+    sound.setAttribute("aria-pressed", "false");
+    this.#unsubscribeSound = subscribeManorSoundEnabled((enabled) => {
+      this.#soundEnabled = enabled;
+      sound.replaceChildren(createElement(enabled ? Volume2 : VolumeX));
+      sound.title = enabled ? "Mute manor sound" : "Enable manor sound";
+      sound.setAttribute("aria-label", sound.title);
+      sound.setAttribute("aria-pressed", String(!enabled));
     });
-    this.#stateHint = options.scene.add.text(-264, 54, "", {
-      color: "#a8bfce",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "12px",
-      wordWrap: { width: 520 },
+    const fullscreen = this.#button("Enter fullscreen", Maximize, async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await options.scene.game.canvas.parentElement?.requestFullscreen();
+      } catch {
+        const message = this.#element(".estate-tool-error");
+        message.hidden = false;
+        message.textContent = "Fullscreen is unavailable in this browser.";
+      }
     });
-    this.#statePlate = options.scene.add.container(0, 0, [
-      this.#stateBackplate,
-      this.#stateEyebrow,
-      this.#stateTitle,
-      this.#stateDetail,
-      this.#stateHint,
-    ]);
-    this.#statePlate.setScrollFactor(0);
-    this.#statePlate.setDepth(320);
+    document.addEventListener(
+      "fullscreenchange",
+      () => {
+        const active = Boolean(document.fullscreenElement);
+        fullscreen.replaceChildren(createElement(active ? Minimize : Maximize));
+        fullscreen.title = active ? "Exit fullscreen" : "Enter fullscreen";
+        fullscreen.setAttribute("aria-label", fullscreen.title);
+      },
+      { signal: this.#abort.signal },
+    );
+    tools.append(sound, fullscreen);
+    const menu = this.#element(".estate-room-menu");
+    for (const [roomId, label] of Object.entries(DEFAULT_ROOM_LABELS)) {
+      const id = roomId as RoomId;
+      const button = document.createElement("button");
+      button.type = "button";
+      const name = document.createElement("span");
+      name.textContent = label;
+      const status = document.createElement("small");
+      button.append(name, status);
+      button.addEventListener(
+        "click",
+        () => {
+          this.#selectRoom?.(id);
+          menu.hidden = true;
+          rooms.setAttribute("aria-expanded", "false");
+        },
+        { signal: this.#abort.signal },
+      );
+      this.#rooms.set(id, button);
+      menu.append(button);
+    }
+    options.scene.events.on("sleep", this.#hide);
+    options.scene.events.on("wake", this.#show);
+    options.scene.events.on("pause", this.#hide);
+    options.scene.events.on("resume", this.#show);
+  }
 
-    this.#subtitlePlate = options.scene.add
-      .rectangle(0, 0, 960, 68, 0x061018, 0.84)
-      .setStrokeStyle(1, 0xa1c4d9, 0.18);
-    this.#subtitleSpeaker = options.scene.add.text(-446, -14, "", {
-      color: "#a5cadf",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "12px",
-      letterSpacing: 1.8,
-    });
-    this.#subtitleText = options.scene.add.text(-446, 12, "", {
-      color: "#f5f0e4",
-      fontFamily: "Segoe UI, sans-serif",
-      fontSize: "15px",
-      wordWrap: { width: 878 },
-    });
-    this.#subtitleContainer = options.scene.add.container(0, 0, [
-      this.#subtitlePlate,
-      this.#subtitleSpeaker,
-      this.#subtitleText,
-    ]);
-    this.#subtitleContainer.setScrollFactor(0);
-    this.#subtitleContainer.setDepth(320);
+  readonly #hide = () => {
+    this.#root.hidden = true;
+  };
+  readonly #show = () => {
+    this.#root.hidden = false;
+  };
 
-    this.#statusChips = Array.from({ length: 3 }, () => {
-      const plate = options.scene.add
-        .rectangle(0, 0, 232, 60, 0x061018, 0.76)
-        .setStrokeStyle(1, 0xa1c4d9, 0.18);
-      const label = options.scene.add.text(-98, -11, "", {
-        color: "#f5f0e4",
-        fontFamily: "Palatino Linotype, Georgia, serif",
-        fontSize: "17px",
-        fontStyle: "bold",
-        wordWrap: { width: 144 },
-      });
-      const detail = options.scene.add.text(-98, 14, "", {
-        color: "#dfe6ee",
-        fontFamily: "Segoe UI, sans-serif",
-        fontSize: "12px",
-        wordWrap: { width: 188 },
-      });
+  #element(selector: string) {
+    const element = this.#root.querySelector<HTMLElement>(selector);
+    if (!element) throw new Error(`Missing manor HUD element ${selector}`);
+    return element;
+  }
 
-      const container = options.scene.add.container(0, 0, [
-        plate,
-        label,
-        detail,
-      ]);
-      container.setScrollFactor(0);
-      container.setDepth(320);
-
-      return {
-        container,
-        plate,
-        label,
-        detail,
-      };
-    });
-
-    this.resize(options.scene.scale.width, options.scene.scale.height);
+  #button(
+    label: string,
+    icon: typeof House,
+    action: () => void | Promise<void>,
+    text?: string,
+  ) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    button.append(createElement(icon));
+    if (text) {
+      const span = document.createElement("span");
+      span.textContent = text;
+      button.append(span);
+    }
+    button.addEventListener(
+      "click",
+      () => {
+        void action();
+      },
+      { signal: this.#abort.signal },
+    );
+    return button;
   }
 
   setContent(content: ObservationHudContent) {
-    const {
-      camera,
-      contextText,
-      inspection,
-      phaseLabel,
-      surveillance,
-      timerText,
-    } = content;
-    const subtitle = surveillance.subtitle;
-    const layout = deriveObservationHudLayout({
-      camera,
-      inspection,
-      surveillance,
-      hasSubtitle: Boolean(subtitle),
-    });
-    const plateTone = cameraPlateTone[camera.reason];
-    const viewModeLabel =
-      surveillance.mode === "surveillance"
-        ? "SURVEILLANCE"
-        : inspection.mode === "inspect"
-          ? "ROOM FOCUS"
-          : "OVERVIEW";
-    const stateDetailText = [timerText, surveillance.indicatorLabel]
-      .filter((value): value is string => Boolean(value))
-      .join(" | ");
-    const narrativeText = contextText ?? inspection.detail;
-    const stateHintText = layout.strongFocus
-      ? `${camera.detail} | ${hintLine(surveillance.mode, inspection)}`
-      : `${narrativeText} | ${hintLine(surveillance.mode, inspection)}`;
-    const visibleIndicators = selectObservationStatusIndicators({
-      surveillance,
-      strongFocus: layout.strongFocus,
-      maxStatusChips: layout.maxStatusChips,
-    });
-
-    this.#stateEyebrow.setText(`${phaseLabel} | ${viewModeLabel}`);
-    this.#stateTitle.setText(cameraTitle(camera, inspection, surveillance));
-    this.#stateDetail.setText(stateDetailText);
-    this.#stateHint.setText(stateHintText);
-    this.#stateBackplate.setDisplaySize(layout.strongFocus ? 556 : 580, 124);
-    this.#stateBackplate.setFillStyle(
-      plateTone.fill,
-      layout.strongFocus ? 0.86 : 0.82,
+    const { inspection, snapshot, surveillance } = content;
+    this.#element('[data-field="phase"]').textContent =
+      content.phaseLabel === "ROAM" ? "THE MASQUERADE" : content.phaseLabel;
+    this.#element('[data-field="tick"]').textContent = content.timerText ?? "";
+    this.#element('[data-command="overview"]').setAttribute(
+      "aria-pressed",
+      String(surveillance.mode !== "surveillance"),
     );
-    this.#stateBackplate.setStrokeStyle(
-      1,
-      plateTone.stroke,
-      layout.strongFocus ? 0.28 : 0.22,
+    this.#element('[data-command="surveillance"]').setAttribute(
+      "aria-pressed",
+      String(surveillance.mode === "surveillance"),
     );
-    this.#stateEyebrow.setColor(plateTone.eyebrow);
-    this.#stateDetail.setColor("#dfe6ee");
-    this.#stateHint.setColor(plateTone.hint);
-
-    if (subtitle) {
-      const tone = toneColors[subtitle.tone];
-      this.#subtitleContainer.setVisible(true);
-      this.#subtitlePlate.setDisplaySize(
-        layout.expandedSubtitle ? 1000 : 960,
-        layout.expandedSubtitle ? 82 : 68,
-      );
-      this.#subtitlePlate.setFillStyle(tone.fill, 0.84);
-      this.#subtitlePlate.setStrokeStyle(1, tone.stroke, 0.28);
-      this.#subtitleSpeaker.setColor(tone.text);
-      this.#subtitleText.setColor(tone.text);
-      this.#subtitleSpeaker.setFontSize(
-        layout.expandedSubtitle ? "13px" : "12px",
-      );
-      this.#subtitleText.setFontSize(layout.expandedSubtitle ? "16px" : "15px");
-      this.#subtitleText.setWordWrapWidth(layout.expandedSubtitle ? 920 : 878);
-      this.#subtitleSpeaker.setText(
-        subtitle.speakerLabel ??
-          (subtitle.speakerId
-            ? `${subtitle.speakerId.toUpperCase()}`
-            : subtitle.tone === "alert"
-              ? "MANOR ALERT"
-              : "PUBLIC SIGNAL"),
-      );
-      this.#subtitleText.setText(subtitle.text);
-    } else if (layout.showFallbackSubtitle) {
-      this.#subtitleContainer.setVisible(true);
-      this.#subtitlePlate.setDisplaySize(
-        layout.expandedSubtitle ? 920 : 860,
-        layout.expandedSubtitle ? 66 : 54,
-      );
-      this.#subtitlePlate.setFillStyle(
-        surveillance.mode === "surveillance" ? 0x08141c : 0x061018,
-        0.78,
-      );
-      this.#subtitlePlate.setStrokeStyle(
-        1,
-        surveillance.mode === "surveillance" ? 0x7cb9d9 : 0xa1c4d9,
-        0.2,
-      );
-      this.#subtitleSpeaker.setColor(
-        surveillance.mode === "surveillance" ? "#9fd7f0" : "#a5cadf",
-      );
-      this.#subtitleText.setColor("#dfe6ee");
-      this.#subtitleSpeaker.setFontSize("11px");
-      this.#subtitleText.setFontSize(layout.expandedSubtitle ? "14px" : "13px");
-      this.#subtitleText.setWordWrapWidth(layout.expandedSubtitle ? 836 : 780);
-      this.#subtitleSpeaker.setText(
-        surveillance.mode === "surveillance" ? "CAMERA NOTE" : "ROOM NOTE",
-      );
-      this.#subtitleText.setText(
-        surveillance.mode === "surveillance"
-          ? "The selected public feed stays locked while the monitor wall keeps the next priority rooms visible."
-          : inspection.mode === "inspect"
-            ? "Room focus favors cast spacing, task props, and the nearest threshold before returning to the full manor."
-            : "Public event framing lingers long enough to keep the manor readable before the camera releases back to overview.",
-      );
-    } else {
-      this.#subtitleContainer.setVisible(false);
+    (
+      this.#element('[data-command="surveillance"]') as HTMLButtonElement
+    ).disabled = !surveillance.available;
+    const location = this.#element(".estate-location");
+    location.replaceChildren(
+      createElement(inspection.mode === "inspect" ? House : Moon),
+    );
+    const locationLabel = document.createElement("span");
+    locationLabel.textContent =
+      inspection.mode === "inspect"
+        ? inspection.label
+        : "Estate grounds / Storm outside";
+    location.append(locationLabel);
+    const subtitle = this.#element(".estate-subtitle");
+    subtitle.hidden = !surveillance.subtitle;
+    if (surveillance.subtitle) {
+      subtitle.dataset.tone = surveillance.subtitle.tone;
+      this.#element(".estate-subtitle small").textContent =
+        surveillance.subtitle.speakerLabel ?? "THE MANOR";
+      this.#element(".estate-subtitle p").textContent =
+        surveillance.subtitle.text;
     }
-
-    for (const [index, chip] of this.#statusChips.entries()) {
-      const indicator = visibleIndicators[index];
-
-      if (!indicator) {
-        chip.container.setVisible(false);
-        continue;
+    if (!snapshot) return;
+    const summary = deriveEstatePublicSummary(snapshot);
+    this.#element('[data-field="alive"]').textContent =
+      `${summary.alive} / ${summary.guests}`;
+    this.#element('[data-field="tasks"]').textContent =
+      `${summary.taskPercent}%`;
+    for (const room of snapshot.rooms) {
+      const button = this.#rooms.get(room.roomId);
+      if (!button) continue;
+      button.setAttribute(
+        "aria-current",
+        String(inspection.roomId === room.roomId),
+      );
+      const status = button.querySelector("small");
+      if (status)
+        status.textContent =
+          room.lightLevel === "blackout"
+            ? "Blackout"
+            : `${room.occupantIds.length} present`;
+    }
+    const publicIds = new Set(snapshot.players.map((player) => player.id));
+    for (const [id, button] of this.#guests) {
+      if (publicIds.has(id)) continue;
+      button.remove();
+      this.#guests.delete(id);
+    }
+    for (const player of snapshot.players) {
+      let button = this.#guests.get(player.id);
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "estate-guest";
+        const portrait = document.createElement("canvas");
+        portrait.width = 70;
+        portrait.height = 80;
+        portrait.setAttribute("aria-hidden", "true");
+        paintGuestPortrait(portrait, player);
+        const name = document.createElement("span");
+        name.textContent = player.displayName;
+        const dot = document.createElement("i");
+        button.append(portrait, name, dot);
+        button.addEventListener(
+          "click",
+          () => {
+            const roomId = button?.dataset.room as RoomId | undefined;
+            if (roomId) this.#selectRoom?.(roomId);
+          },
+          { signal: this.#abort.signal },
+        );
+        this.#guests.set(player.id, button);
+        this.#element(".estate-cast").append(button);
       }
-
-      chip.container.setVisible(true);
-      chip.label.setText(indicator.label);
-      chip.detail.setText(
-        `${indicator.occupantCount} present | ${lightLabel(indicator.lightLevel)} | ${doorLabel(indicator.doorState)}`,
+      button.dataset.room = player.roomId ?? "";
+      button.dataset.alive = String(player.status === "alive");
+      button.disabled = !player.roomId;
+      button.setAttribute(
+        "aria-pressed",
+        String(Boolean(player.roomId && player.roomId === inspection.roomId)),
       );
-      chip.plate.setDisplaySize(
-        surveillance.mode === "surveillance" ? 232 : 220,
-        surveillance.mode === "surveillance" ? 60 : 56,
-      );
-      chip.plate.setFillStyle(
-        indicator.flagged ? 0x1d1415 : 0x071018,
-        indicator.flagged ? 0.84 : 0.7,
-      );
-      chip.plate.setStrokeStyle(
-        1,
-        indicator.flagged ? 0xe49781 : 0x73a8c9,
-        indicator.flagged ? 0.3 : 0.16,
-      );
-      chip.container.setAlpha(
-        surveillance.mode === "surveillance"
-          ? 1
-          : indicator.flagged
-            ? 0.92
-            : 0.82,
-      );
+      button.title = `${player.displayName} / ${player.roomId ? DEFAULT_ROOM_LABELS[player.roomId] : "Absent"} / ${player.status}`;
+      button.setAttribute("aria-label", button.title);
     }
   }
 
-  resize(width: number, height: number) {
-    this.#statePlate.setPosition(316, 104);
-    this.#subtitleContainer.setPosition(width / 2, height - 68);
-
-    for (const [index, chip] of this.#statusChips.entries()) {
-      chip.container.setPosition(width - 146, 106 + index * 72);
-    }
-  }
+  resize(_width: number, _height: number) {}
 
   destroy() {
-    this.#statePlate.destroy(true);
-    this.#subtitleContainer.destroy(true);
-
-    for (const chip of this.#statusChips) {
-      chip.container.destroy(true);
-    }
+    this.#unsubscribeSound();
+    this.#abort.abort();
+    this.#scene.events.off("sleep", this.#hide);
+    this.#scene.events.off("wake", this.#show);
+    this.#scene.events.off("pause", this.#hide);
+    this.#scene.events.off("resume", this.#show);
+    this.#root.remove();
+    this.#guests.clear();
   }
 }

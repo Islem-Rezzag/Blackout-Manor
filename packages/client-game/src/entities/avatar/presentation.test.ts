@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   actionIconLabel,
   buildAvatarCueMap,
+  deriveWorldAvatarLabels,
   directionFromVector,
   resolveAvatarAppearance,
   resolveAvatarPose,
@@ -40,6 +41,29 @@ const createPlayer = (
 });
 
 describe("avatar presentation", () => {
+  it("keeps tribunal labels in the guest strip instead of over gathered avatars", () => {
+    for (const phase of ["report", "meeting", "vote", "reveal"] as const) {
+      expect(deriveWorldAvatarLabels(phase, true, 1)).toEqual({
+        name: false,
+        status: false,
+        actionBadge: false,
+      });
+    }
+  });
+
+  it("retains inspection and public emphasis labels outside the tribunal", () => {
+    expect(deriveWorldAvatarLabels("roam", true, 0)).toEqual({
+      name: true,
+      status: true,
+      actionBadge: true,
+    });
+    expect(deriveWorldAvatarLabels("roam", false, 0.5)).toEqual({
+      name: true,
+      status: false,
+      actionBadge: true,
+    });
+  });
+
   it("resolves deterministic appearance from the public player identity", () => {
     const player = createPlayer("player-01", "Velvet Host");
     const left = resolveAvatarAppearance(player);

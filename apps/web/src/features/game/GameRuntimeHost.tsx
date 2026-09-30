@@ -192,14 +192,6 @@ export function GameRuntimeHost({
       <div className="game-runtime-stage">
         <div ref={hostRef} className="game-runtime-canvas-host" />
         <header className="game-runtime-topbar">
-          <div className="game-runtime-wordmark">
-            <span className="eyebrow">Blackout Manor</span>
-            <h1>Masquerade Night</h1>
-            <p className="game-runtime-subcopy">
-              Live spectator runtime for public matches, inspections, and
-              in-world meetings.
-            </p>
-          </div>
           <div className="game-runtime-badges">
             <span className="play-badge">
               {connection.mode === "replay"

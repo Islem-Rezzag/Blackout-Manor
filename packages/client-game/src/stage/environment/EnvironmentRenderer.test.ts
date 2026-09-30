@@ -158,8 +158,8 @@ describe("Manor environment renderer v2", () => {
 
     for (const roomPlan of plan.rooms) {
       expect(roomPlan.room).toBe(MANOR_RENDER_MAP.rooms[roomPlan.roomId]);
-      expect(roomPlan.art.floorKey).toMatch(/^floor-/);
-      expect(roomPlan.art.wallKey).toMatch(/^wall-/);
+      expect(roomPlan.art.floorKey).toBe(`estate-floor-${roomPlan.roomId}`);
+      expect(roomPlan.art.wallKey).toBe(`estate-wall-${roomPlan.roomId}`);
       expect(roomPlan.taskIds).toEqual(
         contentRoomsById.get(roomPlan.roomId)?.taskIds ?? [],
       );

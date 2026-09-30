@@ -23,6 +23,17 @@ export type ClientGameAssetSourceLedgerEntryV2 = {
 };
 
 export const CLIENT_GAME_ASSET_SOURCE_LEDGER_V2 = {
+  "lucide-control-library": {
+    sourceId: "lucide-control-library",
+    ownerOrAuthor: "Lucide Contributors; Feather portions by Cole Bemis",
+    licenseStatus: "Placeholder",
+    attributionRequired: true,
+    sourceUrl: "https://github.com/lucide-icons/lucide",
+    sourceFile: "packages/client-game/package.json",
+    reviewed: true,
+    notes:
+      "Pinned lucide 0.468.0 code dependency, reviewed against its installed ISC license (with Feather MIT portions). Used only for standard runtime control symbols, not environment/character art. Placeholder describes presentation maturity, not project ownership. Copyright and permission notice retained in docs/production/THIRD_PARTY_UI_NOTICES.md.",
+  },
   "blackout-inline": {
     sourceId: "blackout-inline",
     ownerOrAuthor: "Blackout Manor project",
@@ -41,7 +52,7 @@ export const CLIENT_GAME_ASSET_SOURCE_LEDGER_V2 = {
     sourceFile: "packages/client-game/src",
     reviewed: true,
     notes:
-      "Procedural Phaser graphics, WebAudio synthesis, and runtime-drawn UI/avatar placeholders. These are allowed fallback surfaces until replaced by cataloged production assets.",
+      "Project-authored seeded canvas estate textures, Phaser graphics, WebAudio synthesis, and runtime-drawn UI/avatar placeholders. These are allowed fallback surfaces until replaced by cataloged production assets. Estate texture source: packages/client-game/src/bootstrap/estateTextures.ts; no external or image-generated material is used.",
   },
   "blackout-system-font-stack": {
     sourceId: "blackout-system-font-stack",

@@ -12,7 +12,7 @@ export class RuntimeBanner {
   readonly #title: Phaser.GameObjects.Text;
   readonly #detail: Phaser.GameObjects.Text;
   #baseX = 0;
-  #baseY = 96;
+  #baseY = 88;
   #offsetY = 0;
   #scale = 1;
   #alpha = 1;
@@ -20,25 +20,25 @@ export class RuntimeBanner {
   constructor(options: RuntimeBannerOptions) {
     const width = options.width ?? 640;
     this.#backplate = options.scene.add
-      .rectangle(0, 0, width, 126, 0x050b12, 0.78)
-      .setStrokeStyle(1, 0xa1c4d9, 0.2);
+      .rectangle(0, 0, width, 110, 0x14251e, 0.94)
+      .setStrokeStyle(1, 0xc6ad74, 0.3);
     this.#eyebrow = options.scene.add.text(-width / 2 + 28, -38, "", {
-      color: "#a5cadf",
+      color: "#c6ad74",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "12px",
-      letterSpacing: 2.2,
+      letterSpacing: 0,
     });
     this.#title = options.scene.add.text(-width / 2 + 28, -8, "", {
       color: "#f5f0e4",
       fontFamily: "Palatino Linotype, Georgia, serif",
-      fontSize: "28px",
-      fontStyle: "bold",
+      fontSize: "24px",
+      fontStyle: "normal",
       wordWrap: { width: width - 64 },
     });
     this.#detail = options.scene.add.text(-width / 2 + 28, 32, "", {
-      color: "#dfe6ee",
+      color: "#bbc6b0",
       fontFamily: "Segoe UI, sans-serif",
-      fontSize: "14px",
+      fontSize: "13px",
       wordWrap: { width: width - 64 },
     });
 
@@ -77,6 +77,13 @@ export class RuntimeBanner {
   resize(width: number) {
     this.#baseX = width / 2;
     this.#applyPresentation();
+    this.#container.setScale(
+      this.#scale * Math.min(1, (width - 32) / this.#backplate.width),
+    );
+  }
+
+  get screenSpaceRoot() {
+    return this.#container;
   }
 
   destroy() {
@@ -85,7 +92,9 @@ export class RuntimeBanner {
 
   #applyPresentation() {
     this.#container.setPosition(this.#baseX, this.#baseY + this.#offsetY);
-    this.#container.setScale(this.#scale);
+    this.#container.setScale(
+      this.#scale * Math.min(1, (this.#baseX * 2 - 32) / this.#backplate.width),
+    );
     this.#container.setAlpha(this.#alpha);
   }
 }

@@ -6,6 +6,7 @@ import {
 import * as Phaser from "phaser";
 
 import { readableTaskLabel } from "../signals";
+import { drawRoomArchitecture } from "./ArchitectureRenderer";
 import type {
   EnvironmentRenderPlan,
   EnvironmentRoomLayerContainers,
@@ -16,11 +17,11 @@ import { createRoomLightingWeatherVisuals } from "./LightingWeatherRenderer";
 import { createDecorPropVisuals, createHeroPropVisuals } from "./PropRenderer";
 
 const taskChipStyle = {
-  color: "#091018",
-  backgroundColor: "#ead08c",
+  color: "#e6d6b0",
+  backgroundColor: "#233b32",
   fontFamily: "Segoe UI, sans-serif",
   fontSize: "12px",
-  padding: { left: 10, right: 10, top: 5, bottom: 5 },
+  padding: { left: 8, right: 8, top: 3, bottom: 3 },
 } as const;
 
 type RoomPlateCallbacks = {
@@ -221,8 +222,10 @@ export const drawRoomPlates = (options: {
       {
         color: "#f5f0e4",
         fontFamily: "Palatino Linotype, Georgia, serif",
-        fontSize: "24px",
-        fontStyle: "bold",
+        fontSize: "20px",
+        fontStyle: "normal",
+        stroke: "#14241e",
+        strokeThickness: 3,
       },
     );
     title.setOrigin(0.5);
@@ -247,7 +250,7 @@ export const drawRoomPlates = (options: {
       color: "#dce4ed",
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "13px",
-      letterSpacing: 1.1,
+      letterSpacing: 0,
     });
     state.setOrigin(0.5);
 
@@ -300,7 +303,7 @@ export const drawRoomPlates = (options: {
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "14px",
       fontStyle: "bold",
-      letterSpacing: 1.2,
+      letterSpacing: 0,
     });
     sabotageLabel.setOrigin(0.5);
     sabotageLabel.setAlpha(0);
@@ -383,6 +386,16 @@ export const drawRoomPlates = (options: {
       hitTarget,
     ]);
     containers.focus.add([focusBeam, focusFrame]);
+
+    shell.setVisible(false);
+    cutawayBacking.setVisible(false);
+    cutawayTrim.setVisible(false);
+    titlePlate.setVisible(false);
+    theme.setVisible(false);
+    title.setY(room.height / 2 + room.framing.floorInsetY - 18);
+    statePlate.setVisible(false);
+    state.setPosition(0, room.height / 2 + room.framing.floorInsetY - 39);
+    drawRoomArchitecture(scene, room, containers, plan.renderMap.doorNodes);
 
     roomVisuals.set(room.roomId, {
       roomId: room.roomId,

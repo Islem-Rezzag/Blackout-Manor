@@ -11,6 +11,11 @@ import {
 } from "../../bootstrap/assetCatalogV2";
 import type { ClientGameAssetSourceLedgerEntryV2 } from "../../bootstrap/assetSourceLedgerV2";
 import {
+  estateFloorKey,
+  estatePropKey,
+  estateWallKey,
+} from "../../bootstrap/estateTexturePlan";
+import {
   getRoomRenderData,
   MANOR_RENDER_MAP,
   MANOR_WORLD_BOUNDS,
@@ -51,7 +56,11 @@ const SHARED_ROOM_ENVIRONMENT_KEYS = [
   "sabotage-stripe",
 ] as const;
 
-const SHARED_BACKDROP_KEYS = ["room-shadow", "storm-cloud"] as const;
+const SHARED_BACKDROP_KEYS = [
+  "room-shadow",
+  "storm-cloud",
+  "estate-grounds",
+] as const;
 const SHARED_CORRIDOR_KEYS = [
   "room-shadow",
   "room-shell",
@@ -94,12 +103,26 @@ export const createEnvironmentRenderPlan = (
   rooms: renderMap.roomOrder.map((roomId) => ({
     roomId,
     room: renderMap.rooms[roomId],
-    art: getImportedRoomArt(roomId),
+    art: {
+      ...getImportedRoomArt(roomId),
+      floorKey: estateFloorKey(roomId),
+      wallKey: estateWallKey(roomId),
+      heroProps: getImportedRoomArt(roomId).heroProps.map((prop) => ({
+        ...prop,
+        key: estatePropKey(prop.key),
+      })),
+    },
     taskIds: taskIdsByRoom.get(roomId) ?? [],
   })),
   corridors: renderMap.corridors.map((segment) => ({
     segment,
-    floorKey: getCorridorFloorTextureKey(segment.className),
+    floorKey:
+      segment.className === "meeting-wing"
+        ? "estate-dining-gallery"
+        : segment.className === "service-band" ||
+            segment.className === "service-link"
+          ? getCorridorFloorTextureKey(segment.className)
+          : "estate-gallery",
   })),
   thresholds: renderMap.doorNodes.map((node) => ({
     node,
@@ -337,73 +360,50 @@ export class EnvironmentRenderer {
       const inspected = context.inspectedRoomId === roomId;
       const hovered = context.hoveredRoomId === roomId;
       const room = getRoomRenderData(roomId);
-      const scale = inspected
-        ? 1 + context.roomScaleBoost
-        : focused
-          ? 1 + context.roomScaleBoost * 0.72
-          : active
-            ? 1 + context.roomScaleBoost * 0.34
-            : hovered
-              ? 1.012
-              : 1;
       const alpha =
         context.inspectedRoomId !== null
           ? inspected
             ? 1
             : focused
               ? Math.max(0.58, 1 - context.dimStrength * 0.52)
-              : Math.max(0.24, 1 - context.dimStrength)
+              : Math.max(0.68, 1 - context.dimStrength * 0.5)
           : focused
             ? 1
             : active
-              ? 0.95
+              ? 1
               : hovered
-                ? 0.98
-                : 0.92 - context.emphasis * 0.16;
+                ? 1
+                : 1 - context.emphasis * 0.06;
 
       for (const container of visual.allContainers) {
-        container.setScale(scale);
+        container.setScale(1);
         container.setAlpha(alpha);
       }
 
       visual.focusBeam
-        .setTint(room.surfaces.focusColor)
+        .setTint(0xd7c395)
         .setAlpha(
           inspected
-            ? 0.44 + context.emphasis * 0.18
+            ? 0.07 + context.emphasis * 0.03
             : focused
-              ? 0.22 + context.emphasis * 0.18
+              ? 0.04 + context.emphasis * 0.03
               : active
-                ? 0.12 + context.emphasis * 0.08
+                ? 0.03
                 : hovered
-                  ? 0.1
+                  ? 0.02
                   : 0,
         );
       visual.focusFrame.setStrokeStyle(
-        2.4,
-        room.surfaces.focusColor,
-        inspected
-          ? 1
-          : focused
-            ? 0.86 + context.emphasis * 0.1
-            : active
-              ? 0.56 + context.emphasis * 0.08
-              : hovered
-                ? 0.42
-                : 0,
+        1.2,
+        0xd7c395,
+        inspected ? 0.7 : focused ? 0.5 : active ? 0.3 : hovered ? 0.3 : 0,
       );
       visual.hitTarget.setFillStyle(
         0xffffff,
         hovered && !inspected ? 0.04 : 0.001,
       );
       visual.interiorVignette.setAlpha(
-        inspected
-          ? 0.36 + context.emphasis * 0.12
-          : focused
-            ? 0.28 + context.emphasis * 0.08
-            : hovered
-              ? 0.22
-              : 0.18,
+        inspected ? 0.12 : focused ? 0.1 : hovered ? 0.08 : 0.08,
       );
       visual.cutawayBacking.setAlpha(
         inspected
@@ -416,9 +416,7 @@ export class EnvironmentRenderer {
                 ? 0.48
                 : 0.38,
       );
-      visual.cutawayWall.setAlpha(
-        inspected ? 1 : focused ? 0.96 : active ? 0.9 : 0.84,
-      );
+      visual.cutawayWall.setAlpha(1);
       visual.cutawayTrim.setFillStyle(
         room.accentColor,
         inspected
