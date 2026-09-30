@@ -155,7 +155,6 @@ class PlayerAvatar {
     const labels = deriveWorldAvatarLabels(
       phaseId,
       inspectionRoomId === roomId,
-      cue.emphasis,
     );
 
     const visiblePosture = resolveVisiblePosture(player, cue);

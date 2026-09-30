@@ -31,6 +31,8 @@ markers still consume the existing public presentation data.
 room selection, public guest focus, sound, and fullscreen. Public counts and task
 progress come only from the provided match snapshot. Guest portraits use the existing
 public appearance resolver; there is no replacement character pack or role reveal.
+Overview names stay in the guest bar; inspected rooms show world guest labels
+without a competing room caption. Public action cues remain visible in overview.
 Subtitles contain actual public speech, not generated narrative or reasoning.
 The mute preference is shared by all scene sound buses and survives scene changes
 within the running game; it is not persisted or sent to a server.

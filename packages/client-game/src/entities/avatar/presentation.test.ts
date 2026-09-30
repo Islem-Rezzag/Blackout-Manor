@@ -43,7 +43,7 @@ const createPlayer = (
 describe("avatar presentation", () => {
   it("keeps tribunal labels in the guest strip instead of over gathered avatars", () => {
     for (const phase of ["report", "meeting", "vote", "reveal"] as const) {
-      expect(deriveWorldAvatarLabels(phase, true, 1)).toEqual({
+      expect(deriveWorldAvatarLabels(phase, true)).toEqual({
         name: false,
         status: false,
         actionBadge: false,
@@ -51,17 +51,19 @@ describe("avatar presentation", () => {
     }
   });
 
-  it("retains inspection and public emphasis labels outside the tribunal", () => {
-    expect(deriveWorldAvatarLabels("roam", true, 0)).toEqual({
+  it("keeps overview names in the guest bar and exposes names during inspection", () => {
+    expect(deriveWorldAvatarLabels("roam", true)).toEqual({
       name: true,
       status: true,
       actionBadge: true,
     });
-    expect(deriveWorldAvatarLabels("roam", false, 0.5)).toEqual({
-      name: true,
+    expect(deriveWorldAvatarLabels("roam", false)).toEqual({
+      name: false,
       status: false,
       actionBadge: true,
     });
+    expect(deriveWorldAvatarLabels("intro", false).name).toBe(false);
+    expect(deriveWorldAvatarLabels("resolution", false).name).toBe(true);
   });
 
   it("resolves deterministic appearance from the public player identity", () => {

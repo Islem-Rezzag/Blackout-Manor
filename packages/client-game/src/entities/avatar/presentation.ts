@@ -11,12 +11,13 @@ import type {
 export const deriveWorldAvatarLabels = (
   phaseId: PhaseId,
   inspected: boolean,
-  emphasis: number,
 ) => {
   const inTribunal = ["report", "meeting", "vote", "reveal"].includes(phaseId);
+  const terminalPhase =
+    phaseId !== "intro" && phaseId !== "roam" && !inTribunal;
   return {
-    name: !inTribunal && (inspected || emphasis >= 0.4 || phaseId !== "roam"),
-    status: !inTribunal && (inspected || phaseId !== "roam"),
+    name: !inTribunal && (inspected || terminalPhase),
+    status: !inTribunal && (inspected || terminalPhase),
     actionBadge: !inTribunal,
   };
 };

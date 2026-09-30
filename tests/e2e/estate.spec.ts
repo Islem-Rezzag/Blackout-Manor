@@ -12,7 +12,7 @@ for (const viewport of [
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize(viewport);
-    await page.clock.install();
+    await page.clock.install({ time: new Date("2026-01-01T08:00:00Z") });
     await page.goto("/game/demo");
     const hud = page.locator(".manor-hud:not([hidden])");
     await expect(
@@ -21,10 +21,8 @@ for (const viewport of [
       timeout: 20_000,
     });
     await expect(hud.locator(".estate-guest")).toHaveCount(10);
-    // Keep the short demo cycle from switching scenes during control assertions.
-    await page.clock.pauseAt(
-      new Date(await page.evaluate(() => Date.now() + 1000)),
-    );
+    // The fixed future target stays ahead of slow CI startup and protocol latency.
+    await page.clock.pauseAt(new Date("2026-01-01T09:00:00Z"));
     await expect(hud.locator('[data-field="alive"]')).toHaveText("10 / 10");
 
     await hud.getByRole("button", { name: "Choose a room" }).click();

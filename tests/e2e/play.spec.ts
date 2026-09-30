@@ -13,7 +13,7 @@ test("renders the live manor canvas", async ({ page }) => {
   await expect(page.getByTestId("game-runtime-host")).toBeVisible();
   await expect(
     page.locator(".game-runtime-canvas-host canvas").first(),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
@@ -58,7 +58,7 @@ test("loads replay through the runtime from the dev shell", async ({
   });
   await expect(
     page.locator(".game-runtime-canvas-host canvas").first(),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
