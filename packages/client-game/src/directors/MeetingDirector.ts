@@ -130,20 +130,43 @@ export class MeetingDirector {
   #lastNonMeetingSnapshot: MatchSnapshot | null = null;
   #activeOriginSnapshot: MatchSnapshot | null = null;
   #activeSequenceId: string | null = null;
+  #entryEventId: string | null = null;
+  #lastTick = -1;
+  #matchId: string | null = null;
 
   track(snapshot: MatchSnapshot) {
+    if (snapshot.matchId !== this.#matchId || snapshot.tick < this.#lastTick) {
+      this.#activeSequenceId = null;
+      this.#entryEventId = null;
+      this.#lastNonMeetingSnapshot = null;
+    }
+    this.#matchId = snapshot.matchId;
+    this.#lastTick = snapshot.tick;
     if (!MEETING_PHASES.has(snapshot.phaseId)) {
       this.#lastNonMeetingSnapshot = cloneSnapshot(snapshot);
+      this.#activeSequenceId = null;
+      this.#entryEventId = null;
     }
   }
 
   derive(snapshot: MatchSnapshot): MeetingPresentation {
     const latestEvent = findLatestMeetingEvent(snapshot);
     const triggerEvent = findMeetingTriggerEvent(snapshot) ?? latestEvent;
-    const sequenceId = `${triggerEvent?.id ?? snapshot.matchId}:${triggerEvent?.tick ?? snapshot.tick}`;
+    const entryEvent = [...snapshot.recentEvents]
+      .reverse()
+      .find(
+        (event) =>
+          event.eventId === "phase-changed" && event.toPhaseId === "meeting",
+      );
 
-    if (this.#activeSequenceId !== sequenceId) {
-      this.#activeSequenceId = sequenceId;
+    if (
+      this.#activeSequenceId === null ||
+      (entryEvent &&
+        this.#entryEventId !== null &&
+        entryEvent.id !== this.#entryEventId)
+    ) {
+      this.#activeSequenceId = `${entryEvent?.id ?? triggerEvent?.id ?? snapshot.matchId}:${entryEvent?.tick ?? triggerEvent?.tick ?? snapshot.tick}`;
+      this.#entryEventId = entryEvent?.id ?? null;
       this.#activeOriginSnapshot =
         this.#lastNonMeetingSnapshot !== null
           ? cloneSnapshot(this.#lastNonMeetingSnapshot)
@@ -217,7 +240,7 @@ export class MeetingDirector {
 
     return {
       meetingRoomId: MEETING_ROOM_ID,
-      sequenceId,
+      sequenceId: this.#activeSequenceId,
       originSnapshot,
       alarmRoomId: eventRoomId(triggerEvent),
       stagedSnapshot: {

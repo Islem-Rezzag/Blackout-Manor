@@ -49,6 +49,7 @@ export type ClientGameConnectionOptions =
       actorId?: PlayerId;
       seed?: number;
       tickMs?: number;
+      autoPlay?: boolean;
     }
   | {
       mode: "live";

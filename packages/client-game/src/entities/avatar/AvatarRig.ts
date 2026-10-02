@@ -22,6 +22,7 @@ type AvatarRigState = {
   connected: boolean;
   suspiciousness: number;
   alive: boolean;
+  showActionBadge?: boolean;
 };
 
 const MODE = {
@@ -1851,7 +1852,8 @@ export class AvatarRig {
       this.#state.cue.badgeText ??
       (actionIcon ? actionIconLabel(actionIcon) : "");
     const visible = Boolean(
-      label &&
+      this.#state.showActionBadge !== false &&
+        label &&
         this.#state.alive &&
         (this.#state.cue.eventId || this.#state.cue.emphasis >= 0.45),
     );

@@ -1,14 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("renders the public launcher", async ({ page }) => {
+test("opens the manor directly from the public root", async ({ page }) => {
   await page.goto("/");
 
-  await expect(
-    page.getByRole("heading", { level: 1, name: /blackout manor/i }),
-  ).toBeVisible();
-  await expect(page.getByRole("link", { name: /enter game/i })).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: /watch demo room/i }),
-  ).toBeVisible();
-  await expect(page.getByText(/Contributor and debug routes/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/game\/demo$/);
+  await expect(page.getByTestId("game-runtime-host")).toBeVisible();
+  await expect(page.locator(".launcher-shell")).toHaveCount(0);
 });

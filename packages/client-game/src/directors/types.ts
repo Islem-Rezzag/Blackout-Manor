@@ -117,6 +117,7 @@ export type InspectionPresentation = {
 };
 
 export type GamePresentationState = {
+  followedPlayerId: PlayerId | null;
   runtimeState: ClientGameState;
   activeScene: RuntimeSceneId;
   snapshot: MatchSnapshot | null;

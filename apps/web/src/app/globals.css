@@ -945,17 +945,35 @@ a {
   z-index: 0;
 }
 
+.game-route-page,
+.game-runtime-shell,
+.game-runtime-stage,
+.game-runtime-canvas-host {
+  height: 100svh;
+  min-height: 0;
+}
+
+.game-runtime-stage {
+  background: #14231d;
+}
+
+.game-runtime-stage::before,
+.game-runtime-stage::after {
+  content: none;
+}
+
 .game-runtime-topbar {
-  align-items: start;
+  align-items: center;
   display: flex;
   gap: 20px;
   justify-content: space-between;
-  left: 0;
-  padding: 24px 28px;
+  bottom: 110px;
+  left: auto;
+  padding: 0;
   pointer-events: none;
   position: absolute;
-  right: 0;
-  top: 0;
+  right: 30px;
+  top: auto;
   z-index: 4;
 }
 
@@ -998,25 +1016,28 @@ a {
 }
 
 .game-runtime-badges {
-  border-radius: 24px;
+  border-radius: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 9px;
   justify-content: flex-end;
   max-width: 520px;
-  padding: 12px 14px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .game-runtime-badges .play-badge {
-  background: linear-gradient(
-    180deg,
-    rgba(24, 34, 46, 0.92),
-    rgba(11, 16, 23, 0.92)
-  );
-  border-color: rgba(214, 182, 122, 0.18);
-  color: #e7eef7;
-  font-size: 0.78rem;
-  padding: 11px 15px;
+  background: transparent;
+  border: 0;
+  color: #a8b09b;
+  font-size: 10px;
+  padding: 0;
+  border-radius: 0;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .game-runtime-status-banner {
@@ -1554,12 +1575,13 @@ a {
   }
 
   .game-runtime-topbar {
-    flex-direction: column;
-    padding: 18px;
+    padding: 0;
+    right: 16px;
+    bottom: 100px;
   }
 
   .game-runtime-badges {
-    border-radius: 24px;
+    border-radius: 0;
     justify-content: flex-start;
   }
 
@@ -1570,8 +1592,7 @@ a {
   }
 
   .game-frame,
-  .game-canvas-host,
-  .game-runtime-canvas-host {
+  .game-canvas-host {
     min-height: 560px;
   }
 }

@@ -6,6 +6,7 @@ import {
   type ClientGameAssetSourceLedgerEntryV2,
 } from "./assetSourceLedgerV2";
 import { CLIENT_GAME_DERIVED_TEXTURE_PLAN } from "./derivedClientAssets";
+import { ESTATE_TEXTURE_PLAN } from "./estateTexturePlan";
 import { INLINE_ASSETS } from "./inlineAssets";
 
 export const CLIENT_GAME_ASSET_CATEGORIES_V2 = [
@@ -362,6 +363,22 @@ const INLINE_RUNTIME_FALLBACK_ASSETS: readonly ClientGameAssetV2[] = [
 
 const CURRENT_PROCEDURAL_PLACEHOLDER_ASSETS: readonly ClientGameAssetV2[] = [
   {
+    key: "library-lucide-controls",
+    category: "hud-icons",
+    kind: "inline-svg",
+    inlineSourceKey: "dependency:lucide@0.468.0/control-icons",
+    sourceId: "lucide-control-library",
+    licenseStatus: "Placeholder",
+    placeholder: true,
+    generatedReferenceOnly: false,
+    dimensions: { width: 24, height: 24 },
+    fallbackKey: "procedural-hud-icons",
+    swapGroup: "hud-icon-v2",
+    runtimeReady: true,
+    notes:
+      "Reviewed ISC-licensed UI control placeholder symbols. The original notices are retained in THIRD_PARTY_UI_NOTICES.md; this group does not contain environment or character artwork.",
+  },
+  {
     key: "procedural-avatar-world-rig",
     category: "character-world-sprites",
     kind: "procedural",
@@ -533,6 +550,24 @@ const CURRENT_PROCEDURAL_PLACEHOLDER_ASSETS: readonly ClientGameAssetV2[] = [
 ];
 
 export const CLIENT_GAME_ASSET_CATALOG_V2: readonly ClientGameAssetV2[] = [
+  ...ESTATE_TEXTURE_PLAN.map(
+    (entry): ClientGameAssetV2 => ({
+      key: entry.key,
+      category: entry.category,
+      kind: "procedural",
+      inlineSourceKey: `procedural:estateTextures/${entry.key}`,
+      sourceId: "blackout-runtime-procedural",
+      licenseStatus: "Placeholder",
+      placeholder: true,
+      generatedReferenceOnly: false,
+      dimensions: { width: entry.width * 2, height: entry.height * 2 },
+      fallbackKey: entry.fallbackKey,
+      swapGroup: "manor-rendering",
+      runtimeReady: true,
+      notes:
+        "Project-authored, seeded canvas architecture and material placeholder. Retains the original reviewed baseline as its fallback; no external or generated-reference art.",
+    }),
+  ),
   ...CURRENT_MANIFEST_CATALOG_ASSETS,
   ...CURRENT_DERIVED_CATALOG_ASSETS,
   ...INLINE_RUNTIME_FALLBACK_ASSETS,

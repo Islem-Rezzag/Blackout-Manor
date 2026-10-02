@@ -134,6 +134,9 @@ importers:
       colyseus.js:
         specifier: ^0.16.22
         version: 0.16.22
+      lucide:
+        specifier: 0.468.0
+        version: 0.468.0
       phaser:
         specifier: ^3.90.0
         version: 3.90.0
@@ -1602,6 +1605,9 @@ packages:
   lru.min@1.1.4:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
+
+  lucide@0.468.0:
+    resolution: {integrity: sha512-UFbgwji/ZnAV7iTTE4jujyTV7J95AILKyATDUrqOJrMcUGfXvGjw3c1mcuHZUX2oJfkrAGU9KoxkrLQk2jjtiA==}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -3425,6 +3431,8 @@ snapshots:
   long@5.3.2: {}
 
   lru.min@1.1.4: {}
+
+  lucide@0.468.0: {}
 
   magic-string@0.30.21:
     dependencies:

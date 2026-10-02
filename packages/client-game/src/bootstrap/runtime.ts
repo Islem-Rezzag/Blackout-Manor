@@ -7,6 +7,7 @@ import {
 } from "@blackout-manor/shared";
 
 import { createMatchConnection } from "../network/createMatchConnection";
+import type { DemoPlaybackClock } from "../session/DemoPlaybackClock";
 import { MatchViewStore } from "../state/MatchViewStore";
 import type {
   ClientGameConnectionOptions,
@@ -23,9 +24,18 @@ export class ClientGameRuntime implements ClientGameController {
   readonly #viewStore: MatchViewStore;
   readonly mode: ClientGameController["mode"];
   readonly roomId: ClientGameController["roomId"];
+  readonly localPlayback: DemoPlaybackClock | undefined;
 
   constructor(options: RuntimeOptions) {
-    const connection = createMatchConnection(options.connection);
+    const connection = createMatchConnection(
+      options.connection.mode === "mock"
+        ? {
+            ...options.connection,
+            autoPlay: options.connection.autoPlay ?? false,
+          }
+        : options.connection,
+    );
+    this.localPlayback = connection.localPlayback;
     this.#viewStore = new MatchViewStore({
       mode: options.connection.mode,
       roomId: connection.roomId,

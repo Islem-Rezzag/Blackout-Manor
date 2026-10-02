@@ -174,7 +174,7 @@ export class TaskReadabilityLayer {
           fontFamily: "Segoe UI, sans-serif",
           fontSize: "12px",
           fontStyle: "bold",
-          letterSpacing: 0.8,
+          letterSpacing: 0,
         },
       );
       cueTitle.setDepth(TASK_LAYER_DEPTH.interaction);
@@ -317,7 +317,9 @@ export class TaskReadabilityLayer {
     const emphasized =
       node.tone !== "available" || node.active || node.recent || focused;
     const showLabel =
-      inspected || focused || node.tone !== "available" || node.recent;
+      (inspected && !options.showTaskChips) ||
+      node.tone === "blocked" ||
+      node.tone === "attention";
     const showProgress =
       showLabel &&
       (node.tone === "busy" ||
@@ -346,7 +348,7 @@ export class TaskReadabilityLayer {
     );
     visual.propGlow.setScale(scale);
 
-    visual.propMarker.setVisible(focused || emphasized);
+    visual.propMarker.setVisible(inspected || node.tone === "attention");
     visual.propMarker.setFillStyle(node.cueColor, focused ? 0.34 : 0.18);
     visual.propMarker.setScale(scale);
 
@@ -362,18 +364,18 @@ export class TaskReadabilityLayer {
     visual.hotspotPulse.setScale(scale);
 
     visual.hotspotRing.setVisible(true);
-    visual.hotspotRing.setFillStyle(node.cueColor, emphasized ? 0.12 : 0.04);
+    visual.hotspotRing.setFillStyle(node.cueColor, emphasized ? 0.04 : 0.01);
     visual.hotspotRing.setStrokeStyle(
-      2,
+      1,
       style.plateStroke,
-      inspected ? 0.9 : focused ? 0.78 : emphasized ? style.hotspotAlpha : 0.14,
+      inspected ? 0.7 : focused ? 0.4 : emphasized ? 0.28 : 0.07,
     );
     visual.hotspotRing.setScale(scale, scale);
 
     visual.hotspotPlate.setVisible(true);
     visual.hotspotPlate.setFillStyle(
       node.cueColor,
-      inspected ? 0.42 : focused ? 0.34 : emphasized ? 0.22 : 0.08,
+      inspected ? 0.2 : focused ? 0.12 : emphasized ? 0.08 : 0.02,
     );
     visual.hotspotPlate.setScale(scale, scale);
 

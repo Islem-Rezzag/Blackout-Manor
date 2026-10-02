@@ -21,6 +21,7 @@ import {
   type AvatarFacing,
   type AvatarInteractionCue,
   buildAvatarCueMap,
+  deriveWorldAvatarLabels,
   directionFromVector,
   resolveAvatarAppearance,
   resolveAvatarPose,
@@ -124,7 +125,7 @@ class PlayerAvatar {
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "11px",
       fontStyle: "bold",
-      letterSpacing: 1.2,
+      letterSpacing: 0,
     });
     this.#statusText.setOrigin(0.5);
     this.container = scene.add.container(0, 0, [
@@ -151,6 +152,10 @@ class PlayerAvatar {
   ) {
     const appearance = resolveAvatarAppearance(player);
     this.#syncNavigation(roomId, targetPosition, phaseId, cue, movementOrigin);
+    const labels = deriveWorldAvatarLabels(
+      phaseId,
+      inspectionRoomId === roomId,
+    );
 
     const visiblePosture = resolveVisiblePosture(player, cue);
     const currentPosition = this.#position ?? targetPosition;
@@ -193,6 +198,7 @@ class PlayerAvatar {
       connected: player.connected,
       suspiciousness: player.publicImage.suspiciousness,
       alive: player.status === "alive",
+      showActionBadge: labels.actionBadge,
     });
 
     this.#statusPip.setFillStyle(
@@ -264,6 +270,10 @@ class PlayerAvatar {
       player.status === "alive" ? "#eef4fb" : "#ffd5cb",
     );
     const inspected = inspectionRoomId === roomId;
+    this.#statusPlate.setVisible(labels.status);
+    this.#statusText.setVisible(labels.status);
+    this.#labelPlate.setVisible(false);
+    this.#label.setVisible(labels.name);
     const dimmed = inspectionRoomId !== null && !inspected;
     this.container.setScale(inspected ? 1.08 : moving ? 1.02 : 1);
     this.container.setAlpha(

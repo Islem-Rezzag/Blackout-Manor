@@ -4,18 +4,14 @@ import type { ClientGameRuntime } from "../bootstrap/runtime";
 import type { GameDirector } from "../directors/GameDirector";
 import { ManorWorldStage } from "../stage/ManorWorldStage";
 import { worldSeatResolver } from "../stage/seatResolvers";
-import { ObservationHud } from "../ui/ObservationHud";
 import { SurveillanceConsole } from "../ui/SurveillanceConsole";
 import { attachObservationControls } from "./attachObservationControls";
 import { SCENE_KEYS } from "./keys";
-
-const timerLine = (tick: number) => `Tick ${tick}`;
 
 export class ManorWorldScene extends Phaser.Scene {
   readonly #runtime: ClientGameRuntime;
   readonly #director: GameDirector;
   #stage: ManorWorldStage | null = null;
-  #hud: ObservationHud | null = null;
   #console: SurveillanceConsole | null = null;
   #unsubscribe: (() => void) | null = null;
   #detachControls: (() => void) | null = null;
@@ -36,7 +32,6 @@ export class ManorWorldScene extends Phaser.Scene {
         void this.#runtime.proposeStartTask(taskId);
       },
     });
-    this.#hud = new ObservationHud({ scene: this });
     this.#console = new SurveillanceConsole({
       scene: this,
       onSelectRoom: (roomId) => {
@@ -55,19 +50,6 @@ export class ManorWorldScene extends Phaser.Scene {
         return;
       }
 
-      this.#hud?.setContent({
-        camera: state.camera,
-        inspection: state.inspection,
-        surveillance: state.surveillance,
-        phaseLabel: state.snapshot.phaseId.toUpperCase(),
-        timerText: timerLine(state.snapshot.tick),
-        contextText:
-          state.surveillance.mode === "surveillance"
-            ? "Console mode stays locked to public room feeds."
-            : state.inspection.mode === "inspect"
-              ? "Press Esc to return to the whole-manor overview."
-              : "Click any room to inspect it while public activity remains highlighted.",
-      });
       this.#console?.setPresentation(state.surveillance);
       this.#stage?.render({
         snapshot: state.snapshot,
@@ -87,8 +69,6 @@ export class ManorWorldScene extends Phaser.Scene {
       this.#detachControls?.();
       this.#detachControls = null;
       this.scale.off("resize", this.#handleResize, this);
-      this.#hud?.destroy();
-      this.#hud = null;
       this.#console?.destroy();
       this.#console = null;
       this.#stage?.destroy();
@@ -102,7 +82,6 @@ export class ManorWorldScene extends Phaser.Scene {
 
   #handleResize(gameSize?: Phaser.Structs.Size) {
     this.#stage?.resize(gameSize);
-    this.#hud?.resize(this.scale.width, this.scale.height);
     this.#console?.resize(this.scale.width, this.scale.height);
   }
 }
