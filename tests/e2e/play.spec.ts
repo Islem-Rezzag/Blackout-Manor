@@ -62,7 +62,7 @@ test("loads replay through the runtime from the dev shell", async ({
   await expect(page.getByTestId("game-runtime-room-label")).toContainText(
     "Room demo",
   );
-  await expect(page.getByText(/replay archive/i)).toBeVisible();
+  await expect(page.locator(".estate-session-status")).toHaveText("Replay");
 });
 
 test("keeps fairness behind the dev route", async ({ page }) => {

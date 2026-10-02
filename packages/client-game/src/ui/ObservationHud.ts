@@ -1,21 +1,29 @@
 import {
   DEFAULT_ROOM_LABELS,
   type MatchSnapshot,
+  type PlayerId,
   type PublicPlayerState,
   type RoomId,
 } from "@blackout-manor/shared";
 import {
   Cctv,
   House,
+  List,
   Map as MapIcon,
   Maximize,
   Minimize,
   Moon,
+  Pause,
+  Play,
+  Radio,
+  SkipBack,
+  SkipForward,
   Users,
   VenetianMask,
   Volume2,
   VolumeX,
   Wrench,
+  X,
 } from "lucide";
 import type * as Phaser from "phaser";
 import { subscribeManorSoundEnabled } from "../audio/soundPreference";
@@ -26,8 +34,13 @@ import type {
   SurveillancePresentation,
 } from "../directors/types";
 import { resolveAvatarAppearance } from "../entities/avatar/presentation";
+import {
+  PHASE_LABELS,
+  type SessionPresentation,
+} from "../session/sessionPresentation";
 import { createControlIcon as createElement } from "./controlIcons";
 import { ESTATE_HUD_STYLES } from "./estateHudStyles";
+import { derivePublicActivity } from "./publicActivity";
 
 type ObservationHudContent = {
   camera: CameraPlan;
@@ -37,6 +50,8 @@ type ObservationHudContent = {
   timerText?: string | null;
   contextText?: string | null;
   snapshot?: MatchSnapshot;
+  followedPlayerId?: PlayerId | null;
+  directed?: boolean;
 };
 
 export const deriveObservationHudLayout = (options: {
@@ -168,6 +183,13 @@ export class ObservationHud {
   readonly #rooms = new globalThis.Map<RoomId, HTMLButtonElement>();
   readonly #abort = new AbortController();
   readonly #unsubscribeSound: () => void;
+  readonly #persistent: boolean;
+  readonly #play: HTMLButtonElement;
+  readonly #step: HTMLButtonElement;
+  readonly #back: HTMLButtonElement;
+  readonly #speed: HTMLSelectElement;
+  readonly #scrubber: HTMLInputElement;
+  #activitySignature = "";
   #soundEnabled = true;
 
   constructor(options: {
@@ -176,21 +198,32 @@ export class ObservationHud {
     onOverview?: () => void;
     onSurveillance?: () => void;
     onSoundChange?: (enabled: boolean) => void;
+    onFollowPlayer?: (playerId: PlayerId) => void;
+    onPlay?: () => void;
+    onStep?: (delta: number) => void;
+    onSpeed?: (speed: number) => void;
+    onSeek?: (index: number) => void;
+    persistent?: boolean;
   }) {
     this.#scene = options.scene;
+    this.#persistent = options.persistent ?? false;
     this.#selectRoom = options.onSelectRoom;
     const root = document.createElement("div");
     root.className = "manor-hud";
     root.innerHTML = `<style>${ESTATE_HUD_STYLES}</style>
       <header class="estate-header">
         <div class="estate-brand"><div class="estate-crest"></div><div><h1>Blackout Manor</h1><p>The masquerade after midnight</p></div></div>
-        <div class="estate-phase"><i></i><span data-field="phase">ROAM</span><span data-field="tick"></span></div>
+        <div class="estate-clock"><small data-field="clock-label">Demo time</small><strong data-field="clock">00:00</strong><span data-field="clock-detail">Ready to begin</span></div>
         <div class="estate-totals"><div class="estate-total" data-icon="guests" title="Guests remaining"><strong data-field="alive"></strong><small>Guests remaining</small></div><div class="estate-total" data-icon="tasks" title="House restored"><strong data-field="tasks"></strong><small>House restored</small></div></div>
       </header>
       <nav class="estate-nav" aria-label="Observation mode"></nav>
+      <div class="estate-transport" aria-label="Session controls"><span class="estate-session-status"></span></div>
+      <div class="estate-phase-track" aria-label="Match phase"></div>
       <div class="estate-location"></div>
       <section class="estate-room-menu" hidden aria-label="Manor rooms"><h2>Inside the estate</h2></section>
       <div class="estate-subtitle" hidden data-tone="speech"><small></small><p></p></div>
+      <section class="estate-ready" aria-label="Session ready" hidden><small>LOCAL DEMO / TEN GUESTS</small><h2>The guests are ready.</h2><div class="estate-ready-action"></div></section>
+      <aside class="estate-activity" aria-label="Public activity" hidden><header><h2>Public activity</h2></header><ol></ol><p class="estate-activity-empty">No public events yet.</p></aside>
       <footer class="estate-bottom"><div class="estate-cast-heading"><strong>The guests</strong><small>Masquerade night</small></div><div class="estate-cast" aria-label="Guest focus"></div><div class="estate-tools"></div></footer>
       <p class="estate-tool-error" role="status" hidden></p>`;
     this.#root = root;
@@ -223,6 +256,78 @@ export class ObservationHud {
     rooms.dataset.command = "rooms";
     rooms.setAttribute("aria-expanded", "false");
     nav.append(overview, surveillance, rooms);
+    const activity = this.#button("Public activity", List, () => {
+      const panel = this.#element(".estate-activity");
+      panel.hidden = !panel.hidden;
+      activity.setAttribute("aria-expanded", String(!panel.hidden));
+    });
+    activity.dataset.command = "activity";
+    activity.setAttribute("aria-expanded", "false");
+    nav.append(activity);
+    this.#element(".estate-activity header").append(
+      this.#button("Close public activity", X, () => {
+        this.#element(".estate-activity").hidden = true;
+        activity.setAttribute("aria-expanded", "false");
+      }),
+    );
+    const track = this.#element(".estate-phase-track");
+    for (const [phase, label] of Object.entries(PHASE_LABELS)) {
+      const segment = document.createElement("div");
+      segment.dataset.phase = phase;
+      const text = document.createElement("span");
+      text.textContent = label;
+      const progress = document.createElement("i");
+      segment.append(text, progress);
+      track.append(segment);
+    }
+    const transport = this.#element(".estate-transport");
+    this.#back = this.#button("Previous frame", SkipBack, () =>
+      options.onStep?.(-1),
+    );
+    this.#play = this.#button("Start night", Play, () => options.onPlay?.());
+    this.#play.dataset.command = "play";
+    this.#step = this.#button("Next tick", SkipForward, () =>
+      options.onStep?.(1),
+    );
+    this.#speed = document.createElement("select");
+    this.#speed.setAttribute("aria-label", "Playback speed");
+    this.#speed.title = "Local playback speed";
+    for (const speed of [0.25, 0.5, 1, 2]) {
+      const option = document.createElement("option");
+      option.value = String(speed);
+      option.textContent = `${speed}x`;
+      this.#speed.append(option);
+    }
+    this.#speed.addEventListener(
+      "change",
+      () => options.onSpeed?.(Number(this.#speed.value)),
+      { signal: this.#abort.signal },
+    );
+    this.#scrubber = document.createElement("input");
+    this.#scrubber.type = "range";
+    this.#scrubber.min = "0";
+    this.#scrubber.step = "1";
+    this.#scrubber.setAttribute("aria-label", "Replay frame");
+    this.#scrubber.addEventListener(
+      "input",
+      () => options.onSeek?.(Number(this.#scrubber.value)),
+      { signal: this.#abort.signal },
+    );
+    transport.append(
+      this.#back,
+      this.#play,
+      this.#step,
+      this.#speed,
+      this.#scrubber,
+    );
+    this.#element(".estate-ready-action").append(
+      this.#button(
+        "Start night",
+        Play,
+        () => options.onPlay?.(),
+        "Start night",
+      ),
+    );
     const tools = this.#element(".estate-tools");
     const sound = this.#button("Mute manor sound", Volume2, () => {
       this.#soundEnabled = !this.#soundEnabled;
@@ -286,11 +391,16 @@ export class ObservationHud {
       this.#rooms.set(id, button);
       menu.append(button);
     }
-    options.scene.events.on("sleep", this.#hide);
-    options.scene.events.on("wake", this.#show);
-    options.scene.events.on("pause", this.#hide);
-    options.scene.events.on("resume", this.#show);
+    if (!this.#persistent) {
+      options.scene.events.on("sleep", this.#hide);
+      options.scene.events.on("wake", this.#show);
+      options.scene.events.on("pause", this.#hide);
+      options.scene.events.on("resume", this.#show);
+    }
+    this.#followPlayer = options.onFollowPlayer;
   }
+
+  readonly #followPlayer: ((playerId: PlayerId) => void) | undefined;
 
   readonly #hide = () => {
     this.#root.hidden = true;
@@ -333,9 +443,11 @@ export class ObservationHud {
 
   setContent(content: ObservationHudContent) {
     const { inspection, snapshot, surveillance } = content;
-    this.#element('[data-field="phase"]').textContent =
-      content.phaseLabel === "ROAM" ? "THE MASQUERADE" : content.phaseLabel;
-    this.#element('[data-field="tick"]').textContent = content.timerText ?? "";
+    this.#root.dataset.directed = String(content.directed ?? false);
+    (this.#element('[data-command="overview"]') as HTMLButtonElement).disabled =
+      content.directed ?? false;
+    (this.#element('[data-command="rooms"]') as HTMLButtonElement).disabled =
+      content.directed ?? false;
     this.#element('[data-command="overview"]').setAttribute(
       "aria-pressed",
       String(surveillance.mode !== "surveillance"),
@@ -355,7 +467,9 @@ export class ObservationHud {
     locationLabel.textContent =
       inspection.mode === "inspect"
         ? inspection.label
-        : "Estate grounds / Storm outside";
+        : content.directed
+          ? "Grand hall / Directed scene"
+          : "Whole manor / Storm outside";
     location.append(locationLabel);
     const subtitle = this.#element(".estate-subtitle");
     subtitle.hidden = !surveillance.subtitle;
@@ -368,6 +482,23 @@ export class ObservationHud {
     }
     if (!snapshot) return;
     const summary = deriveEstatePublicSummary(snapshot);
+    const activity = derivePublicActivity(snapshot);
+    const activitySignature = activity.map((event) => event.id).join("|");
+    if (activitySignature !== this.#activitySignature) {
+      this.#activitySignature = activitySignature;
+      this.#element(".estate-activity ol").replaceChildren(
+        ...activity.map((event) => {
+          const row = document.createElement("li");
+          const tick = document.createElement("small");
+          tick.textContent = `T${event.tick}`;
+          const text = document.createElement("span");
+          text.textContent = event.text;
+          row.append(tick, text);
+          return row;
+        }),
+      );
+    }
+    this.#element(".estate-activity-empty").hidden = activity.length > 0;
     this.#element('[data-field="alive"]').textContent =
       `${summary.alive} / ${summary.guests}`;
     this.#element('[data-field="tasks"]').textContent =
@@ -406,12 +537,14 @@ export class ObservationHud {
         const name = document.createElement("span");
         name.textContent = player.displayName;
         const dot = document.createElement("i");
-        button.append(portrait, name, dot);
+        const status = document.createElement("small");
+        button.append(portrait, name, status, dot);
         button.addEventListener(
           "click",
           () => {
             const roomId = button?.dataset.room as RoomId | undefined;
-            if (roomId) this.#selectRoom?.(roomId);
+            if (this.#followPlayer) this.#followPlayer(player.id);
+            else if (roomId) this.#selectRoom?.(roomId);
           },
           { signal: this.#abort.signal },
         );
@@ -420,14 +553,97 @@ export class ObservationHud {
       }
       button.dataset.room = player.roomId ?? "";
       button.dataset.alive = String(player.status === "alive");
-      button.disabled = !player.roomId;
+      button.disabled =
+        player.status !== "alive" ||
+        !player.roomId ||
+        Boolean(content.directed);
       button.setAttribute(
         "aria-pressed",
-        String(Boolean(player.roomId && player.roomId === inspection.roomId)),
+        String(content.followedPlayerId === player.id),
       );
-      button.title = `${player.displayName} / ${player.roomId ? DEFAULT_ROOM_LABELS[player.roomId] : "Absent"} / ${player.status}`;
+      button.dataset.speaking = String(
+        surveillance.subtitle?.speakerId === player.id &&
+          surveillance.subtitle.tone === "speech",
+      );
+      const status = button.querySelector("small");
+      if (status)
+        status.textContent =
+          player.status !== "alive"
+            ? player.status
+            : button.dataset.speaking === "true"
+              ? "Speaking"
+              : player.roomId
+                ? DEFAULT_ROOM_LABELS[player.roomId]
+                : "Present";
+      button.title = `Follow ${player.displayName} / ${player.roomId ? DEFAULT_ROOM_LABELS[player.roomId] : "Absent"} / ${player.status}`;
       button.setAttribute("aria-label", button.title);
     }
+  }
+
+  setSession(session: SessionPresentation) {
+    this.#root.dataset.session = session.status;
+    this.#element('[data-field="clock"]').textContent = session.clock;
+    this.#element('[data-field="clock-label"]').textContent =
+      session.clockLabel;
+    this.#element('[data-field="clock-detail"]').textContent = session.detail;
+    const status = this.#element(".estate-session-status");
+    status.replaceChildren(
+      createElement(
+        session.status === "live"
+          ? Radio
+          : session.status === "playing"
+            ? Play
+            : Pause,
+      ),
+    );
+    const label = document.createElement("span");
+    label.textContent =
+      session.mode === "mock"
+        ? "Local demo"
+        : session.mode === "replay"
+          ? "Replay"
+          : "Live match";
+    status.append(label);
+    for (const segment of this.#root.querySelectorAll<HTMLElement>(
+      "[data-phase]",
+    )) {
+      const active = segment.dataset.phase === session.phase;
+      segment.setAttribute("aria-current", String(active));
+      const progress = segment.querySelector<HTMLElement>("i");
+      if (progress)
+        progress.style.width = active
+          ? `${(session.phaseProgress ?? 1) * 100}%`
+          : "0%";
+    }
+    const playing = session.status === "playing";
+    const playLabel =
+      session.status === "ready"
+        ? "Start night"
+        : playing
+          ? "Pause playback"
+          : "Resume playback";
+    if (this.#play.title !== playLabel) {
+      this.#play.title = playLabel;
+      this.#play.setAttribute("aria-label", playLabel);
+      this.#play.replaceChildren(createElement(playing ? Pause : Play));
+    }
+    this.#play.hidden = !session.canControl;
+    this.#back.hidden = session.mode !== "replay";
+    this.#back.disabled = session.frameIndex <= 0;
+    this.#step.hidden = !session.canControl;
+    this.#step.disabled =
+      session.status !== "paused" ||
+      (session.mode === "replay" &&
+        session.frameIndex >= session.totalFrames - 1);
+    this.#step.title = session.mode === "replay" ? "Next frame" : "Next tick";
+    this.#step.setAttribute("aria-label", this.#step.title);
+    this.#speed.hidden = !session.canControl;
+    this.#speed.value = String(session.speed);
+    this.#scrubber.hidden = session.mode !== "replay";
+    this.#scrubber.max = String(Math.max(0, session.totalFrames - 1));
+    this.#scrubber.value = String(session.frameIndex);
+    this.#element(".estate-ready").hidden =
+      session.status !== "ready" || !session.canControl;
   }
 
   resize(_width: number, _height: number) {}

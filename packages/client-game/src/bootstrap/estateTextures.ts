@@ -528,6 +528,34 @@ const paintRoomFurnishings = (
       bevel(ctx, x + 7, 34, 24, 10, "#d1c8ab");
     }
   } else if (id === "grand-hall") {
+    const tableX = w * 0.14;
+    const tableY = h * 0.54;
+    const tableWidth = w * 0.72;
+    const tableHeight = h * 0.19;
+    rect(ctx, tableX + 5, tableY + 8, tableWidth, tableHeight, "#17221ba6");
+    bevel(ctx, tableX, tableY, tableWidth, tableHeight, "#725d43", "#c3a678");
+    bevel(
+      ctx,
+      tableX + 6,
+      tableY + 5,
+      tableWidth - 12,
+      tableHeight - 10,
+      "#8b7451",
+      "#a28b64",
+    );
+    rect(
+      ctx,
+      tableX + 10,
+      tableY + tableHeight * 0.42,
+      tableWidth - 20,
+      tableHeight * 0.16,
+      "#b9ae87",
+    );
+    for (let seat = 0; seat < 5; seat += 1) {
+      const x = tableX + tableWidth * ((seat + 0.5) / 5);
+      ellipse(ctx, x, tableY + 10, 6, 4, "#e2d3ac");
+      ellipse(ctx, x, tableY + tableHeight - 10, 6, 4, "#e2d3ac");
+    }
     for (const x of [27, w - 45]) {
       plant(ctx, x + 8, h - 52, 0.95);
       bevel(ctx, x, h * 0.45, 22, 42, "#6d4d46", "#ac8c62");

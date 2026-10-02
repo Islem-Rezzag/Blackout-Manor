@@ -24,6 +24,27 @@ for (const viewport of [
     // The fixed future target stays ahead of slow CI startup and protocol latency.
     await page.clock.pauseAt(new Date("2026-01-01T09:00:00Z"));
     await expect(hud.locator('[data-field="alive"]')).toHaveText("10 / 10");
+    await expect(
+      hud.getByRole("region", { name: "Session ready" }),
+    ).toBeVisible();
+    await expect(hud.locator('[data-field="clock"]')).toHaveText("00:00");
+    await hud
+      .getByRole("region", { name: "Session ready" })
+      .getByRole("button", { name: "Start night" })
+      .click();
+    await page.clock.fastForward(2400);
+    await hud.getByRole("button", { name: "Pause playback" }).click();
+    await hud.getByRole("button", { name: "Next tick" }).click();
+    await expect(
+      hud.getByRole("region", { name: "Session ready" }),
+    ).toBeHidden();
+    await expect(hud.locator('[data-phase="roam"]')).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+    await expect(hud.locator('[data-field="clock"]')).toHaveText("00:02");
+    await hud.locator(".estate-guest").first().click();
+    await expect(hud.locator(".estate-location")).toContainText("Following");
 
     await hud.getByRole("button", { name: "Choose a room" }).click();
     await expect(
@@ -55,6 +76,8 @@ for (const viewport of [
         ".estate-nav",
         ".estate-bottom",
         ".estate-tools",
+        ".estate-transport",
+        ".estate-phase-track",
       ];
       return selectors.map((selector) => {
         const rect = root.querySelector(selector)?.getBoundingClientRect();

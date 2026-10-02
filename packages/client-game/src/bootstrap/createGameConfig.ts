@@ -50,7 +50,7 @@ export const createGameConfig = ({
   },
   scene: [
     new BootScene(),
-    new LoadingScene(director, assetBaseUrl),
+    new LoadingScene(director, runtime, assetBaseUrl),
     new ManorWorldScene(runtime, director),
     new MeetingScene(director),
     new EndgameScene(director),

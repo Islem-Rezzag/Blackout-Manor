@@ -18,7 +18,36 @@ import {
   createEnvironmentFocusContext,
   createEnvironmentRenderPlan,
 } from "./EnvironmentRenderer";
+import { shouldShowRoomAlert } from "./LightingWeatherRenderer";
 import { getThresholdFocusState } from "./ThresholdRenderer";
+
+it("keeps meeting faces clear without suppressing blackout or sabotage alerts", () => {
+  const room = {
+    roomId: "grand-hall",
+    doorState: "sealed",
+    lightLevel: "lit",
+    occupantIds: [],
+    taskIds: [],
+  } as const;
+  const publicRoom = { ...room, occupantIds: [], taskIds: [] };
+  expect(shouldShowRoomAlert("meeting", publicRoom, false)).toBe(false);
+  expect(shouldShowRoomAlert("roam", publicRoom, false)).toBe(true);
+  expect(
+    shouldShowRoomAlert(
+      "meeting",
+      { ...publicRoom, lightLevel: "blackout" },
+      false,
+    ),
+  ).toBe(true);
+  expect(shouldShowRoomAlert("meeting", publicRoom, true)).toBe(true);
+  expect(
+    shouldShowRoomAlert(
+      "meeting",
+      { ...publicRoom, doorState: "jammed" },
+      false,
+    ),
+  ).toBe(true);
+});
 
 vi.mock("phaser", () => {
   const clamp = (value: number, min: number, max: number) =>

@@ -35,7 +35,11 @@ const describeStatus = (state: ClientGameState | null) => {
     case "connecting":
       return "Joining the manor";
     case "connected":
-      return "Broadcast live";
+      return state.mode === "mock"
+        ? "Local demo connected"
+        : state.mode === "replay"
+          ? "Archive loaded"
+          : "Broadcast live";
     case "error":
       return "Connection fault";
     case "closed":
@@ -191,7 +195,12 @@ export function GameRuntimeHost({
     >
       <div className="game-runtime-stage">
         <div ref={hostRef} className="game-runtime-canvas-host" />
-        <header className="game-runtime-topbar">
+        <header
+          className="game-runtime-topbar"
+          style={
+            state?.status === "connected" ? { display: "none" } : undefined
+          }
+        >
           <div className="game-runtime-badges">
             <span className="play-badge">
               {connection.mode === "replay"

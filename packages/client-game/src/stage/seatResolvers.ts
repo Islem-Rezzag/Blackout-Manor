@@ -22,19 +22,21 @@ const createMeetingSeatPosition = (
   if (phaseId === "reveal" && seatCount > 1 && seatIndex === seatCount - 1) {
     return {
       x: room.focusPoint.x,
-      y: room.bounds.y + room.height * 0.76,
+      y: room.bounds.y + room.height * 0.96,
     };
   }
 
-  const angle =
-    Math.PI * 0.18 +
-    (Math.PI * 0.64 * (seatIndex + 0.5)) / Math.max(1, seatCount);
-  const radiusX = room.width * 0.28;
-  const radiusY = room.height * 0.22;
+  const regularSeats = Math.max(1, seatCount - (phaseId === "reveal" ? 1 : 0));
+  const backRowCount = Math.ceil(regularSeats / 2);
+  const frontRow = seatIndex >= backRowCount;
+  const rowCount = frontRow
+    ? Math.max(1, regularSeats - backRowCount)
+    : backRowCount;
+  const column = frontRow ? seatIndex - backRowCount : seatIndex;
 
   return {
-    x: room.focusPoint.x + Math.cos(angle) * radiusX,
-    y: room.focusPoint.y + Math.sin(angle) * radiusY + 28,
+    x: room.bounds.x + room.width * (0.1 + (0.8 * (column + 0.5)) / rowCount),
+    y: room.bounds.y + room.height * (frontRow ? 0.82 : 0.55),
   };
 };
 

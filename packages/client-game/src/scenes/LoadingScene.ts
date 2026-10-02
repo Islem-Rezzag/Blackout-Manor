@@ -3,7 +3,9 @@ import * as Phaser from "phaser";
 import { loadClientGameAssetManifest } from "../bootstrap/assetManifest";
 import { registerDerivedClientGameTextures } from "../bootstrap/derivedClientAssets";
 import { registerEstateTextures } from "../bootstrap/estateTextures";
+import type { ClientGameRuntime } from "../bootstrap/runtime";
 import type { GameDirector } from "../directors/GameDirector";
+import { SpectatorSessionHud } from "../ui/SpectatorSessionHud";
 import { SCENE_KEYS } from "./keys";
 
 export class LoadingScene extends Phaser.Scene {
@@ -11,10 +13,16 @@ export class LoadingScene extends Phaser.Scene {
   readonly #barHeight = 14;
   readonly #director: GameDirector;
   readonly #assetBaseUrl: string | undefined;
+  readonly #runtime: ClientGameRuntime;
 
-  constructor(director: GameDirector, assetBaseUrl?: string) {
+  constructor(
+    director: GameDirector,
+    runtime: ClientGameRuntime,
+    assetBaseUrl?: string,
+  ) {
     super(SCENE_KEYS.loading);
     this.#director = director;
+    this.#runtime = runtime;
     this.#assetBaseUrl = assetBaseUrl;
   }
 
@@ -68,6 +76,7 @@ export class LoadingScene extends Phaser.Scene {
     this.scene.launch(SCENE_KEYS.endgame);
     this.scene.launch(SCENE_KEYS.replay);
     this.#director.attachScenePlugin(this.scene);
+    new SpectatorSessionHud(this, this.#runtime, this.#director);
     this.scene.stop();
   }
 }

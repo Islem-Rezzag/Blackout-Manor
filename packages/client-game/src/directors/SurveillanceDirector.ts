@@ -115,7 +115,9 @@ const playerLabel = (
       playerId)
     : null;
 
-const buildSubtitle = (snapshot: MatchSnapshot): VisibleSubtitle | null => {
+export const buildSubtitle = (
+  snapshot: MatchSnapshot,
+): VisibleSubtitle | null => {
   for (const event of [...snapshot.recentEvents].reverse()) {
     switch (event.eventId) {
       case "discussion-turn":

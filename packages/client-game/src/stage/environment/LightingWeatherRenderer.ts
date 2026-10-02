@@ -1,8 +1,26 @@
+import type { PhaseId, RoomState } from "@blackout-manor/shared";
 import * as Phaser from "phaser";
 
 import type { StormLayer } from "../../fx/StormLayer";
 import type { ManorRenderRoom } from "../../tiled/manorLayout";
 import type { EnvironmentRenderPlan } from "./EnvironmentRenderTypes";
+
+export const shouldShowRoomAlert = (
+  phaseId: PhaseId,
+  room: RoomState,
+  sabotage: boolean,
+) => {
+  if (
+    ["meeting", "vote", "reveal"].includes(phaseId) &&
+    room.doorState === "sealed" &&
+    room.lightLevel === "lit" &&
+    !sabotage
+  )
+    return false;
+  return (
+    sabotage || room.doorState !== "open" || room.lightLevel === "blackout"
+  );
+};
 
 export const configureEnvironmentStormLayer = (
   stormLayer: StormLayer,

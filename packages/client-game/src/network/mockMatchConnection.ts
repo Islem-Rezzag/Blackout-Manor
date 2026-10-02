@@ -35,7 +35,8 @@ import {
   type TaskState,
   type TeamId,
 } from "@blackout-manor/shared";
-
+import { DemoPlaybackClock } from "../session/DemoPlaybackClock";
+import { getDemoPhase } from "../session/demoTimeline";
 import type { MatchConnection } from "./types";
 
 type MockConnectionOptions = {
@@ -43,6 +44,7 @@ type MockConnectionOptions = {
   actorId?: PlayerId;
   seed?: number;
   tickMs?: number;
+  autoPlay?: boolean;
 };
 
 type MockMutableState = {
@@ -234,22 +236,38 @@ const createRoleAssignments = (
 
 export class MockMatchConnection implements MatchConnection {
   readonly mode = "mock" as const;
+  readonly localPlayback: DemoPlaybackClock;
   readonly roomId: string;
   readonly #listeners = new Set<(message: ServerMessage) => void>();
   readonly #errorListeners = new Set<(error: Error) => void>();
   readonly #actorId: PlayerId | null;
-  readonly #tickMs: number;
+  readonly #autoPlay: boolean;
   readonly #rng: () => number;
   readonly #roleAssignments: Map<PlayerId, MockRoleAssignment>;
   #state: MockMutableState;
   #replayFrames: ReplayFrame[] = [];
-  #timer: ReturnType<typeof setInterval> | null = null;
   #disposed = false;
 
   constructor(options: MockConnectionOptions = {}) {
     this.roomId = options.roomId ?? MOCK_ROOM_ID;
     this.#actorId = options.actorId ?? ("player-01" as PlayerId);
-    this.#tickMs = options.tickMs ?? DEFAULT_TICK_MS;
+    this.#autoPlay = options.autoPlay ?? true;
+    this.localPlayback = new DemoPlaybackClock(
+      options.tickMs ?? DEFAULT_TICK_MS,
+      () => {
+        try {
+          this.#advanceTick();
+        } catch (error) {
+          this.localPlayback.pause();
+          this.#emitError(
+            error instanceof Error
+              ? error
+              : new Error("Mock simulation tick failed."),
+          );
+        }
+      },
+    );
+    if (this.#autoPlay) this.localPlayback.setSpeed(1);
     this.#rng = createRng(options.seed ?? 17);
     this.#state = createBaseState(options.seed ?? 17);
     this.#roleAssignments = createRoleAssignments(this.#state.players);
@@ -271,19 +289,7 @@ export class MockMatchConnection implements MatchConnection {
     this.#emitPrivateState();
     this.#emitSnapshot();
 
-    if (!this.#timer) {
-      this.#timer = setInterval(() => {
-        try {
-          this.#advanceTick();
-        } catch (error) {
-          this.#emitError(
-            error instanceof Error
-              ? error
-              : new Error("Mock simulation tick failed."),
-          );
-        }
-      }, this.#tickMs);
-    }
+    if (this.#autoPlay) this.localPlayback.play();
   }
 
   async send(message: ClientMessage) {
@@ -333,10 +339,7 @@ export class MockMatchConnection implements MatchConnection {
 
   async disconnect() {
     this.#disposed = true;
-    if (this.#timer) {
-      clearInterval(this.#timer);
-      this.#timer = null;
-    }
+    this.localPlayback.destroy();
   }
 
   #handleProposal(
@@ -480,23 +483,8 @@ export class MockMatchConnection implements MatchConnection {
   #advanceTick() {
     this.#state.tick += 1;
 
-    const cycleTick = this.#state.tick % 28;
     const previousPhase = this.#state.phaseId;
-    if (cycleTick < 2) {
-      this.#state.phaseId = "intro";
-    } else if (cycleTick < 14) {
-      this.#state.phaseId = "roam";
-    } else if (cycleTick < 16) {
-      this.#state.phaseId = "report";
-    } else if (cycleTick < 21) {
-      this.#state.phaseId = "meeting";
-    } else if (cycleTick < 24) {
-      this.#state.phaseId = "vote";
-    } else if (cycleTick < 26) {
-      this.#state.phaseId = "reveal";
-    } else {
-      this.#state.phaseId = "roam";
-    }
+    this.#state.phaseId = getDemoPhase(this.#state.tick).phase;
 
     if (previousPhase !== this.#state.phaseId) {
       this.#appendEvent({

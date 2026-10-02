@@ -42,10 +42,14 @@ import type {
   EnvironmentRoomVisual,
   EnvironmentStageLayers,
 } from "./environment/EnvironmentRenderTypes";
-import { configureEnvironmentStormLayer } from "./environment/LightingWeatherRenderer";
+import {
+  configureEnvironmentStormLayer,
+  shouldShowRoomAlert,
+} from "./environment/LightingWeatherRenderer";
 import {
   estateInspectionZoom,
   estateOverviewZoom,
+  estateWorldViewport,
 } from "./estateCameraFraming";
 import { createRoomRenderPalette } from "./renderTheme";
 import {
@@ -552,9 +556,7 @@ export class ManorWorldStage {
           : 0,
       );
     visual.sabotageBanner.setVisible(
-      signal.sabotage ||
-        roomState.doorState !== "open" ||
-        roomState.lightLevel === "blackout",
+      shouldShowRoomAlert(snapshot.phaseId, roomState, signal.sabotage),
     );
     visual.sabotageLabel.setVisible(visual.sabotageBanner.visible);
 
@@ -695,6 +697,13 @@ export class ManorWorldStage {
   #handleResize(gameSize?: Phaser.Structs.Size) {
     const width = gameSize?.width ?? this.#scene.scale.width;
     const height = gameSize?.height ?? this.#scene.scale.height;
+    const viewport = estateWorldViewport(width, height);
+    this.#scene.cameras.main.setViewport(
+      viewport.x,
+      viewport.y,
+      viewport.width,
+      viewport.height,
+    );
 
     this.#baseZoom = this.#calculateZoom();
     this.#atmosphereVeil.resize(width, height);

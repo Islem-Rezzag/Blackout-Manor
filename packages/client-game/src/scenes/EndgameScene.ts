@@ -3,14 +3,12 @@ import * as Phaser from "phaser";
 import type { GameDirector } from "../directors/GameDirector";
 import { ManorWorldStage } from "../stage/ManorWorldStage";
 import { createFinaleSeatResolver } from "../stage/seatResolvers";
-import { RuntimeBanner } from "../ui/RuntimeBanner";
 import { createScreenSpaceCamera } from "../ui/ScreenSpaceCamera";
 import { SCENE_KEYS } from "./keys";
 
 export class EndgameScene extends Phaser.Scene {
   readonly #director: GameDirector;
   #stage: ManorWorldStage | null = null;
-  #banner: RuntimeBanner | null = null;
   #resultPlate: Phaser.GameObjects.Container | null = null;
   #resultTitle: Phaser.GameObjects.Text | null = null;
   #resultDetail: Phaser.GameObjects.Text | null = null;
@@ -25,7 +23,6 @@ export class EndgameScene extends Phaser.Scene {
 
   create() {
     this.#stage = new ManorWorldStage({ scene: this });
-    this.#banner = new RuntimeBanner({ scene: this, width: 540 });
 
     const plate = this.add
       .rectangle(0, 0, 620, 134, 0x14251e, 0.94)
@@ -56,10 +53,7 @@ export class EndgameScene extends Phaser.Scene {
     this.#resultPlate = this.add.container(0, 0, [plate, title, detail, tag]);
     this.#resultPlate.setDepth(322);
     this.#resultPlate.setScrollFactor(0);
-    this.#uiCamera = createScreenSpaceCamera(this, [
-      this.#banner.screenSpaceRoot,
-      this.#resultPlate,
-    ]);
+    this.#uiCamera = createScreenSpaceCamera(this, [this.#resultPlate]);
     this.#resizePanels();
 
     this.scale.on("resize", this.#handleResize, this);
@@ -68,12 +62,6 @@ export class EndgameScene extends Phaser.Scene {
         return;
       }
 
-      this.#banner?.setContent(state.banner);
-      this.#banner?.setPresentation({
-        alpha: 1,
-        offsetY: 0,
-        scale: 1,
-      });
       this.#resultTitle?.setText(state.endgame.title);
       this.#resultDetail?.setText(state.endgame.subtitle);
       this.#resultTag?.setText(state.endgame.summaryTag.toUpperCase());
@@ -97,8 +85,6 @@ export class EndgameScene extends Phaser.Scene {
       this.#unsubscribe?.();
       this.#unsubscribe = null;
       this.scale.off("resize", this.#handleResize, this);
-      this.#banner?.destroy();
-      this.#banner = null;
       this.#stage?.destroy();
       this.#stage = null;
       this.#resultPlate?.destroy(true);
@@ -114,10 +100,9 @@ export class EndgameScene extends Phaser.Scene {
   }
 
   #resizePanels() {
-    this.#banner?.resize(this.scale.width);
     this.#resultPlate?.setPosition(
       this.scale.width / 2,
-      this.scale.height - 96,
+      this.scale.height - 216,
     );
     this.#resultPlate?.setScale(Math.min(1, (this.scale.width - 32) / 620));
     this.#uiCamera?.setSize(this.scale.width, this.scale.height);

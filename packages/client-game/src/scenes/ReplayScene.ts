@@ -11,10 +11,10 @@ import {
 } from "../stage/meetingBlocking";
 import {
   createFinaleSeatResolver,
+  createMeetingSeatMap,
   createMeetingSeatResolver,
   worldSeatResolver,
 } from "../stage/seatResolvers";
-import { ObservationHud } from "../ui/ObservationHud";
 import { SurveillanceConsole } from "../ui/SurveillanceConsole";
 import { attachObservationControls } from "./attachObservationControls";
 import { SCENE_KEYS } from "./keys";
@@ -31,12 +31,6 @@ const resolveSeatResolver = (phaseId: PhaseId): SeatResolver => {
   return worldSeatResolver;
 };
 
-const replayTimerLine = (
-  frameIndex: number,
-  totalFrames: number,
-  tick: number,
-) => `Frame ${frameIndex + 1}/${totalFrames} | Tick ${tick}`;
-
 type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
   id: string;
   startedAt: number;
@@ -45,7 +39,6 @@ type MeetingSequenceState = ReturnType<typeof createMeetingBlocking> & {
 export class ReplayScene extends Phaser.Scene {
   readonly #director: GameDirector;
   #stage: ManorWorldStage | null = null;
-  #hud: ObservationHud | null = null;
   #console: SurveillanceConsole | null = null;
   #unsubscribe: (() => void) | null = null;
   #detachControls: (() => void) | null = null;
@@ -64,13 +57,6 @@ export class ReplayScene extends Phaser.Scene {
       onInspectRoom: (roomId) => {
         this.#director.selectObservationRoom(roomId);
       },
-    });
-    this.#hud = new ObservationHud({
-      scene: this,
-      onSelectRoom: (roomId) => this.#director.selectObservationRoom(roomId),
-      onOverview: () => this.#director.exitObservationFocus(),
-      onSurveillance: () => this.#director.toggleObservationMode(),
-      onSoundChange: (enabled) => this.#stage?.setSoundEnabled(enabled),
     });
     this.#console = new SurveillanceConsole({
       scene: this,
@@ -91,6 +77,12 @@ export class ReplayScene extends Phaser.Scene {
         return;
       }
 
+      if (
+        state.replay.snapshot.tick <
+        (this.#presentationState?.replay?.snapshot?.tick ?? 0)
+      ) {
+        this.#meetingSequence = null;
+      }
       this.#presentationState = state;
       if (
         state.meeting &&
@@ -101,6 +93,14 @@ export class ReplayScene extends Phaser.Scene {
           startedAt: this.time.now,
           ...createMeetingBlocking(state.meeting),
         };
+      }
+      if (state.meeting && this.#meetingSequence) {
+        this.#meetingSequence.seatPositions = createMeetingSeatMap(
+          state.meeting.stagedSnapshot.players,
+          state.meeting.meetingRoomId,
+          state.meeting.stagedSnapshot.phaseId,
+          state.meeting.targetPlayerId,
+        );
       }
       this.#renderReplayState();
     });
@@ -113,8 +113,6 @@ export class ReplayScene extends Phaser.Scene {
       this.#detachReplayControls?.();
       this.#detachReplayControls = null;
       this.scale.off("resize", this.#handleResize, this);
-      this.#hud?.destroy();
-      this.#hud = null;
       this.#console?.destroy();
       this.#console = null;
       this.#stage?.destroy();
@@ -137,9 +135,6 @@ export class ReplayScene extends Phaser.Scene {
     }
 
     const phaseId = state.replay.snapshot.phaseId;
-    const highlightText =
-      state.replay.highlightMarkers[0]?.description ??
-      "Left and right step the deterministic frame log.";
     const meetingPresentation =
       phaseId === "meeting" || phaseId === "vote" || phaseId === "reveal"
         ? state.meeting
@@ -160,19 +155,6 @@ export class ReplayScene extends Phaser.Scene {
     const replayCamera = meetingDirection?.camera ?? state.camera;
     const replayInspection = meetingDirection?.inspection ?? state.inspection;
 
-    this.#hud?.setContent({
-      snapshot: state.replay.snapshot,
-      camera: replayCamera,
-      inspection: replayInspection,
-      surveillance: state.surveillance,
-      phaseLabel: phaseId.toUpperCase(),
-      timerText: replayTimerLine(
-        state.replay.frameIndex,
-        state.replay.totalFrames,
-        state.replay.snapshot.tick,
-      ),
-      contextText: highlightText,
-    });
     this.#console?.setPresentation(state.surveillance);
     this.#stage?.render({
       snapshot,
@@ -242,7 +224,6 @@ export class ReplayScene extends Phaser.Scene {
 
   #handleResize(gameSize?: Phaser.Structs.Size) {
     this.#stage?.resize(gameSize);
-    this.#hud?.resize(this.scale.width, this.scale.height);
     this.#console?.resize(this.scale.width, this.scale.height);
   }
 }

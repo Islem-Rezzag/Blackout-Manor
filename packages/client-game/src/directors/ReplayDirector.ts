@@ -11,6 +11,7 @@ export class ReplayDirector {
   readonly #envelope: SavedReplayEnvelope | null;
   readonly #frames;
   #frameIndex = 0;
+  #runtimeSnapshot: ClientGameState["snapshot"] = null;
 
   constructor(envelope: SavedReplayEnvelope | null) {
     this.#envelope = envelope;
@@ -22,7 +23,8 @@ export class ReplayDirector {
   }
 
   syncToRuntime(state: ClientGameState) {
-    if (state.snapshot) {
+    if (state.snapshot && state.snapshot !== this.#runtimeSnapshot) {
+      this.#runtimeSnapshot = state.snapshot;
       this.#frameIndex = findReplayPresentationFrameIndex(
         this.#frames,
         state.snapshot.tick,

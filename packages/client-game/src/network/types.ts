@@ -1,5 +1,5 @@
 import type { ClientMessage, ServerMessage } from "@blackout-manor/shared";
-
+import type { DemoPlaybackClock } from "../session/DemoPlaybackClock";
 import type { ClientGameConnectionMode } from "../types";
 
 export type MatchConnectionStatus =
@@ -20,6 +20,7 @@ export type MatchConnectionErrorListener = (
 export interface MatchConnection {
   readonly mode: ClientGameConnectionMode;
   readonly roomId: string | null;
+  readonly localPlayback?: DemoPlaybackClock;
   connect(): Promise<void>;
   send(message: ClientMessage): Promise<void>;
   subscribe(listener: MatchConnectionListener): () => void;

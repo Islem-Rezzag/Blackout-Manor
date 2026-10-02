@@ -1,10 +1,11 @@
 import type { SavedReplayEnvelope } from "@blackout-manor/replay-viewer";
-import type { MatchSnapshot } from "@blackout-manor/shared";
+import type { MatchSnapshot, PlayerId } from "@blackout-manor/shared";
 import type * as Phaser from "phaser";
 
 import type { ClientGameRuntime } from "../bootstrap/runtime";
 import type { ClientGameState } from "../types";
 import { CameraDirector } from "./CameraDirector";
+import { deriveFollowInspection } from "./followPresentation";
 import { InspectionDirector } from "./InspectionDirector";
 import { MeetingDirector } from "./MeetingDirector";
 import { PhaseDirector } from "./PhaseDirector";
@@ -162,6 +163,7 @@ export class GameDirector {
   readonly #listeners = new Set<Listener>();
   #scenePlugin: Phaser.Scenes.ScenePlugin | null = null;
   #state: GamePresentationState;
+  #followedPlayerId: PlayerId | null = null;
 
   constructor(
     runtime: ClientGameRuntime,
@@ -217,16 +219,19 @@ export class GameDirector {
   }
 
   toggleObservationMode() {
+    this.#followedPlayerId = null;
     this.#surveillanceDirector.toggleMode();
     this.#refreshDerivedState();
   }
 
   setObservationMode(mode: ObservationMode) {
+    this.#followedPlayerId = null;
     this.#surveillanceDirector.setMode(mode);
     this.#refreshDerivedState();
   }
 
   inspectRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
+    this.#followedPlayerId = null;
     this.#inspectionDirector.inspectRoom(roomId);
     this.#refreshDerivedState();
   }
@@ -237,6 +242,7 @@ export class GameDirector {
   }
 
   exitObservationFocus() {
+    this.#followedPlayerId = null;
     if (this.#state.surveillance.mode === "surveillance") {
       this.#surveillanceDirector.setMode("roaming");
     }
@@ -254,6 +260,7 @@ export class GameDirector {
   }
 
   focusSurveillanceRoom(roomId: MatchSnapshot["rooms"][number]["roomId"]) {
+    this.#followedPlayerId = null;
     this.#surveillanceDirector.focusRoom(roomId);
     this.#refreshDerivedState();
   }
@@ -261,6 +268,13 @@ export class GameDirector {
   cycleSurveillanceRoom(delta: number) {
     const rooms = this.#state.surveillance.feedRooms.map((feed) => feed.roomId);
     this.#surveillanceDirector.cycleFocus(rooms, delta);
+    this.#refreshDerivedState();
+  }
+
+  followPlayer(playerId: PlayerId) {
+    this.#followedPlayerId = playerId;
+    this.#inspectionDirector.clear();
+    this.#surveillanceDirector.setMode("roaming");
     this.#refreshDerivedState();
   }
 
@@ -319,20 +333,27 @@ export class GameDirector {
       activeRoomId: camera.roomId,
       fallbackImmediate: camera.immediate,
     });
+    const followInspection = deriveFollowInspection({
+      followedPlayerId: this.#followedPlayerId,
+      snapshot,
+      scene: activeScene,
+      camera,
+    });
 
     return {
       runtimeState,
       activeScene,
       snapshot: stageSnapshot,
       camera,
-      inspection,
+      inspection: followInspection ?? inspection,
+      followedPlayerId: this.#followedPlayerId,
       banner: buildBanner(runtimeState, activeScene, snapshot),
       meeting,
       endgame,
       replay,
       surveillance: {
         ...surveillance,
-        cameraLabel: inspection.label,
+        cameraLabel: (followInspection ?? inspection).label,
       },
     };
   }
